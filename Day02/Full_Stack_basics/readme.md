@@ -37,14 +37,14 @@ npm install
 ```bash
 # Terminal 1 — backend
 cd "Day02/Full_Stack_basics/backend"
-npm run dev    # or `node server.js` depending on package scripts
+npm run start    # or `node server.js` depending on package scripts
 
 # Terminal 2 — frontend (Vite)
 cd "Day02/Full_Stack_basics/frontend"
 npm run dev
 ```
 
-- Backend default: http://localhost:3000
+- Backend default: http://localhost:5000
 - Frontend default: http://localhost:5173
 
 API / Data
@@ -67,10 +67,3 @@ Contributing
 
 License
 - This repo is provided for learning/demo purposes. Add a license file if you intend to publish or share.
-
-Contact
-- Questions or suggestions: update the README or open an issue.
-
----
-
-If you'd like, I can add badges, sample screenshots, or a short walkthrough GIF — tell me which and I'll update the README.
