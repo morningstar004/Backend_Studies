@@ -1,0 +1,17 @@
+{
+  "name": "youtubeclonebackend",
+  "version": "1.0.0",
+  "description": "Its a backend for youtube clone.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [ 
+    "javascript",
+    "express",
+    "mongodb"
+  ],
+  "author": "Pranjal Kumar",
+  "license": "ISC",
+  "type": "module"
+}
