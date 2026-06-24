@@ -4,14 +4,17 @@
   "description": "Its a backend for youtube clone.",
   "main": "index.js",
   "scripts": {
-    "Start": "node index.js"
+    "dev": "nodemon src/index.js"
   },
-  "keywords": [ 
+  "keywords": [
     "javascript",
     "express",
     "mongodb"
   ],
   "author": "Pranjal Kumar",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
