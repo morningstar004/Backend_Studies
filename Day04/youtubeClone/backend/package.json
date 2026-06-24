@@ -4,7 +4,7 @@
   "description": "Its a backend for youtube clone.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "Start": "node index.js"
   },
   "keywords": [ 
     "javascript",
