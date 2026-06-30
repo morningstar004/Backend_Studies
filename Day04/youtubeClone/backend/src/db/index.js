@@ -1,6 +1,8 @@
-import mongoose, { connect } from "mongoose";
-import { DB_Name } from "./constants.js";
+// require("dotenv").config({path: "./env"});
 import dotenv from "dotenv";
+dotenv.config({ path: "./env" });
+import mongoose, { connect } from "mongoose";
+import { DB_Name } from "../constants.js";
 
 const connectDB = async () => {
     try {
@@ -12,3 +14,5 @@ const connectDB = async () => {
         console.error(`Error: ${error.message}`);
     }
 }
+
+export default connectDB;
