@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 /*NOTE: If you Import mongoose, {Schema} together from mongoose the you can start with the Schema constructor directly no need write new mongoose.Schema write new Schema.
                     if import mongoose,{Schema} from "mongoose";
@@ -50,12 +52,50 @@ const userSchema = new mongoose.Schema(
     },
     refreshtoken: {
       type: String,
-      
     },
   },
   {
     timestamps: true,
   },
 );
+
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  }
+});
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      //PAYLOAD
+      id: this.id,
+      username: this.username,
+      fullname: this.fullName,
+      email: this.email,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+    },
+  );
+};
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      //PAYLOAD
+      id: this.id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
+    },
+  );
+};
 
 export const User = mongoose.model("User", userSchema);
