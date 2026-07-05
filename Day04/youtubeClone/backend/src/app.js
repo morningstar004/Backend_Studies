@@ -21,11 +21,15 @@ app.use(cors({
 }));
 app.use(cookieParse());
 
+//Importing routers
+import { userRouter } from "./routes/user.route.js"
 
 // Routes
 app.get("/", (req, res) => {
     res.send("API is running...");
 });
+
+app.use("/api/v1/users", userRouter);
 
 
 export default app;
