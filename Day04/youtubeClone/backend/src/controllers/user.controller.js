@@ -7,7 +7,7 @@ import { ResponseHandler } from "../utils/apiResponse.js";
 const registerUser = asyncHandler(async (req, res) => {
   // get details about the User from its model
   const { fullName, email, password, username } = req.body;
-
+  console.log("Incoming body:", req.body);
   // Validate the data input
 
   // if(fullName || email || password || username == ""){
@@ -21,20 +21,21 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(400, "All feilds should be filed");
   }
 
+  
   // check if the user already exists: username, email
   const UserExist = await User.findOne({
     $or: [{ username }, { email }],
   });
+
+  console.log("UserExist result:", UserExist);
 
   if (UserExist) {
     throw new apiError(409, "User already exists");
   }
 
   // check from images, and avtar
-  const avtarLocalPath = req.files?.avtar[0]?.path;
-  console.log(avtarLocalPath);
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
-  console.log(coverImageLocalPath);
+const avtarLocalPath = req.files?.avtar?.[0]?.path;
+const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
   if (!avtarLocalPath) {
     throw new apiError(400, "Avtar Image is required.");
