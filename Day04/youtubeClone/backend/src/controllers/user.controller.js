@@ -15,20 +15,19 @@ const registerUser = asyncHandler(async (req, res) => {
   // }
   if (
     [fullName, email, username, password].some((field) => {
-      return field?.trim === "";
+      return field?.trim() === "";
     })
   ) {
     throw new apiError(400, "All feilds should be filed");
   }
 
   // check if the user already exists: username, email
-  const UserExist = User.findOne({
+  const UserExist = await User.findOne({
     $or: [{ username }, { email }],
   });
-  console.log(UserExist);
 
   if (UserExist) {
-    throw new apiError(409, "User alredy exist");
+    throw new apiError(409, "User already exists");
   }
 
   // check from images, and avtar
@@ -38,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
   console.log(coverImageLocalPath);
 
   if (!avtarLocalPath) {
-    throw new apiError(404, "Avtar Image is required.");
+    throw new apiError(400, "Avtar Image is required.");
   }
 
   // upload the image to cloudinary
@@ -46,24 +45,26 @@ const registerUser = asyncHandler(async (req, res) => {
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!avtar) {
-    throw new apiError(401, "File not uploaded");
+    throw new apiError(400, "File not uploaded");
   }
 
   // create user object - create enter in db
   const user = await User.create({
     fullName,
     avtar: avtar.url,
-    coverimage: coverImage?.url,
+    coverImage: coverImage?.url || "",
     email,
     password,
     username: username.toLowerCase(),
   });
 
   // remove password and refresh token feild from responce
-  const createdUser = User.findById(user._id).select("-password -refreshtoken");
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshtoken",
+  );
 
   // check if user created
-  if (createdUser) {
+  if (!createdUser) {
     throw new apiError(500, "Something went wrong while user registration");
   }
 
@@ -71,7 +72,7 @@ const registerUser = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(
-      new ResponseHandler(200, createdUser, "User Registered successfully"),
+      new ResponseHandler(201, "User Registered successfully", createdUser),
     );
 });
 

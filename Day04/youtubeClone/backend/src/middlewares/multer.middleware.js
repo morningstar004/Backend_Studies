@@ -1,14 +1,37 @@
+import fs from "fs";
+import path from "path";
 import multer from "multer";
 
+const uploadDir = path.resolve("public", "temp");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+/**
+ * Configures multer disk storage settings for file uploads.
+ * 
+ * @type {multer.StorageEngine}
+ * 
+ * @description
+ * Sets up file storage configuration with two callback functions:
+ * - destination: Specifies where uploaded files will be stored on the server
+ * - filename: Generates unique filenames using timestamp and original filename
+ * 
+ * @example
+ * const upload = multer({ storage });
+ * app.post('/upload', upload.single('file'), (req, res) => {
+ *   // Handle uploaded file
+ * });
+ */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, ".public/temp");
-  },//cb: callback function that takes two arguments: an error (if any) and the destination path where the file should be stored. In this case, it specifies that the uploaded files should be stored in the ".public/temp" directory.
+    cb(null, uploadDir);
+  },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
-  },//cb: callback function that takes two arguments: an error (if any) and the filename to be used for the uploaded file. In this case, it generates a unique filename by prepending the current timestamp (Date.now()) to the original filename of the uploaded file (file.originalname). This helps avoid filename collisions and ensures that each uploaded file has a unique name.
+  },
 });
 
 export const upload = multer({
   storage,
-});//storage: This property specifies the storage engine to be used for handling file uploads. In this case, it uses the diskStorage engine defined earlier, which saves files to the local disk in the specified destination directory with unique filenames.
+});

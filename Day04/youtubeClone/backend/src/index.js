@@ -1,20 +1,21 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "./env" });
+dotenv.config({ path: "./.env" });
 import connectDB from "./db/index.js";
 import app from "./app.js";
 
+// import fs from "fs";
+// fs.mkdirSync("./.public/temp", { recursive: true });
 
 connectDB()
-.then(()=> {
+  .then(() => {
     app.listen(process.env.PORT || 5000, () => {
-        console.log(`Server is running on port ${process.env.PORT || 5000}`);
+      console.log(`Server is running on port ${process.env.PORT || 5000}`);
     });
-})
-.catch((error)=> {
+  })
+  .catch((error) => {
     console.error(`Error: ${error.message}`);
     // process.exit(1) mean that the process will exit with a failure code. In Node.js, an exit code of 0 indicates success, while any non-zero value indicates an error or abnormal termination. By calling `process.exit(1)`, you are signaling that the application encountered an error and is terminating as a result. This can be useful for logging and monitoring purposes, as it allows other systems to detect that the application did not complete successfully.
-    process.exit(1);
-})
+  });
 // const app = express();
 // (async () => {
 //   try {
@@ -36,7 +37,6 @@ connectDB()
 // })();
 
 // ANOTHER WAY TO CONNECT TO MONGODB
-
 
 // const connectDB = async () => {
 //   try {
