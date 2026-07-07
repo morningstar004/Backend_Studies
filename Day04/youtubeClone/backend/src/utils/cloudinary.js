@@ -14,16 +14,26 @@ const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null; // Return null if no file path is provided
 
-    console.log("Cloudinary upload input path:", localFilePath);
-
+    // Upload first, then delete the local temp file after success.
     const response = await cloudinary.uploader.upload(localFilePath, {
-        resource_type: "auto", // Automatically detect the file type (image, video, etc.)
-
+      resource_type: "auto", // Automatically detect the file type (image, video, etc.)
+      // not optimized yet because there is no limiter, or filetype assignment to the upload.
     });
+
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
+
     console.log("File uploaded to Cloudinary:", response.url);
     return response; // Return the URL of the uploaded file
   } catch (error) {
-    fs.unlinkSync(localFilePath); // Delete the local file if upload fails
+    if (localFilePath && fs.existsSync(localFilePath)) {
+      try {
+        fs.unlinkSync(localFilePath);
+      } catch (unlinkError) {
+        console.warn("Failed to delete temp file after upload error:", unlinkError);
+      }
+    }
     console.error("Error uploading to Cloudinary:", error);
     throw error;
   }

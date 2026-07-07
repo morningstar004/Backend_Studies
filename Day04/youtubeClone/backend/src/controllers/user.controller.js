@@ -36,6 +36,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // check from images, and avtar
 const avtarLocalPath = req.files?.avtar?.[0]?.path;
 const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+console.log(req.files);
 
   if (!avtarLocalPath) {
     throw new apiError(400, "Avtar Image is required.");
