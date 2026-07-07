@@ -21,7 +21,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(400, "All feilds should be filed");
   }
 
-  
   // check if the user already exists: username, email
   const UserExist = await User.findOne({
     $or: [{ username }, { email }],
@@ -34,9 +33,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check from images, and avtar
-const avtarLocalPath = req.files?.avtar?.[0]?.path;
-const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-console.log(req.files);
+  const avtarLocalPath = req.files?.avtar?.[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+  console.log(req.files);
 
   if (!avtarLocalPath) {
     throw new apiError(400, "Avtar Image is required.");
@@ -78,4 +77,82 @@ console.log(req.files);
     );
 });
 
-export { registerUser };
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshtoken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return {accessToken, refreshToken}
+  } catch (error) {
+    throw new apiError(
+      500,
+      "Something Went Worng While generating Access and Refresh token.",
+    );
+  }
+};
+
+const loginUser = asyncHandler(async (req, res) => {
+  //get data from req.body(frontend)
+  const { email, username, password } = req.body;
+
+  //login on the basis of username/email
+  if (!username || !email) {
+    throw new apiError(400, "Credential missing.");
+  }
+
+  //find the username/email in User DB
+  const user = await User.findOne({
+    $or: [
+      {
+        username,
+      },
+      {
+        email,
+      },
+    ],
+  });
+  //If user not exist
+  if (!user) {
+    throw new apiError(404, "User does not exist.");
+  }
+
+  //Password Check
+  const IsPasswordValid = await user.isPasswordCorrect(password);
+
+  if (!IsPasswordValid) {
+    throw new apiError(401, "Invalid Password.");
+  }
+
+  //access and refresh token
+  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
+
+  //send cookie
+  const loggedIn = await User.findById(user._id).select("-password -refreshToken")//finding user by ID on DB expensive step try to update if DB get slow
+
+  const options = {
+    httpOnly: true,//Cookie can't be modified by frontend only by server
+    secure: true// increacing security
+  }
+
+  return res
+  .status(200)
+  .cookie("accessToken",accessToken, options)
+  .cookie("refreshToken",refreshToken,options)
+  .json(
+    new ResponseHandler(
+      200,
+      {
+        user: loggedIn, accessToken, refreshToken
+      },
+      "User LoggedIn Successfully"
+    )
+  )
+
+
+
+});
+export { registerUser, loginUser };
