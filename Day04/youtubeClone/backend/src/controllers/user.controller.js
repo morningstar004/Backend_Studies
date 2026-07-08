@@ -3,11 +3,12 @@ import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const registerUser = asyncHandler(async (req, res) => {
   // get details about the User from its model
   const { fullName, email, password, username } = req.body;
-  console.log("Incoming body:", req.body);
   // Validate the data input
 
   // if(fullName || email || password || username == ""){
@@ -26,7 +27,7 @@ const registerUser = asyncHandler(async (req, res) => {
     $or: [{ username }, { email }],
   });
 
-  console.log("UserExist result:", UserExist);
+  // console.log("UserExist result:", UserExist);
 
   if (UserExist) {
     throw new apiError(409, "User already exists");
@@ -35,7 +36,6 @@ const registerUser = asyncHandler(async (req, res) => {
   // check for images and avatar
   const avtarLocalPath = req.files?.avtar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-  console.log(req.files);
 
   if (!avtarLocalPath) {
     throw new apiError(400, "Avatar image is required.");
@@ -100,7 +100,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   //login on the basis of username/email
-  if (!username || !email) {
+  if (!username && !email) {
     throw new apiError(400, "Credential missing.");
   }
 
@@ -121,8 +121,8 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   //Password Check
-  const IsPasswordValid = await user.isPasswordCorrect(password);
-
+    const IsPasswordValid = await user.isPasswordCorrect(password);
+    
   if (!IsPasswordValid) {
     throw new apiError(401, "Invalid Password.");
   }
