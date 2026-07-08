@@ -2,6 +2,12 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 
+/**
+ * Constructs an absolute file system path for temporary file uploads.
+ * Resolves to the "public/temp" directory relative to the project root.
+ * Used to store temporarily uploaded files before processing or permanent storage.
+ * @type {string}
+ */
 const uploadDir = path.resolve("public", "temp");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });

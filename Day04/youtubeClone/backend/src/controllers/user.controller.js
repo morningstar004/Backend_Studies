@@ -11,14 +11,14 @@ const registerUser = asyncHandler(async (req, res) => {
   // Validate the data input
 
   // if(fullName || email || password || username == ""){
-  //     throw new apiError(400,"All feilds are required")
+  //     throw new apiError(400, "All fields are required")
   // }
   if (
     [fullName, email, username, password].some((field) => {
       return field?.trim() === "";
     })
   ) {
-    throw new apiError(400, "All feilds should be filed");
+    throw new apiError(400, "All fields should be filled");
   }
 
   // check if the user already exists: username, email
@@ -32,13 +32,13 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(409, "User already exists");
   }
 
-  // check from images, and avtar
+  // check for images and avatar
   const avtarLocalPath = req.files?.avtar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
   console.log(req.files);
 
   if (!avtarLocalPath) {
-    throw new apiError(400, "Avtar Image is required.");
+    throw new apiError(400, "Avatar image is required.");
   }
 
   // upload the image to cloudinary
@@ -59,9 +59,9 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
   });
 
-  // remove password and refresh token feild from responce
+  // remove password and refresh token field from response
   const createdUser = await User.findById(user._id).select(
-    "-password -refreshtoken",
+    "-password -refreshToken",
   );
 
   // check if user created
@@ -83,14 +83,14 @@ const generateAccessAndRefreshToken = async (userId) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    user.refreshtoken = refreshToken;
+    user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    return {accessToken, refreshToken}
+    return { accessToken, refreshToken };
   } catch (error) {
     throw new apiError(
       500,
-      "Something Went Worng While generating Access and Refresh token.",
+      "Something went wrong while generating access and refresh token.",
     );
   }
 };
@@ -128,31 +128,59 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   //access and refresh token
-  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
 
   //send cookie
-  const loggedIn = await User.findById(user._id).select("-password -refreshToken")//finding user by ID on DB expensive step try to update if DB get slow
+  const loggedIn = await User.findById(user._id).select(
+    "-password -refreshToken",
+  ); //finding user by ID on DB expensive step try to update if DB get slow
 
   const options = {
-    httpOnly: true,//Cookie can't be modified by frontend only by server
-    secure: true// increacing security
-  }
+    httpOnly: true, // Cookie can't be modified by frontend, only by server
+    secure: true, // increasing security
+  };
 
   return res
-  .status(200)
-  .cookie("accessToken",accessToken, options)
-  .cookie("refreshToken",refreshToken,options)
-  .json(
-    new ResponseHandler(
-      200,
-      {
-        user: loggedIn, accessToken, refreshToken
-      },
-      "User LoggedIn Successfully"
-    )
-  )
-
-
-
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ResponseHandler(
+        200,
+        {
+          user: loggedIn,
+          accessToken,
+          refreshToken,
+        },
+        "User LoggedIn Successfully",
+      ),
+    );
 });
-export { registerUser, loginUser };
+
+const logoutUser = asyncHandler(async (req, res) => {
+  //clear cookie and remove the refresh token
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  const options = {
+    httpOnly: true, // Cookie can't be modified by frontend, only by server
+    secure: true, // increasing security
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ResponseHandler(200, {}, "User Logged Out"));
+});
+export { registerUser, loginUser, logoutUser };
