@@ -77,6 +77,12 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
+/**
+ * @description
+ * This function retrieves a user by ID, generates both access and refresh tokens,
+ * stores the refresh token in the database, and returns both tokens.
+ * The validateBeforeSave option is disabled to skip model validation during save.
+ */
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -133,6 +139,16 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   //send cookie
+  /*! @description
+   * This step fetches the complete user profile after successful login/authentication.
+   * By excluding password and refreshToken, it ensures sensitive data is not exposed.
+   * This is a database operation and can be performance-intensive with large datasets.
+   * Consider implementing caching strategies or database indexing if performance becomes an issue.
+   *
+   * @performance
+   * NOTE: This is an expensive database operation. Monitor performance and consider
+   * optimization strategies (indexing, caching) if database performance degrades.
+   */
   const loggedIn = await User.findById(user._id).select(
     "-password -refreshToken",
   ); //finding user by ID on DB expensive step try to update if DB get slow
