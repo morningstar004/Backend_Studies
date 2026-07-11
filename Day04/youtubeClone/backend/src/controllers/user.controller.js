@@ -278,10 +278,63 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ResponseHandler(200, {}, "Password Has Been Changed."));
 });
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  const currentUser = req.user;
+
+  return res
+    .status(200)
+    .json(
+      new ResponseHandler(200, currentUser, "Current User has been Fetched."),
+    );
+});
+
+const updateAccountDetail = asyncHandler(async (req, res) => {
+  const { fullName, email, username } = req.body;
+
+  if (!fullName || !email || !username) {
+    throw new apiError(400, "All fields are required");
+  }
+
+  if ([fullName, email, username].some((field) => field?.trim() === "")) {
+    throw new apiError(400, "All fields should be filled");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    req.body,
+    {
+      $set: {
+        fullName,
+        email,
+        username: username.toLowerCase(),
+      },
+    },
+    { new: true },
+  ).select("-password -refreshToken");
+
+  if (!user) {
+    throw new apiError(404, "User not found");
+  }
+
+  /* user.fullName = fullName;
+  user.email = email;
+  user.username = username.toLowerCase();
+  user.updatedAt = Date.now();
+  await user.save({ validateBeforeSave: false }); */
+
+  return res
+    .status(200)
+    .json(
+      new ResponseHandler(200, user, "Account details updated successfully."),
+    );
+});
 export {
   registerUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
   changeCurrentPassword,
+  getCurrentUser,
+  updateAccountDetail,
 };
