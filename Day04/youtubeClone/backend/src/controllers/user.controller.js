@@ -329,6 +329,32 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
       new ResponseHandler(200, user, "Account details updated successfully."),
     );
 });
+
+const updateAvtar = asyncHandler(async (req, res) => {
+  const avtarLocalPath = req.file?.path;
+
+  if (!avtarLocalPath) {
+    throw new apiError(400, "Avatar image is required.");
+  }
+
+  const avtar = await uploadOnCloudinary(avtarLocalPath);
+
+  if (!avtar.url) {
+    throw new apiError(400, "File not Uploaded");
+  }
+
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      set: {
+        avtar: avtar.url,
+      },
+    },
+    {
+      new: true,
+    },
+  ).select("-password -refreshToken");
+});
 export {
   registerUser,
   loginUser,
@@ -337,4 +363,5 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetail,
+  updateAvtar,
 };
