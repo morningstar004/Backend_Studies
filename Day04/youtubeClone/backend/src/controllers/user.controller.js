@@ -343,7 +343,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
     throw new apiError(400, "File not Uploaded");
   }
 
-  await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       set: {
@@ -354,7 +354,64 @@ const updateAvtar = asyncHandler(async (req, res) => {
       new: true,
     },
   ).select("-password -refreshToken");
+
+  return res
+  .status(200)
+  .json(
+    new ResponseHandler(200, user, "Avatar updated successfully."),
+  )  
 });
+
+const updateCoverImage = asyncHandler(async (req, _) => {
+  const coverImageLocalPathLocalPath = req.file?.path;
+
+  if (!coverImageLocalPathLocalPath) {
+    throw new apiError(400, "Cover Image is Required.");
+  }
+
+  const coverImage = await uploadOnCloudinary(coverImageLocalPathLocalPath);
+
+  if (!coverImage.url) {
+    throw new apiError(400, "File not Uploaded");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      set: {
+        coverImage: coverImage.url,
+      },
+    },
+    {
+      new: true,
+    },
+  ).select("-password -refreshToken");
+
+  return res
+  .status(200)
+  .json(
+    new ResponseHandler(200, user, "Cover Image updated successfully."),
+  )
+});
+
+const deleteUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new apiError(400, "Invalid user ID");
+  }
+
+  const user = await User.findByIdAndDelete(userId);
+
+  if (!user) {
+    throw new apiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, {}, "User deleted successfully."));
+});
+
 export {
   registerUser,
   loginUser,
@@ -364,4 +421,6 @@ export {
   getCurrentUser,
   updateAccountDetail,
   updateAvtar,
+  updateCoverImage,
+  deleteUser,
 };
