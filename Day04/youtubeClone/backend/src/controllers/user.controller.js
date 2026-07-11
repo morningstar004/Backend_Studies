@@ -201,8 +201,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookie.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new apiError(401, "Unauthorized Request");
@@ -246,4 +245,43 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new apiError(401, error?.message || "Invalid refresh Token");
   }
 });
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  //Take feild requied for password change.
+  const { oldPassword, newPassword, ConformPassword } = req.body;
+
+  //get the user and its details from the database
+  const user = User.findById(req.user?._id);
+
+  //Check if all the feilds are filled
+  if (oldPassword || newPassword || ConformPassword == "") {
+    throw new apiError(400, "All fields are required");
+  }
+
+  //Check if the newPassword and ConformPassword are equal
+  if (newPassword !== ConformPassword) {
+    throw new apiError(400, "New Password and Conform Password are not equal");
+  }
+
+  //Check if the OldPassord is correct
+  const IsPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+  if (!IsPasswordValid) {
+    throw new apiError(401, "Invalid Password.");
+  }
+
+  //set password as newPassword
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, {}, "Password Has Been Changed."));
+});
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+};
