@@ -498,7 +498,13 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     }
   ])
   console.log(channel);
+  if(!channel?.length){
+    throw new apiError(404, "Channel Does not Exists")
+  }
   
+  return res
+  .status(200)
+  .json(ResponseHandler(200,channel[0],"User's Channel Fetched Successfully"));
 });
 
 export {
