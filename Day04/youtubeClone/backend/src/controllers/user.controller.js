@@ -436,6 +436,69 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, {}, "User deleted successfully."));
 });
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  if (!username?.trim === "") {
+    throw new apiError(404, "Username not Found");
+  }
+
+  // User.find({username})
+  const channel = await User.aggregate([
+    {
+      $match:{
+        username: username?.toLowerCase()
+      }
+    },
+    {
+      $lookup:{
+        form:"Subscription",
+        localField:"_id",
+        foreignField:"channel",
+        as:"subscribers"
+      }
+    },
+    {
+      $lookup:{
+        form:"Subscription",
+        localField:"_id",
+        foreignField:"subscribers",
+        as:"subscribedTo"
+      }
+    },
+    {
+      $addFields:{
+        subscribersCount:{
+          $size:"subscribers"
+        },
+        channelsSubscriberedToCount:{
+          $size:"subscribedTo"
+        },
+        isSubscribed: {
+          $cond:{
+            if: {$in: [req.user?._id,"$subscribers.subscriber"]},
+            then: true,
+            else: false,
+          }
+        }
+
+      }
+    },
+    {
+      $project:{
+        fullName:1,
+        username:1,
+        subscribersCount:1,
+        channelsSubscriberedToCount:1,
+        isSubscribed:1,
+        avtar: 1,
+        coverImage: 1,
+        email: 1,
+      }
+    }
+  ])
+});
+
 export {
   registerUser,
   loginUser,
@@ -447,4 +510,5 @@ export {
   updateAvtar,
   updateCoverImage,
   deleteUser,
+  getUserChannelProfile,
 };
