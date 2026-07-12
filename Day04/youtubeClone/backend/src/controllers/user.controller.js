@@ -343,6 +343,18 @@ const updateAvtar = asyncHandler(async (req, res) => {
     throw new apiError(400, "File not Uploaded");
   }
 
+  const oldAvtar = req.user?.avtar;
+
+  async () => {
+    if (oldAvtar) {
+      try {
+        await deleteFromCloudinary(oldAvtar);
+      } catch (error) {
+        console.error("Error deleting old avatar from Cloudinary:", error);
+      }
+    }
+  };
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -355,11 +367,11 @@ const updateAvtar = asyncHandler(async (req, res) => {
     },
   ).select("-password -refreshToken");
 
+  //Todo : make a function to delete the previous image from cloudinary if user has already uploaded an image before.
+
   return res
-  .status(200)
-  .json(
-    new ResponseHandler(200, user, "Avatar updated successfully."),
-  )  
+    .status(200)
+    .json(new ResponseHandler(200, user, "Avatar updated successfully."));
 });
 
 const updateCoverImage = asyncHandler(async (req, _) => {
@@ -375,6 +387,18 @@ const updateCoverImage = asyncHandler(async (req, _) => {
     throw new apiError(400, "File not Uploaded");
   }
 
+  const oldCoverImage = req.user?.coverImage;
+
+  async () => {
+    if (oldCoverImage) {
+      try {
+        await deleteFromCloudinary(oldCoverImage);
+      } catch (error) {
+        console.error("Error deleting old cover image from Cloudinary:", error);
+      }
+    }
+  };
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -387,11 +411,11 @@ const updateCoverImage = asyncHandler(async (req, _) => {
     },
   ).select("-password -refreshToken");
 
+  //todo: make a function to delete the previous image from cloudinary if user has already uploaded an image before.
+
   return res
-  .status(200)
-  .json(
-    new ResponseHandler(200, user, "Cover Image updated successfully."),
-  )
+    .status(200)
+    .json(new ResponseHandler(200, user, "Cover Image updated successfully."));
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
