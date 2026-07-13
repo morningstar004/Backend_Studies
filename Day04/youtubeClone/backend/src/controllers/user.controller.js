@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -15,16 +15,16 @@ const registerUser = asyncHandler(async (req, res) => {
   //     throw new apiError(400, "All fields are required")
   // }
   if (
-    [fullName, email, username, password].some((field) => {
-      return field?.trim() === "";
-    })
+    [fullName, email, username, password].some(
+      (field) => !field || field.trim() === "",
+    )
   ) {
     throw new apiError(400, "All fields should be filled");
   }
 
   // check if the user already exists: username, email
   const UserExist = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: username.toLowerCase() }, { email: email.toLowerCase() }],
   });
 
   // console.log("UserExist result:", UserExist);
@@ -179,7 +179,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
   //clear cookie and remove the refresh token
-  User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     req.user._id,
     {
       $set: {
@@ -254,10 +254,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword, ConformPassword } = req.body;
 
   //get the user and its details from the database
-  const user = User.findById(req.user?._id);
+  const user = await User.findById(req.user?._id);
 
   //Check if all the feilds are filled
-  if (oldPassword || newPassword || ConformPassword == "") {
+  if (
+    [oldPassword, newPassword, ConformPassword].some(
+      (field) => !field || field.trim() === "",
+    )
+  ) {
     throw new apiError(400, "All fields are required");
   }
 
@@ -361,7 +365,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      set: {
+      $set: {
         avtar: avtar.url,
       },
     },
@@ -377,14 +381,14 @@ const updateAvtar = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, user, "Avatar updated successfully."));
 });
 
-const updateCoverImage = asyncHandler(async (req, _) => {
-  const coverImageLocalPathLocalPath = req.file?.path;
+const updateCoverImage = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path;
 
-  if (!coverImageLocalPathLocalPath) {
+  if (!coverImageLocalPath) {
     throw new apiError(400, "Cover Image is Required.");
   }
 
-  const coverImage = await uploadOnCloudinary(coverImageLocalPathLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!coverImage.url) {
     throw new apiError(400, "File not Uploaded");
@@ -405,7 +409,7 @@ const updateCoverImage = asyncHandler(async (req, _) => {
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      set: {
+      $set: {
         coverImage: coverImage.url,
       },
     },
@@ -442,20 +446,20 @@ const deleteUser = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
-  if (!username?.trim === "") {
-    throw new apiError(404, "Username not Found");
+  if (!username?.trim()) {
+    throw new apiError(400, "Username is required");
   }
 
   // User.find({username})
   const channel = await User.aggregate([
     {
       $match:{
-        username: username?.toLowerCase()
+        username: username.toLowerCase()
       }
     },
     {
       $lookup:{
-        form:"Subscription",
+        from:"subscriptions",
         localField:"_id",
         foreignField:"channel",
         as:"subscribers"
@@ -463,7 +467,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
     {
       $lookup:{
-        form:"Subscription",
+        from:"subscriptions",
         localField:"_id",
         foreignField:"subscribers",
         as:"subscribedTo"
@@ -472,14 +476,14 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     {
       $addFields:{
         subscribersCount:{
-          $size:"subscribers"
+          $size:"$subscribers"
         },
         channelsSubscriberedToCount:{
-          $size:"subscribedTo"
+          $size:"$subscribedTo"
         },
         isSubscribed: {
           $cond:{
-            if: {$in: [req.user?._id,"$subscribers.subscriber"]},
+            if: {$in: [req.user?._id,"$subscribers.subscribers"]},
             then: true,
             else: false,
           }
@@ -507,7 +511,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   
   return res
   .status(200)
-  .json(ResponseHandler(200,channel[0],"User's Channel Fetched Successfully"));
+  .json(new ResponseHandler(200, "User's Channel Fetched Successfully", channel[0]));
 });
 
 export {
