@@ -36,7 +36,9 @@ const registerUser = asyncHandler(async (req, res) => {
   // check for images and avatar
   const avtarLocalPath = req.files?.avtar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-
+  console.log(avtarLocalPath);
+  console.log(coverImageLocalPath);
+  
   if (!avtarLocalPath) {
     throw new apiError(400, "Avatar image is required.");
   }
@@ -52,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // create user object - create enter in db
   const user = await User.create({
     fullName,
-    avtar: avtar.url,
+    avtar: avtar?.url || "",
     coverImage: coverImage?.url || "",
     email,
     password,
@@ -201,7 +203,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new apiError(401, "Unauthorized Request");
@@ -213,13 +215,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
     );
 
-    const user = User.findById(decodedToken._id);
+    const user = await User.findById(decodedToken._id);
 
     if (!user) {
       throw new apiError(401, "Invalid Refresh Token");
     }
 
-    if (incomingRefreshToken !== decodedToken) {
+    if (incomingRefreshToken !== user?.refreshToken) {
       throw new apiError(401, "Refreshtoken expired.");
     }
 
@@ -232,6 +234,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       await generateAccessAndRefreshToken(user._id);
 
     return res
+      .status(200)
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", newRefreshToken, options)
       .json(

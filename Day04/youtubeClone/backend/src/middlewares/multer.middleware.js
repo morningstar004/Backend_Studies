@@ -30,14 +30,22 @@ if (!fs.existsSync(uploadDir)) {
  * });
  */
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function (_, __, cb) {
     cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
+  filename: function (_, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
 export const upload = multer({
   storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per file
+  },
+  fileFilter: function (_, file, cb) {
+    // Accept common image mime types only
+    if (/image\/(jpeg|png|jpg|webp)/.test(file.mimetype)) return cb(null, true);
+    cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
+  },
 });
