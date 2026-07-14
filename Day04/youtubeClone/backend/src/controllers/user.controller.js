@@ -167,12 +167,12 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ResponseHandler(
         200,
+        "User LoggedIn Successfully",
         {
           user: loggedIn,
           accessToken,
           refreshToken,
         },
-        "User LoggedIn Successfully",
       ),
     );
 });
@@ -199,7 +199,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ResponseHandler(200, {}, "User Logged Out"));
+    .json(new ResponseHandler(200, "User Logged Out", {}));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -215,7 +215,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
     );
 
-    const user = await User.findById(decodedToken._id);
+    const user = await User.findById(decodedToken.id);
 
     if (!user) {
       throw new apiError(401, "Invalid Refresh Token");
@@ -230,18 +230,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } =
+    const { accessToken, refreshToken } =
       await generateAccessAndRefreshToken(user._id);
 
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ResponseHandler(
           200,
-          { accessToken, refreshToken: newRefreshToken },
           "Access token refreshed",
+          { accessToken, refreshToken },
         ),
       );
   } catch (error) {
@@ -283,7 +283,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, {}, "Password Has Been Changed."));
+    .json(new ResponseHandler(200, "Password Has Been Changed.", {}));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
@@ -292,7 +292,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ResponseHandler(200, currentUser, "Current User has been Fetched."),
+      new ResponseHandler(200, "Current User has been Fetched.", currentUser),
     );
 });
 
@@ -309,7 +309,6 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
 
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    req.body,
     {
       $set: {
         fullName,
@@ -317,7 +316,7 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
       },
     },
-    { new: true },
+    { new: true, runValidators: true },
   ).select("-password -refreshToken");
 
   if (!user) {
@@ -333,7 +332,7 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ResponseHandler(200, user, "Account details updated successfully."),
+      new ResponseHandler(200, "Account details updated successfully.", user),
     );
 });
 
@@ -352,7 +351,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
 
   const oldAvtar = req.user?.avtar;
 
-  async () => {
+  await (async () => {
     if (oldAvtar) {
       try {
         await deleteFromCloudinary(oldAvtar);
@@ -360,7 +359,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
         console.error("Error deleting old avatar from Cloudinary:", error);
       }
     }
-  };
+  })();
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
@@ -378,7 +377,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, user, "Avatar updated successfully."));
+    .json(new ResponseHandler(200, "Avatar updated successfully.", user));
 });
 
 const updateCoverImage = asyncHandler(async (req, res) => {
@@ -396,7 +395,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
   const oldCoverImage = req.user?.coverImage;
 
-  async () => {
+  await (async () => {
     if (oldCoverImage) {
       try {
         await deleteFromCloudinary(oldCoverImage);
@@ -404,7 +403,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
         console.error("Error deleting old cover image from Cloudinary:", error);
       }
     }
-  };
+  })();
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
@@ -422,7 +421,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, user, "Cover Image updated successfully."));
+    .json(new ResponseHandler(200, "Cover Image updated successfully.", user));
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
@@ -440,7 +439,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, {}, "User deleted successfully."));
+    .json(new ResponseHandler(200, "User deleted successfully.", {}));
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
