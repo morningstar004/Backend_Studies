@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
-import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -38,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
   console.log(avtarLocalPath);
   console.log(coverImageLocalPath);
-  
+
   if (!avtarLocalPath) {
     throw new apiError(400, "Avatar image is required.");
   }
@@ -165,15 +168,11 @@ const loginUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
-      new ResponseHandler(
-        200,
-        "User LoggedIn Successfully",
-        {
-          user: loggedIn,
-          accessToken,
-          refreshToken,
-        },
-      ),
+      new ResponseHandler(200, "User LoggedIn Successfully", {
+        user: loggedIn,
+        accessToken,
+        refreshToken,
+      }),
     );
 });
 
@@ -203,7 +202,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new apiError(401, "Unauthorized Request");
@@ -230,19 +230,19 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, refreshToken } =
-      await generateAccessAndRefreshToken(user._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+      user._id,
+    );
 
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshToken, options)
       .json(
-        new ResponseHandler(
-          200,
-          "Access token refreshed",
-          { accessToken, refreshToken },
-        ),
+        new ResponseHandler(200, "Access token refreshed", {
+          accessToken,
+          refreshToken,
+        }),
       );
   } catch (error) {
     throw new apiError(401, error?.message || "Invalid refresh Token");
@@ -452,65 +452,124 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   // User.find({username})
   const channel = await User.aggregate([
     {
-      $match:{
-        username: username.toLowerCase()
-      }
+      $match: {
+        username: username.toLowerCase(),
+      },
     },
     {
-      $lookup:{
-        from:"subscriptions",
-        localField:"_id",
-        foreignField:"channel",
-        as:"subscribers"
-      }
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
     },
     {
-      $lookup:{
-        from:"subscriptions",
-        localField:"_id",
-        foreignField:"subscribers",
-        as:"subscribedTo"
-      }
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscribers",
+        as: "subscribedTo",
+      },
     },
     {
-      $addFields:{
-        subscribersCount:{
-          $size:"$subscribers"
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
         },
-        channelsSubscriberedToCount:{
-          $size:"$subscribedTo"
+        channelsSubscriberedToCount: {
+          $size: "$subscribedTo",
         },
         isSubscribed: {
-          $cond:{
-            if: {$in: [req.user?._id,"$subscribers.subscribers"]},
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscribers"] },
             then: true,
             else: false,
-          }
-        }
-
-      }
+          },
+        },
+      },
     },
     {
-      $project:{
-        fullName:1,
-        username:1,
-        subscribersCount:1,
-        channelsSubscriberedToCount:1,
-        isSubscribed:1,
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscriberedToCount: 1,
+        isSubscribed: 1,
         avtar: 1,
         coverImage: 1,
         email: 1,
-      }
-    }
-  ])
+      },
+    },
+  ]);
   console.log(channel);
-  if(!channel?.length){
-    throw new apiError(404, "Channel Does not Exists")
+  if (!channel?.length) {
+    throw new apiError(404, "Channel Does not Exists");
   }
-  
+
+  return res
+    .status(200)
+    .json(
+      new ResponseHandler(
+        200,
+        "User's Channel Fetched Successfully",
+        channel[0],
+      ),
+    );
+});
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+  const _ = await req.user._id; //provide you with the string of user id ..//!Not the object that is stored in mongoDB
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchhistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          {
+            $lookup:{
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName:1,
+                    username:1,
+                    avtar:1,
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $addFields: {
+              owner:{
+                $first:"$owner",
+              }
+            }
+          }
+        ]
+      }
+
+    }
+  ]);
+
+  if (!user.length) {
+    throw new apiError(404, "User not found");
+  }
+
   return res
   .status(200)
-  .json(new ResponseHandler(200, "User's Channel Fetched Successfully", channel[0]));
+  .json(new ResponseHandler(200,"Users WatchHistory",user[0].watchHistory))
 });
 
 export {
@@ -525,4 +584,5 @@ export {
   updateCoverImage,
   deleteUser,
   getUserChannelProfile,
+  getWatchHistory,
 };
