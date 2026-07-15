@@ -39,7 +39,7 @@ router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/RefreshTokenRoute").post(refreshAccessToken);
 
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
-router.route("/user").post(verifyJWT, getCurrentUser);
+router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account-details").patch(verifyJWT, updateAccountDetail);
 router
   .route("/change-avatar")
@@ -48,8 +48,8 @@ router
   .route("/change-cover-image")
   .patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
 
-router.route("./delete-user").delete(verifyJWT, deleteUser);
-router.route("./c/:username").get(verifyJWT, getUserChannelProfile);
-router.route("./history").get(verifyJWT, getWatchHistory);
+router.route("/delete-user").delete(verifyJWT, deleteUser);
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
+router.route("/history").get(verifyJWT, getWatchHistory);
 
 export { router as userRouter };
