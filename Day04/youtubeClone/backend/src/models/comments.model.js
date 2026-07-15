@@ -7,6 +7,8 @@ const commentSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
+      trim: true,
+      maxlength: 1000,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +18,7 @@ const commentSchema = new mongoose.Schema(
     video: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Video",
+      required: true,
     },
   },
   {

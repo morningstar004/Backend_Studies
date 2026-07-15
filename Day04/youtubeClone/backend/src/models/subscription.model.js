@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    subscribers: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "User", //? Users that are subscribing to his channel 
-      default: "0",
+    subscriber: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     channel: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "User" //? Channel which the he subscribed
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     }
   },
   {
@@ -18,5 +18,6 @@ const subscriptionSchema = new mongoose.Schema(
   },
 );
 
+subscriptionSchema.index({ subscriber: 1, channel: 1 }, { unique: true });
 
 export const Subscription = mongoose.model("Subscription",subscriptionSchema)

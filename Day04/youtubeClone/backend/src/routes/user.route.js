@@ -21,7 +21,7 @@ const router = Router();
 router.route("/register").post(
   upload.fields([
     {
-      name: "avtar",
+      name: "avatar",
       maxCount: 1,
     },
     {
@@ -43,7 +43,7 @@ router.route("/user").post(verifyJWT, getCurrentUser);
 router.route("/update-account-details").patch(verifyJWT, updateAccountDetail);
 router
   .route("/change-avatar")
-  .patch(verifyJWT, upload.single("avtar"), updateAvtar);
+  .patch(verifyJWT, upload.single("avatar"), updateAvtar);
 router
   .route("/change-cover-image")
   .patch(verifyJWT, upload.single("coverImage"), updateCoverImage);

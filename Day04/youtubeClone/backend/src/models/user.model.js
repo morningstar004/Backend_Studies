@@ -9,9 +9,9 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
-    watchhistory: [
+    watchHistory: [
       {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Video",
       },
     ],
@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    avtar: {
+    avatar: {
       type: String, // Cloudinary URL of the image
       default:
         "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      select: false,
     },
     refreshToken: {
       type: String,
@@ -76,7 +77,7 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       //PAYLOAD
-      id: this.id,
+      _id: this._id,
       username: this.username,
       fullname: this.fullName,
       email: this.email,
@@ -91,7 +92,7 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
       //PAYLOAD
-      id: this.id,
+      _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     {

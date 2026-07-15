@@ -10,6 +10,8 @@ const tweetSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
+      trim: true,
+      maxlength: 280,
     },
   },
   {
@@ -17,4 +19,4 @@ const tweetSchema = new mongoose.Schema(
   },
 );
 
-export const Tweets = mongoose.model("Tweets", tweetSchema);
+export const Tweet = mongoose.model("Tweet", tweetSchema);

@@ -9,7 +9,6 @@ const likeSchema = new mongoose.Schema(
     video: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Video",
-      reduired: true,
     },
     likedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,10 +17,25 @@ const likeSchema = new mongoose.Schema(
     },
     tweet: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Tweets",
+      ref: "Tweet",
     },
   },
   { timestamps: true },
 );
 
-export const Likes = mongoose.model("Likes", likeSchema);
+// likeSchema.pre("validate", function () {
+//   const targets = [this.video, this.comment, this.tweet].filter(Boolean);
+
+//   if (targets.length !== 1) {
+//     this.invalidate(
+//       "video",
+//       "A like must belong to exactly one video, comment, or tweet.",
+//     );
+//   }
+// });
+
+// likeSchema.index({ video: 1, likedBy: 1 }, { unique: true, sparse: true });
+// likeSchema.index({ comment: 1, likedBy: 1 }, { unique: true, sparse: true });
+// likeSchema.index({ tweet: 1, likedBy: 1 }, { unique: true, sparse: true });
+
+export const Like = mongoose.model("Like", likeSchema);
