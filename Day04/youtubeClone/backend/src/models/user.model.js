@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
+      minlength: 3,
+      maxlength: 60,
       trim: true, // to remove the extra spaces
       index: true, // for faster search
     },
@@ -33,6 +35,8 @@ const userSchema = new mongoose.Schema(
     fullName: {
       type: String,
       required: true,
+      minlength: 3,
+      maxlength: 100,
       trim: true,
       index: true,
     },

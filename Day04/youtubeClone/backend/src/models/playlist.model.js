@@ -1,0 +1,30 @@
+import mongoose from "mongoose";
+
+const playlistSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      minlength: 3,
+      maxlength: 50,
+      trim: true,
+    },
+    description: {
+      type: String,
+      minlength: 10,
+      maxlength: 1000,
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    video: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Video",
+    },
+  },
+  { timestamps: true },
+);
+
+export const Playlist = mongoose.model("Playlist", playlistSchema);
