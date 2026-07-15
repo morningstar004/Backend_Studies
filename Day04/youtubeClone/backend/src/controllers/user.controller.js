@@ -37,27 +37,24 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check for images and avatar
-  const avtarLocalPath = req.files?.avtar?.[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-  console.log(avtarLocalPath);
-  console.log(coverImageLocalPath);
-
-  if (!avtarLocalPath) {
+  if (!avatarLocalPath) {
     throw new apiError(400, "Avatar image is required.");
   }
 
   // upload the image to cloudinary
-  const avtar = await uploadOnCloudinary(avtarLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  if (!avtar) {
+  if (!avatar) {
     throw new apiError(400, "File not uploaded");
   }
 
   // create user object - create enter in db
   const user = await User.create({
     fullName,
-    avtar: avtar?.url || "",
+    avatar: avatar?.url || "",
     coverImage: coverImage?.url || "",
     email,
     password,
@@ -125,7 +122,7 @@ const loginUser = asyncHandler(async (req, res) => {
         email,
       },
     ],
-  });
+  }).select("+password");
   //If user not exist
   if (!user) {
     throw new apiError(404, "User does not exist.");
@@ -215,7 +212,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
     );
 
-    const user = await User.findById(decodedToken.id);
+    const user = await User.findById(decodedToken._id);
 
     if (!user) {
       throw new apiError(401, "Invalid Refresh Token");
@@ -337,24 +334,24 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
 });
 
 const updateAvtar = asyncHandler(async (req, res) => {
-  const avtarLocalPath = req.file?.path;
+  const avatarLocalPath = req.file?.path;
 
-  if (!avtarLocalPath) {
+  if (!avatarLocalPath) {
     throw new apiError(400, "Avatar image is required.");
   }
 
-  const avtar = await uploadOnCloudinary(avtarLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
 
-  if (!avtar.url) {
+  if (!avatar.url) {
     throw new apiError(400, "File not Uploaded");
   }
 
-  const oldAvtar = req.user?.avtar;
+  const oldAvatar = req.user?.avatar;
 
   await (async () => {
-    if (oldAvtar) {
+    if (oldAvatar) {
       try {
-        await deleteFromCloudinary(oldAvtar);
+        await deleteFromCloudinary(oldAvatar);
       } catch (error) {
         console.error("Error deleting old avatar from Cloudinary:", error);
       }
@@ -365,7 +362,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        avtar: avtar.url,
+        avatar: avatar.url,
       },
     },
     {
@@ -468,7 +465,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
-        foreignField: "subscribers",
+        foreignField: "subscriber",
         as: "subscribedTo",
       },
     },
@@ -482,7 +479,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user?._id, "$subscribers.subscribers"] },
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
             then: true,
             else: false,
           },
@@ -496,7 +493,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         subscribersCount: 1,
         channelsSubscriberedToCount: 1,
         isSubscribed: 1,
-        avtar: 1,
+        avatar: 1,
         coverImage: 1,
         email: 1,
       },
@@ -528,14 +525,14 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        form: "videos",
+        from: "videos",
         localField: "watchHistory",
         foreignField:"_id",
         as: "watchHistory",
         pipeline: [
           {
             $lookup:{
-              form:"users",
+              from:"users",
               localField: "owner",
               foreignField: "_id",
               as: "owner",
@@ -544,7 +541,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                   $project: {
                     fullName:1,
                     username:1,
-                    avtar:1,
+                    avatar:1,
                   }
                 }
               ]
