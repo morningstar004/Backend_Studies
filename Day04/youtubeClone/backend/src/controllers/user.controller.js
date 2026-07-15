@@ -528,14 +528,14 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "videos",
-        localField: "watchhistory",
-        foreignField: "_id",
+        form: "videos",
+        localField: "watchHistory",
+        foreignField:"_id",
         as: "watchHistory",
         pipeline: [
           {
             $lookup:{
-              from: "users",
+              form:"users",
               localField: "owner",
               foreignField: "_id",
               as: "owner",
@@ -562,10 +562,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 
     }
   ]);
-
-  if (!user.length) {
-    throw new apiError(404, "User not found");
-  }
 
   return res
   .status(200)
