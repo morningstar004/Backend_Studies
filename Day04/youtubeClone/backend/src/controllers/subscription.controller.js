@@ -60,19 +60,25 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 });
 
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
+  // `channelId` is the channel whose subscriber list the client requested.
   const { channelId } = req.params;
 
+  // Avoid creating an ObjectId from an invalid value and querying MongoDB with it.
   if (!isValidObjectId(channelId)) {
     throw new apiError(400, "Invalid channel ID.");
   }
 
   const subscribers = await Subscription.aggregate([
+    // Stage 1: Keep only subscription documents for the requested channel.
+    // Each remaining document represents one user subscribed to this channel.
     {
       $match: {
         channel: new mongoose.Types.ObjectId(channelId),
       },
     },
 
+    // Stage 2: Replace each subscriber id with that subscriber's public user data.
+    // `subscriber` is initially an ObjectId; after this lookup it is an array of users.
     {
       $lookup: {
         from: "users",
@@ -80,7 +86,8 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         foreignField: "_id",
         as: "subscriber",
         pipeline: [
-          //subscribers count
+          // Nested stage 2a: Find everyone who subscribes to this subscriber.
+          // This lets us calculate the subscriber's own subscriber count.
           {
             $lookup: {
               from: "subscriptions",
@@ -89,7 +96,9 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
               as: "subscribers",
             },
           },
-          //subscribed channel
+
+          // Nested stage 2b: Find every channel this subscriber follows.
+          // This lets us calculate how many channels they subscribe to.
           {
             $lookup: {
               from: "subscriptions",
@@ -98,15 +107,20 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
               as: "subscribedTo",
             },
           },
-          //
+
+          // Nested stage 2c: Derive counts and the viewer-specific subscription state.
           {
             $addFields: {
+              // Number of users subscribed to this listed subscriber's channel.
               subscribersCount: {
                 $size: "$subscribers",
               },
+              // Number of channels the listed subscriber is subscribed to.
               noOfChannelSubscribed: {
                 $size: "$subscribedTo",
               },
+              // True when the logged-in viewer also subscribes to this listed subscriber.
+              // `$subscribers.subscriber` is the array of ObjectIds that follow them.
               isSubscribed: {
                 $cond: {
                   if: {
@@ -118,19 +132,25 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
               },
             },
           },
+
+          // Nested stage 2d: Return only safe, useful public fields from the user document.
+          // Fields such as password and refreshToken are never included.
           {
             $project: {
-              fullname: 1,
+              fullName: 1,
               username: 1,
-              avtar: 1,
+              avatar: 1,
               subscribersCount: 1,
-              channelsSubscribedToCount: 1,
+              noOfChannelSubscribed: 1,
               isSubscribed: 1,
             },
           },
         ],
       },
     },
+
+    // Stage 3: The lookup returns an array, but one subscription has one subscriber.
+    // Extract that single user object so clients receive `subscriber: { ... }`.
     {
       $addFields: {
         subscriber: {
@@ -138,7 +158,20 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         },
       },
     },
+
+    // Stage 4: Remove subscription-document metadata and return only each subscriber.
+    {
+      $project: {
+        _id: 0,
+        subscriber: 1,
+      },
+    },
   ]);
+
+  // Send the final list in the application's standard response format.
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Got Subscribers", subscribers));
 });
 
 const getSubscribedChannel = asyncHandler(async (req, res) => {});
