@@ -175,18 +175,28 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 });
 
 const getSubscribedChannel = asyncHandler(async (req, res) => {
+  // `subscriberId` identifies the user whose followed channels are requested.
   const { subscriberId } = req.params;
 
-  if (!isValidObjectId(channelId)) {
+  if (!isValidObjectId(subscriberId)) {
     throw new apiError(400, "Invalid Subscriber ID.");
   }
 
-  const SubscribedChannel = await Subscription.aggregate([
+  // Return 404 rather than an ambiguous empty list for a non-existent user.
+  const subscriberExists = await User.exists({ _id: subscriberId });
+  if (!subscriberExists) {
+    throw new apiError(404, "Subscriber not found.");
+  }
+
+  const subscribedChannels = await Subscription.aggregate([
+    // Stage 1: Keep subscriptions created by the requested subscriber.
     {
       $match: {
         subscriber: new mongoose.Types.ObjectId(subscriberId),
       },
     },
+
+    // Stage 2: Join every followed channel with its public user information.
     {
       $lookup: {
         from: "users",
@@ -194,6 +204,7 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
         foreignField: "_id",
         as: "channel",
         pipeline: [
+          // Nested stage 2a: Find the users following this channel.
           {
             $lookup: {
               from: "subscriptions",
@@ -202,6 +213,8 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
               as: "subscribers",
             },
           },
+
+          // Nested stage 2b: Find the channels this channel owner follows.
           {
             $lookup: {
               from: "subscriptions",
@@ -210,13 +223,15 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
               as: "subscribedTo",
             },
           },
+
+          // Nested stage 2c: Calculate display counts and viewer subscription state.
           {
             $addFields: {
               subscribersCount: {
                 $size: "$subscribers",
               },
 
-              channelsSubscribedTOCount: {
+              channelsSubscribedToCount: {
                 $size: "$subscribedTo",
               },
 
@@ -231,6 +246,8 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
               },
             },
           },
+
+          // Nested stage 2d: Limit output to public channel fields.
           {
             $project: {
               fullName: 1,
@@ -245,17 +262,30 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
         ],
       },
     },
+
+    // Stage 3: A lookup produces an array; extract its single matching channel.
     {
       $addFields: {
         channel: {
-          $frist: "$channel",
+          $first: "$channel",
         },
       },
     },
+
+    // Stage 4: Exclude subscription document metadata from the API response.
+    {
+      $project: {
+        _id: 0,
+        channel: 1,
+      },
+    },
   ]);
+
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Got Subscribed Channels."));
+    .json(
+      new ResponseHandler(200, "Got subscribed channels.", subscribedChannels),
+    );
 });
 
 export { toggleSubscription, getSubscribedChannel, getUserChannelSubscribers };

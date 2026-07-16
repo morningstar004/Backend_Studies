@@ -3,7 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   toggleSubscription,
   getUserChannelSubscribers,
-  getSubscribedChannel
+  getSubscribedChannel,
 } from "../controllers/subscription.controller.js";
 const router = Router();
 
@@ -12,5 +12,9 @@ router
   .route("/:channelId/subscribers")
   .get(verifyJWT, getUserChannelSubscribers);
 
-router.route("/:channelId/subscriptions").get(verifyJWT, getSubscribedChannel)
-export {router as subscriptionRouter}
+// Gets the channels followed by the user identified by `subscriberId`.
+router
+  .route("/:subscriberId/subscriptions")
+  .get(verifyJWT, getSubscribedChannel);
+
+export { router as subscriptionRouter };
