@@ -3,6 +3,6 @@ import { } from "../controllers/comments.controller.js"
 
 const router = Router();
 
-router.route("/").get()
+// router.route("/").get()
 
 export {router as commentsRouter}

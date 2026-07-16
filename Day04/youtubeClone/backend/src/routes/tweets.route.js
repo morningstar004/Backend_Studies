@@ -2,6 +2,6 @@ import {Router} from "express";
 
 const router = Router();
 
-router.route("/").put();
+// router.route("/").put();
 
 export {router as tweetsRouter}
