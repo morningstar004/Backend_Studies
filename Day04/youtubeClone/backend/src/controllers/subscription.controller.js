@@ -174,6 +174,88 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Got Subscribers", subscribers));
 });
 
-const getSubscribedChannel = asyncHandler(async (req, res) => {});
+const getSubscribedChannel = asyncHandler(async (req, res) => {
+  const { subscriberId } = req.params;
+
+  if (!isValidObjectId(channelId)) {
+    throw new apiError(400, "Invalid Subscriber ID.");
+  }
+
+  const SubscribedChannel = await Subscription.aggregate([
+    {
+      $match: {
+        subscriber: new mongoose.Types.ObjectId(subscriberId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "channel",
+        foreignField: "_id",
+        as: "channel",
+        pipeline: [
+          {
+            $lookup: {
+              from: "subscriptions",
+              localField: "_id",
+              foreignField: "channel",
+              as: "subscribers",
+            },
+          },
+          {
+            $lookup: {
+              from: "subscriptions",
+              localField: "_id",
+              foreignField: "subscriber",
+              as: "subscribedTo",
+            },
+          },
+          {
+            $addFields: {
+              subscribersCount: {
+                $size: "$subscribers",
+              },
+
+              channelsSubscribedTOCount: {
+                $size: "$subscribedTo",
+              },
+
+              isSubscribed: {
+                $cond: {
+                  if: {
+                    $in: [req.user?._id, "$subscribers.subscriber"],
+                  },
+                  then: true,
+                  else: false,
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              fullName: 1,
+              username: 1,
+              avatar: 1,
+              coverImage: 1,
+              subscribersCount: 1,
+              channelsSubscribedToCount: 1,
+              isSubscribed: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        channel: {
+          $frist: "$channel",
+        },
+      },
+    },
+  ]);
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Got Subscribed Channels."));
+});
 
 export { toggleSubscription, getSubscribedChannel, getUserChannelSubscribers };
