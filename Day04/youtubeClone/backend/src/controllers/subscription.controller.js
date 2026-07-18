@@ -68,6 +68,9 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     throw new apiError(400, "Invalid channel ID.");
   }
 
+  // Future simple version (only when subscriber counts and `isSubscribed` are not needed):
+  // const subscribers = await Subscription.find({ channel: channelId })
+  //   .populate("subscriber", "username avatar fullName");
   const subscribers = await Subscription.aggregate([
     // Stage 1: Keep only subscription documents for the requested channel.
     // Each remaining document represents one user subscribed to this channel.
