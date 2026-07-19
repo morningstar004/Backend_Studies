@@ -85,3 +85,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }),
   );
 });
+
+
+export {getAllVideos}
