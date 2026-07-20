@@ -1,39 +1,61 @@
-import mongoose, { Schema, isValidObjectId } from "mongoose";
-import { Video } from "../models/video.model";
+import mongoose, { isValidObjectId } from "mongoose";
+import { Video } from "../models/video.model.js";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const {
-    page = 1,
-    limit = 10,
+    page: pageQuery = "1",
+    limit: limitQuery = "10",
     query,
-    sortBy = "createAt",
+    sortBy = "createdAt",
     sortType = "desc",
     userId,
-  } = req.body;
+  } = req.query;
+
+  const page = Number(pageQuery);
+  const limit = Number(limitQuery);
+
+  if (!Number.isInteger(page) || page < 1) {
+    throw new apiError(400, "Page must be a positive integer");
+  }
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new apiError(400, "Limit must be an integer between 1 and 100");
+  }
+
+  const allowedSortFields = ["createdAt", "views", "title", "duration"];
+  if (!allowedSortFields.includes(sortBy)) {
+    throw new apiError(400, "Invalid sort field");
+  }
+
+  if (!["asc", "desc"].includes(sortType)) {
+    throw new apiError(400, "Sort type must be asc or desc");
+  }
 
   const matchCondition = {
-    isPublised: true,
+    isPublished: true,
   };
 
-  if (query) {
+  if (query?.trim()) {
     matchCondition.title = {
-      $regex: query,
+      $regex: query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       $options: "i",
     };
   }
 
-  if (userId && isValidObjectId(userId)) {
+  if (userId) {
+    if (!isValidObjectId(userId)) {
+      throw new apiError(400, "Invalid user id");
+    }
+
     matchCondition.owner = new mongoose.Types.ObjectId(userId);
   }
 
-  const sortOptions = {};
+  const sortOptions = { [sortBy]: sortType === "asc" ? 1 : -1, _id: -1 };
 
-  sortOptions[sortBy] = sortType === "asc" ? 1 : -1;
-
-  const videos = await Video.aggregate([
+  const pipeline = [
     {
       $match: matchCondition,
     },
@@ -60,29 +82,30 @@ const getAllVideos = asyncHandler(async (req, res) => {
       },
     },
     {
-      $sort: {
-        sortOptions,
-      },
+      $sort: sortOptions,
     },
     {
-      $skip: (Number(page) - 1) * Number(limit),
+      $skip: (page - 1) * limit,
     },
     {
-      $limit: Number(limit),
+      $limit: limit,
     },
-  ]);
+  ];
 
-  const totalVideos = await Video.countDocuments(matchCondition);
+  const [videos, totalVideos] = await Promise.all([
+    Video.aggregate(pipeline),
+    Video.countDocuments(matchCondition),
+  ]);
 
   return res.status(200).json(
     new ResponseHandler(200, "Video Fetched Successfully", {
       videos,
       totalVideos,
-      currentPage: Number(page),
+      currentPage: page,
       totalPage: Math.ceil(totalVideos / limit),
     }),
   );
 });
 
 
-export {getAllVideos}
+export { getAllVideos };
