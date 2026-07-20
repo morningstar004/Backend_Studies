@@ -1,7 +1,8 @@
-import {Router} from "express";
+import { Router } from "express";
+import { getAllVideos } from "../controllers/video.controller.js";
 
 const router = Router();
 
-// router.route("/").put();
+router.route("/").get(getAllVideos);
 
-export {router as videoRouter}
+export { router as videoRouter };
