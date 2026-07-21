@@ -40,7 +40,9 @@ router.route("/RefreshTokenRoute").post(refreshAccessToken);
 
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
-router.route("/update-account-details").patch(verifyJWT, updateAccountDetail);
+router
+  .route("/update-account-details")
+  .patch(verifyJWT, upload.none(), updateAccountDetail);
 router
   .route("/change-avatar")
   .patch(verifyJWT, upload.single("avatar"), updateAvtar);
