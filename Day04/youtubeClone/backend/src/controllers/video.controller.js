@@ -131,4 +131,11 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 });
 
-export { getAllVideos };
+export {
+  getAllVideos,
+  publishAVideo,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
+  togglePublishStatus,
+};
