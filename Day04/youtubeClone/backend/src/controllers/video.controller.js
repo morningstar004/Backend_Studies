@@ -3,6 +3,7 @@ import { Video } from "../models/video.model.js";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {User} from "../models/user.model.js"
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const {
@@ -114,7 +115,69 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: get video by id
+
+  if (!isValidObjectId(videoId)) {
+    throw new apiError(400, "Invalid videoID.");
+  }
+
+  const video = await Video.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $lookup: {
+        from: users,
+        localField: owner,
+        foreignField: _id,
+        as: owner,
+        pipeline: [
+          {
+            $project: {
+              fullName: 1,
+              username: 1,
+              avatar: 1,
+              coverImage: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $first: "$owner",
+        },
+      },
+    },
+  ]);
+
+  if(!video?.path){
+    throw new apiError(404, "video not found")
+  }
+
+  await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $inc:{
+        views: 1
+      }
+    }
+  )
+
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $addToSet:{
+        watchHistory:1
+      }
+    }
+  )
+
+  return res
+  .status(200)
+  .json(new Response(200, "Videos Fetched succesfully", video[0]))
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
