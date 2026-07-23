@@ -4,6 +4,10 @@ import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {User} from "../models/user.model.js"
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const {
@@ -112,7 +116,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new apiError(400, "Invalid videoID.");
   }
 
-  const video = await Video.aggregate([
+  const [video] = await Video.aggregate([
     {
       $match: {
         _id: new mongoose.Types.ObjectId(videoId),
@@ -120,10 +124,10 @@ const getVideoById = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: users,
-        localField: owner,
-        foreignField: _id,
-        as: owner,
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
         pipeline: [
           {
             $project: {
@@ -145,31 +149,22 @@ const getVideoById = asyncHandler(async (req, res) => {
     },
   ]);
 
-  if(!video?.path){
-    throw new apiError(404, "video not found")
+  if (!video) {
+    throw new apiError(404, "Video not found");
   }
 
-  await Video.findByIdAndUpdate(
-    videoId,
-    {
-      $inc:{
-        views: 1
-      }
-    }
-  )
+  const [updatedVideo] = await Promise.all([
+    Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } }, { new: true }),
+    User.findByIdAndUpdate(req.user._id, {
+      $addToSet: { watchHistory: video._id },
+    }),
+  ]);
 
-  await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $addToSet:{
-        watchHistory:1
-      }
-    }
-  )
+  video.views = updatedVideo.views;
 
   return res
-  .status(200)
-  .json(new Response(200, "Videos Fetched succesfully", video[0]))
+    .status(200)
+    .json(new ResponseHandler(200, "Video fetched successfully", video));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {

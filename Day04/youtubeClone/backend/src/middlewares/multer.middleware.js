@@ -49,3 +49,26 @@ export const upload = multer({
     cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
   },
 });
+
+export const uploadVideo = multer({
+  storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024,
+  },
+  fileFilter: function (_, file, cb) {
+    const isThumbnail =
+      file.fieldname === "thumbnail" &&
+      /image\/(jpeg|png|jpg|webp)/.test(file.mimetype);
+    const isVideo =
+      file.fieldname === "videoFile" &&
+      /video\/(mp4|webm|ogg|quicktime)/.test(file.mimetype);
+
+    if (isThumbnail || isVideo) return cb(null, true);
+
+    cb(
+      new Error(
+        "Upload a video (mp4, webm, ogg, mov) as videoFile and an image as thumbnail.",
+      ),
+    );
+  },
+});
