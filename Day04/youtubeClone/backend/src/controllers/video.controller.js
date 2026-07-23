@@ -1,4 +1,5 @@
 import mongoose, { isValidObjectId } from "mongoose";
+import { unlink } from "node:fs/promises";
 import { Video } from "../models/video.model.js";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
@@ -8,6 +9,10 @@ import {
   deleteFromCloudinary,
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
+
+const removeTemporaryFiles = async (paths) => {
+  await Promise.allSettled(paths.filter(Boolean).map((filePath) => unlink(filePath)));
+};
 
 const getAllVideos = asyncHandler(async (req, res) => {
   const {
@@ -109,8 +114,14 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const videoLocalPath = req.files?.videoFile?.[0]?.path;
   const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
-  if (title.trim() === "" || description === "") {
-    throw new apiError(400, "Title and discription is required.");
+  if (
+    typeof title !== "string" ||
+    typeof description !== "string" ||
+    !title.trim() ||
+    !description.trim()
+  ) {
+    await removeTemporaryFiles([videoLocalPath, thumbnailLocalPath]);
+    throw new apiError(400, "Title and description are required");
   }
 
   if (!videoLocalPath) {
@@ -134,12 +145,12 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const video = await Video.create({
     videoFile: videoData.url,
     thumbnail: thumbnail.url,
-    owner: req.user._id,
-    title: title.trim(),
-    description: description.trim(),
+      owner: req.user._id,
+      title: title.trim(),
+      description: description.trim(),
     duration: videoData.duration || 0,
-    isPublished: true,
-  });
+      isPublished: true,
+    });
 
   const uploadedVideo = await Video.findById(video._id);
 
