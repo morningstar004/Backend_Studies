@@ -11,7 +11,9 @@ import {
 } from "../utils/cloudinary.js";
 
 const removeTemporaryFiles = async (paths) => {
-  await Promise.allSettled(paths.filter(Boolean).map((filePath) => unlink(filePath)));
+  await Promise.allSettled(
+    paths.filter(Boolean).map((filePath) => unlink(filePath)),
+  );
 };
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -145,12 +147,12 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const video = await Video.create({
     videoFile: videoData.url,
     thumbnail: thumbnail.url,
-      owner: req.user._id,
-      title: title.trim(),
-      description: description.trim(),
+    owner: req.user._id,
+    title: title.trim(),
+    description: description.trim(),
     duration: videoData.duration || 0,
-      isPublished: true,
-    });
+    isPublished: true,
+  });
 
   const uploadedVideo = await Video.findById(video._id);
 
@@ -225,7 +227,53 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+
+  if (!isValidObjectId(videoId)) {
+    throw new apiError(400, "Invalid videoID.");
+  }
   //TODO: update video details like title, description, thumbnail
+  const { title, description } = req.body ?? {};
+
+  if (!title || !description) {
+    throw new apiError(400, "All the attributes should be filled");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new apiError(404, "Video not Found.");
+  }
+
+  //check ownership
+  if (video.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "Not authorized to made any changes.");
+  }
+
+  let thumbnailUrl = video.thumbnail;
+
+  if (req.file?.path) {
+    const thumbnail = await uploadOnCloudinary(req.file?.path);
+
+    if (!thumbnail.url) {
+      throw new apiError(500, "thumbnail is not updated.");
+    }
+
+    thumbnailUrl = thumbnail.url;
+  }
+
+  const videoInfo = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $set: {
+        title: title.trim(),
+        description: description.trim(),
+        thumbnail: thumbnailUrl,
+      },
+    },
+    {
+      new: true,
+    },
+  );
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
