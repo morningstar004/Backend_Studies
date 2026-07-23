@@ -35,11 +35,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
     throw new apiError(400, "Sort type must be asc or desc");
   }
 
-  const matchCondition = {
-    isPublished: true,
-  };
+  const matchCondition = { isPublished: true };
 
-  if (query?.trim()) {
+  if (typeof query === "string" && query.trim()) {
     matchCondition.title = {
       $regex: query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       $options: "i",
@@ -55,48 +53,42 @@ const getAllVideos = asyncHandler(async (req, res) => {
   }
 
   const sortOptions = { [sortBy]: sortType === "asc" ? 1 : -1, _id: -1 };
+  const skip = (page - 1) * limit;
 
-  const pipeline = [
+  const [result] = await Video.aggregate([
+    { $match: matchCondition },
+    { $sort: sortOptions },
     {
-      $match: matchCondition,
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "owner",
-        foreignField: "_id",
-        as: "owner",
-        pipeline: {
-          $project: {
-            username: 1,
-            fullName: 1,
-            avatar: 1,
+      $facet: {
+        videos: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    username: 1,
+                    fullName: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
           },
-        },
+          { $set: { owner: { $first: "$owner" } } },
+        ],
+        metadata: [{ $count: "totalVideos" }],
       },
     },
-    {
-      $addFields: {
-        owner: {
-          $first: "$owner",
-        },
-      },
-    },
-    {
-      $sort: sortOptions,
-    },
-    {
-      $skip: (page - 1) * limit,
-    },
-    {
-      $limit: limit,
-    },
-  ];
-
-  const [videos, totalVideos] = await Promise.all([
-    Video.aggregate(pipeline),
-    Video.countDocuments(matchCondition),
   ]);
+
+  const videos = result?.videos ?? [];
+  const totalVideos = result?.metadata[0]?.totalVideos ?? 0;
 
   return res.status(200).json(
     new ResponseHandler(200, "Video Fetched Successfully", {
