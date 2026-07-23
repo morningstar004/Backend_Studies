@@ -274,11 +274,20 @@ const updateVideo = asyncHandler(async (req, res) => {
       new: true,
     },
   );
+
+  return res
+  .status(200)
+  .json(new ResponseHandler(200,"video information has been updated.",videoInfo))
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: delete video
+  //check id video id is valid.
+  //check for ownership.
+  //search with the videoID 
+  //delete the get the thumb nail and and video url.
+  //delete it from the cloudinary,
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
