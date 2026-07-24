@@ -177,10 +177,8 @@ const getUserTweets = asyncHandler(async (req, res) => {
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
-  //TODO: update tweet
   const { tweetId } = req.params;
-
-  const { content } = req.body;
+  const { content } = req.body ?? {};
 
   if (!isValidObjectId(tweetId)) {
     throw new apiError(400, "Invalid TweetId.");
@@ -188,28 +186,34 @@ const updateTweet = asyncHandler(async (req, res) => {
 
   const tweet = await Tweet.findById(tweetId);
 
-  if (!content || content.trim() == "") {
-    throw new apiError(400, "Content Needed");
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found.");
   }
+
+  if (!content || content.trim() === "") {
+    throw new apiError(400, "Content is required.");
+  }
+
   if (tweet.owner.toString() !== req.user?._id.toString()) {
-    throw new apiError(403, "Not Authrirized to make a change.");
+    throw new apiError(403, "Not authorized to make changes.");
   }
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,
     {
-      set: {
-        content,
+      $set: {
+        content: content.trim(),
       },
     },
     {
       new: true,
+      runValidators: true,
     },
   );
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Tweet Updated", updateTweet));
+    .json(new ResponseHandler(200, "Tweet Updated", updatedTweet));
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
