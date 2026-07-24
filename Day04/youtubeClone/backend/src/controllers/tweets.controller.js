@@ -93,16 +93,15 @@ const createTweet = asyncHandler(async (req, res) => {
 });
 
 const getUserTweets = asyncHandler(async (req, res) => {
-  // TODO: get user tweets
   const { userId } = req.params;
   if (!isValidObjectId(userId)) {
     throw new apiError(400, "Invalid UserID.");
   }
 
-  const tweet = await Tweet.aggregate([
+  const tweets = await Tweet.aggregate([
     {
       $match: {
-        _id: mongoose.Types.ObjectId(userId),
+        owner: new mongoose.Types.ObjectId(userId),
       },
     },
     {
@@ -152,31 +151,29 @@ const getUserTweets = asyncHandler(async (req, res) => {
               fullName: 1,
               username: 1,
               avatar: 1,
-              subscribersCount: 1,
-              channelsSubscribedToCount: 1,
+              subscriberCount: 1,
+              subscribedChannelsCount: 1,
               isSubscribed: 1,
             },
           },
-          {
-            $addFields: {
-              owner: {
-                $first: "$owner",
-              },
-            },
-          },
-          {
-            $sort: {
-              createdAt: -1,
-            },
-          },
         ],
+      },
+    },
+    {
+      $addFields: {
+        owner: { $first: "$owner" },
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
       },
     },
   ]);
 
   return res
   .status(200)
-  .json(200,"Tweets Fetched Successfully",tweet)
+  .json(new ResponseHandler(200,"Tweets Fetched Successfully",tweets))
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
