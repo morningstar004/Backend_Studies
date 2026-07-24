@@ -217,8 +217,8 @@ const updateTweet = asyncHandler(async (req, res) => {
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
-  //TODO: delete tweet
-  const {tweetId} = req.params
+  const { tweetId } = req.params;
+
   if (!isValidObjectId(tweetId)) {
     throw new apiError(400, "Invalid TweetId.");
   }
@@ -230,14 +230,14 @@ const deleteTweet = asyncHandler(async (req, res) => {
   }
 
   if (tweet.owner.toString() !== req.user?._id.toString()) {
-    throw new apiError(403, "Not authorized to make changes.");
+    throw new apiError(403, "Not authorized to delete this tweet.");
   }
 
-  const deleteTweet = await Tweet.findByIdAndDelete(tweetId)
+  const deletedTweet = await Tweet.findByIdAndDelete(tweetId);
 
   return res
-  .status(200)
-  .json(new ResponseHandler(200,"Tweet deleted.",deleteTweet))
+    .status(200)
+    .json(new ResponseHandler(200, "Tweet deleted.", deletedTweet));
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };
