@@ -172,12 +172,44 @@ const getUserTweets = asyncHandler(async (req, res) => {
   ]);
 
   return res
-  .status(200)
-  .json(new ResponseHandler(200,"Tweets Fetched Successfully",tweets))
+    .status(200)
+    .json(new ResponseHandler(200, "Tweets Fetched Successfully", tweets));
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
   //TODO: update tweet
+  const { tweetId } = req.params;
+
+  const { content } = req.body;
+
+  if (!isValidObjectId(tweetId)) {
+    throw new apiError(400, "Invalid TweetId.");
+  }
+
+  const tweet = await Tweet.findById(tweetId);
+
+  if (!content || content.trim() == "") {
+    throw new apiError(400, "Content Needed");
+  }
+  if (tweet.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "Not Authrirized to make a change.");
+  }
+
+  const updatedTweet = await Tweet.findByIdAndUpdate(
+    tweetId,
+    {
+      set: {
+        content,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Tweet Updated", updateTweet));
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
