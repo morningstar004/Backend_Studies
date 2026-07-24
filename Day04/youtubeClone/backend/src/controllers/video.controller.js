@@ -131,7 +131,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
   }
 
   if (!thumbnailLocalPath) {
-    throw new apiError(400, "Video file required");
+    throw new apiError(400, "Thumbnail file required");
   }
 
   const videoData = await uploadOnCloudinary(videoLocalPath);
@@ -288,44 +288,51 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: delete video
-  //check id video id is valid.
+
   if (!isValidObjectId(videoId)) {
     throw new apiError(400, "Invalid VideoID.");
   }
 
   const video = await Video.findById(videoId);
-  //check for ownership.
-  if (video.owner.toString() !== req.user?._id.toString()) {
-    throw new apiError(403, "Not Authorized to Delete the video.");
+
+  if (!video) {
+    throw new apiError(404, "Video not found.");
   }
 
-  //search with the videoID
+  if (video.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "Not Authorized to delete this video.");
+  }
+
   const videoFile = video.videoFile;
   const thumbnailFile = video.thumbnail;
 
-  //delete the get the thumb nail and and video url.
   if (!videoFile) {
     throw new apiError(404, "Video URL not found.");
   }
+
   if (!thumbnailFile) {
     throw new apiError(404, "Thumbnail URL not found.");
   }
-  //delete it from the cloudinary,
-  const videoDelete = await deleteFromCloudinary(videoFile);
-  if(!videoDelete){
-    throw new apiError(500,"Video not deleted")
+
+  const [videoDelete, thumbnailDelete] = await Promise.all([
+    deleteFromCloudinary(videoFile),
+    deleteFromCloudinary(thumbnailFile),
+  ]);
+
+  if (!videoDelete || !thumbnailDelete) {
+    throw new apiError(500, "Failed to delete video files from Cloudinary.");
   }
-  const thumbnailDelete = await deleteFromCloudinary(thumbnailFile);
-  if(!thumbnailDelete){
-    throw new apiError(500, "Thumbnail not deleted")
-  }
-  //delete video from the database 
-  await Video.findByIdAndDelete(videoId)
+
+  await Video.findByIdAndDelete(videoId);
 
   return res
-  .status(200)
-  .json(new ResponseHandler(200,"Video and Thumbnail has been deleted",[videoDelete,thumbnailDelete]))
+    .status(200)
+    .json(
+      new ResponseHandler(200, "Video and thumbnail have been deleted.", {
+        videoDelete,
+        thumbnailDelete,
+      }),
+    );
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
