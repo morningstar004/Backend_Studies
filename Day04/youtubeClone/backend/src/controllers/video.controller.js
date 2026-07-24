@@ -276,18 +276,56 @@ const updateVideo = asyncHandler(async (req, res) => {
   );
 
   return res
-  .status(200)
-  .json(new ResponseHandler(200,"video information has been updated.",videoInfo))
+    .status(200)
+    .json(
+      new ResponseHandler(
+        200,
+        "video information has been updated.",
+        videoInfo,
+      ),
+    );
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: delete video
   //check id video id is valid.
+  if (!isValidObjectId(videoId)) {
+    throw new apiError(400, "Invalid VideoID.");
+  }
+
+  const video = await Video.findById(videoId);
   //check for ownership.
-  //search with the videoID 
+  if (video.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "Not Authorized to Delete the video.");
+  }
+
+  //search with the videoID
+  const videoFile = video.videoFile;
+  const thumbnailFile = video.thumbnail;
+
   //delete the get the thumb nail and and video url.
+  if (!videoFile) {
+    throw new apiError(404, "Video URL not found.");
+  }
+  if (!thumbnailFile) {
+    throw new apiError(404, "Thumbnail URL not found.");
+  }
   //delete it from the cloudinary,
+  const videoDelete = await deleteFromCloudinary(videoFile);
+  if(!videoDelete){
+    throw new apiError(500,"Video not deleted")
+  }
+  const thumbnailDelete = await deleteFromCloudinary(thumbnailFile);
+  if(!thumbnailDelete){
+    throw new apiError(500, "Thumbnail not deleted")
+  }
+  //delete video from the database 
+  await Video.findByIdAndDelete(videoId)
+
+  return res
+  .status(200)
+  .json(new ResponseHandler(200,"Video and Thumbnail has been deleted",[videoDelete,thumbnailDelete]))
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
