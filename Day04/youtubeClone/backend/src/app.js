@@ -35,6 +35,7 @@ import { playlistRouter } from "./routes/playlist.route.js";
 import { subscriptionRouter } from "./routes/subscription.route.js";
 import { tweetsRouter } from "./routes/tweets.route.js";
 import { videoRouter } from "./routes/video.route.js";
+import { dashboardRouter } from "./routes/dashboard.route.js";
 
 // Routes
 app.get("/", (req, res) => {
@@ -48,5 +49,6 @@ app.use("/api/v1/playlists", playlistRouter);
 app.use("/api/v1/subscription", subscriptionRouter);
 app.use("/api/v1/tweets", tweetsRouter);
 app.use("/api/v1/video", videoRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
 export default app;
