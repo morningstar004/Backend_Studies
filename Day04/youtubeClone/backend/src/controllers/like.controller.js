@@ -1,12 +1,11 @@
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { Like } from "../models/like.model.js";
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comments.model.js";
 import { Tweet } from "../models/tweets.model.js";
-import { response } from "express";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -44,12 +43,68 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
-  //TODO: toggle like on comment
+  if (!isValidObjectId(commentId)) {
+    throw new apiError(400, "Invalid CommentID.");
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new apiError(404, "Comment not found.");
+  }
+
+  const alreadyLiked = await Like.findOne({
+    comment: commentId,
+    likedBy: req.user?._id,
+  });
+
+  if (alreadyLiked) {
+    await Like.findByIdAndDelete(alreadyLiked._id);
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "Comment Unliked successfully.", null));
+  }
+
+  const like = await Like.create({
+    comment: commentId,
+    likedBy: req.user?._id,
+  });
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Comment Liked successfully.", like));
 });
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
-  //TODO: toggle like on tweet
+  if(!isValidObjectId(tweetId)){
+    throw new apiError(400, "Invalid TweetID.")
+  }
+
+  const tweet = await Tweet.findById(tweetId);
+  if(!tweet){
+    throw new apiError(404,"Tweet not found.")
+  }
+
+  const alreadyLiked = await Like.findOne({
+    tweet: tweetId,
+    likedBy: req.user?._id,
+  });
+
+  if (alreadyLiked) {
+    await Like.findByIdAndDelete(alreadyLiked._id);
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "tweet Unliked successfully.", null));
+  }
+
+  const like = await Like.create({
+    tweet: tweetId,
+    likedBy: req.user?._id,
+  });
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Tweet Liked successfully.", like));
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
