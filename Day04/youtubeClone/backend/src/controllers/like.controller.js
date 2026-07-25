@@ -6,8 +6,6 @@ import { Like } from "../models/like.model.js";
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comments.model.js";
 import { Tweet } from "../models/tweets.model.js";
-import { foreignObject } from "framer-motion/client";
-import { UNSAFE_ErrorResponseImpl } from "react-router-dom";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -111,17 +109,18 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   //TODO: get all liked videos
-  const videoId = req.user?._id;
-  if (!videoId) {
-    throw new apiError(400, "VideoID not found.");
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new apiError(401, "User not authenticated.");
   }
+
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+
   const likedVideos = await Like.aggregate([
     {
       $match: {
-        likedBy: new mongoose.Types.ObjectId(videoId),
-      },
-      video: {
-        $exists: true,
+        likedBy: userObjectId,
+        video: { $exists: true },
       },
     },
     {
@@ -129,12 +128,12 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         from: "videos",
         localField: "video",
         foreignField: "_id",
-        as: "Videos",
+        as: "video",
         pipeline: [
           {
             $lookup: {
               from: "users",
-              localStorage: "owner",
+              localField: "owner",
               foreignField: "_id",
               as: "owner",
               pipeline: [
@@ -145,37 +144,44 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                     foreignField: "channel",
                     as: "subscribers",
                   },
-
-                  isSubscribed: {
-                    $cond: {
-                      if: {
-                        $in: [req.user?._id, "$subscribers.subscriber"],
-                      },
-                      then: true,
-                      else: false,
+                },
+                {
+                  $addFields: {
+                    subscribersCount: { $size: "$subscribers" },
+                    isSubscribed: {
+                      $in: [userObjectId, "$subscribers.subscriber"],
                     },
                   },
                 },
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                    subscribersCount: 1,
+                    isSubscribed: 1,
+                  },
+                },
               ],
+            },
+          },
+          {
+            $addFields: {
+              owner: { $first: "$owner" },
             },
           },
         ],
       },
     },
     {
-      $project: {
-        fullName: 1,
-        username: 1,
-        avatar: 1,
-        subscribersCount: 1,
-        isSubscribed: 1,
-      },
+      $unwind: "$video",
     },
     {
-      $addFields: {
-        likedVideos: {
-          $frist: "$video",
-        },
+      $project: {
+        _id: 0,
+        video: 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
   ]);
