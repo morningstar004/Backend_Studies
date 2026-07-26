@@ -8,14 +8,11 @@ import { Video } from "../models/video.model.js";
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
-  //TODO: create playlist
-  const playlistInfo = {};
-  if (name !== undefined) {
-    if (typeof name !== "string" || name.trim().length < 3) {
-      throw new apiError(400, "Playlist name must be at least 3 characters.");
-    }
-    playlistInfo.name = name.trim();
+  if (typeof name !== "string" || name.trim().length < 3) {
+    throw new apiError(400, "Playlist name must be at least 3 characters.");
   }
+
+  const playlistInfo = { name: name.trim() };
   if (description !== undefined) {
     if (typeof description !== "string" || description.trim().length < 10) {
       throw new apiError(400, "Description must be at least 10 characters.");
@@ -24,15 +21,15 @@ const createPlaylist = asyncHandler(async (req, res) => {
   }
 
   const playlist = await Playlist.create({
-    playlistInfo,
+    ...playlistInfo,
     owner: req.user?._id,
   });
 
-  const createdPlaylist = await Playlist.findById(playlist._id)
-
   return res
-  .status(200)
-  .json(new ResponseHandler(200,`new playlist created ${playlistInfo.name}`,createdPlaylist))
+    .status(201)
+    .json(
+      new ResponseHandler(201, `New playlist created: ${playlist.name}.`, playlist),
+    );
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
