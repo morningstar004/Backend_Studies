@@ -1,4 +1,4 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -32,14 +32,19 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new apiError(404, "Playlist not Found.");
   }
   //owner check
-  if (playlist.owner.toString() !== req.user?._id) {
+  if (playlist.owner.toString() !== req.user?._id.toString()) {
     throw new apiError(403, "User not authorized to add videos.");
+  }
+
+  const video = await Video.exists({ _id: videoId });
+  if (!video) {
+    throw new apiError(404, "Video not found.");
   }
 
   const addVideo = await Playlist.findByIdAndUpdate(
     playlistId,
     {
-      $push: {
+      $addToSet: {
         videos: videoId,
       },
     },
@@ -53,7 +58,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     .json(
       new ResponseHandler(
         200,
-        `New Video added to Playlist (${Playlist.name})`,
+        `New video added to playlist (${playlist.name}).`,
         addVideo,
       ),
     );
@@ -62,17 +67,16 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
   // TODO: remove video from playlist
-  if (!isValidObjectId(playlistId) || isValidObjectId(videoId)) {
+  if (!isValidObjectId(playlistId) || !isValidObjectId(videoId)) {
     throw new apiError(400, "Invalid Playlist and Video ID.");
   }
 
-  const playlist = await Playlist.findById(playlistId);
   const playlist = await Playlist.findById(playlistId);
   if (!playlist) {
     throw new apiError(404, "Playlist not Found.");
   }
   //check ownerShip
-  if (playlist.owner.toString() !== req.user?._id) {
+  if (playlist.owner.toString() !== req.user?._id.toString()) {
     throw new apiError(403, "User not authorized to remove videos");
   }
   const removeVideo = await Playlist.findByIdAndUpdate(
@@ -97,7 +101,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 const deletePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   // TODO: delete playlist
-  if (!playlistId) {
+  if (!isValidObjectId(playlistId)) {
     throw new apiError(400, "Invalid Playlist.");
   }
 
