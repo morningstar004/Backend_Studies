@@ -9,6 +9,30 @@ const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
   //TODO: create playlist
+  const playlistInfo = {};
+  if (name !== undefined) {
+    if (typeof name !== "string" || name.trim().length < 3) {
+      throw new apiError(400, "Playlist name must be at least 3 characters.");
+    }
+    playlistInfo.name = name.trim();
+  }
+  if (description !== undefined) {
+    if (typeof description !== "string" || description.trim().length < 10) {
+      throw new apiError(400, "Description must be at least 10 characters.");
+    }
+    playlistInfo.description = description.trim();
+  }
+
+  const playlist = await Playlist.create({
+    playlistInfo,
+    owner: req.user?._id,
+  });
+
+  const createdPlaylist = await Playlist.findById(playlist._id)
+
+  return res
+  .status(200)
+  .json(new ResponseHandler(200,`new playlist created ${playlistInfo.name}`,createdPlaylist))
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
@@ -24,69 +48,72 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
   const playlist = await Playlist.aggregate([
     {
-      $match:{
-        _id: new mongoose.Types.ObjectId(playlistId)
-      }
-    },{
-      $lookup:{
-        from:"users",
-        localField:"owner",
-        foreignField:"_id",
-        as:"owner",
-        pipeline:[
+      $match: {
+        _id: new mongoose.Types.ObjectId(playlistId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
           {
-            $project:{
+            $project: {
               fullName: 1,
               username: 1,
               avatar: 1,
-            }
-          }
-        ]
-      }
-    },{
-      $lookup:{
-        from:"videos",
-        localField:"videos",
-        foreignField:"_id",
-        as:"videos",
-        pipeline:[
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "videos",
+        foreignField: "_id",
+        as: "videos",
+        pipeline: [
           {
-            $lookup:{
-              from:"users",
-              localField:"owner",
-              foreignField:"_id",
-              as:"owner",
-              pipeline:[
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
                 {
-                  $project:{
+                  $project: {
                     fullName: 1,
                     username: 1,
                     avatar: 1,
-                  }
-                }
-              ]
-            }
+                  },
+                },
+              ],
+            },
           },
           {
-            $addFields:{
-              owner:{
-                $first: "$owner"
-              }
-            }
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
           },
-        ]
-      }
-    },{
-      $addFields:{
-        owner:{
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: {
           $first: "$owner",
         },
-        totalVideos:{
-          $size:"$videos"
-        }
-      }
-    }
-  ])
+        totalVideos: {
+          $size: "$videos",
+        },
+      },
+    },
+  ]);
 
   const playlistDetails = playlist[0];
   if (!playlistDetails) {
