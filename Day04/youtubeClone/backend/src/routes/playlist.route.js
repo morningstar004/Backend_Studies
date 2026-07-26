@@ -13,7 +13,7 @@ import {
 const router = Router();
 
 router.route("/createPlaylist").post(verifyJWT, createPlaylist);
-router.route("/getUserPlaylists").get(verifyJWT, getUserPlaylists);
+router.route("/:userId/getUserPlaylists").get(verifyJWT, getUserPlaylists);
 router.route("/:playlistId/getPlaylistById").get(verifyJWT, getPlaylistById);
 router
   .route("/:playlistId/addVideoToPlaylist/:videoId")

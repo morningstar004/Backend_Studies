@@ -4,6 +4,7 @@ import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Playlist } from "../models/playlist.model.js";
 import { Video } from "../models/video.model.js";
+import { User } from "../models/user.model.js";
 
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
@@ -28,13 +29,91 @@ const createPlaylist = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(
-      new ResponseHandler(201, `New playlist created: ${playlist.name}.`, playlist),
+      new ResponseHandler(
+        201,
+        `New playlist created: ${playlist.name}.`,
+        playlist,
+      ),
     );
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   //TODO: get user playlists
+  if (!isValidObjectId(userId)) {
+    throw new apiError(400, "Invalid UserID.");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new apiError(404, "User not found.");
+  }
+
+  //check ownership
+  if (user._id.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "User not authorized to fetch playlists");
+  }
+
+  const playlists = await Playlist.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "videos",
+        foreignField: "_id",
+        as: "videos",
+
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        totalVideos: {
+          $size: "$videos",
+        },
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "User playlists fetched successfully.", playlists));
 });
 
 const getPlaylistById = asyncHandler(async (req, res) => {
