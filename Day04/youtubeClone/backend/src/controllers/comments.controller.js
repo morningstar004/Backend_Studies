@@ -1,4 +1,4 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -14,11 +14,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
 const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
   const { videoId } = req.params;
+  const { content } = req.body;
   if (!isValidObjectId(videoId)) {
     throw new apiError(400, "Invalid VideoID.");
   }
-  const { content } = req.body;
-  if (!content || content.trim() === "") {
+
+  if (typeof content !== "string" || content.trim() === "") {
     throw new apiError(400, "Can not send without can content.");
   }
 
@@ -48,9 +49,9 @@ const addComment = asyncHandler(async (req, res) => {
         pipeline: [
           {
             $project: {
-              fullname: 1,
+              fullName: 1,
               username: 1,
-              avtar: 1,
+              avatar: 1,
             },
           },
         ],
@@ -59,14 +60,14 @@ const addComment = asyncHandler(async (req, res) => {
     {
       $addFields: {
         owner: {
-          $frist: "$owner",
+          $first: "$owner",
         },
       },
     },
   ]);
 
   return res
-    .status(200)
+    .status(201)
     .json(
       new ResponseHandler(200, "comment added successfully.", createComment[0]),
     );
@@ -82,7 +83,7 @@ const editComment = asyncHandler(async (req, res) => {
     throw new apiError(400, "Invalid CommentID.");
   }
 
-  if (!content || content.trim() === "") {
+  if (typeof content !== "string" || content.trim() === "") {
     throw new apiError(400, "Please give some content.");
   }
 
@@ -92,7 +93,7 @@ const editComment = asyncHandler(async (req, res) => {
   }
 
   //ownerShip check
-  if (comment.owner.toString() !== req.user?._id) {
+  if (comment.owner.toString() !== req.user?._id.toString()) {
     throw new apiError(403, "UserID is not Authorized to make changes.");
   }
 
@@ -129,7 +130,7 @@ const deleteComment = asyncHandler(async (req, res) => {
   }
 
   //ownership
-  if (comment.owner.toString() !== req.user?._id) {
+  if (comment.owner.toString() !== req.user?._id.toString()) {
     throw new apiError(403, "User not authorized to delete this comment.");
   }
 
