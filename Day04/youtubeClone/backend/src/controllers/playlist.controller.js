@@ -1,4 +1,4 @@
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -19,6 +19,79 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   //TODO: get playlist by id
+  if(!isValidObjectId(playlistId)){
+    throw new apiError(400,"Invalid PlaylistID.")
+  }
+
+  const playlist = await Playlist.aggregate([
+    {
+      $match:{
+        _id: new mongoose.Types.ObjectId(playlistId)
+      }
+    },{
+      $lookup:{
+        from:"users",
+        localField:"owner",
+        foreignField:"_id",
+        as:"owner",
+        pipeline:[
+          {
+            $project:{
+              fullName: 1,
+              username: 1,
+              avatar: 1,
+            }
+          }
+        ]
+      }
+    },{
+      $lookup:{
+        from:"videos",
+        localField:"videos",
+        foreignField:"_id",
+        as:"videos",
+        pipeline:[
+          {
+            $lookup:{
+              from:"users",
+              localField:"owner",
+              foreignField:"_id",
+              as:"owner",
+              pipeline:[
+                {
+                  $project:{
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $addFields:{
+              owner:{
+                $first: "$owner"
+              }
+            }
+          },
+        ]
+      }
+    },{
+      $addFields:{
+        owner:{
+          $first:"owner"
+        },
+        totalVideos:{
+          $size:"$videos"
+        }
+      }
+    }
+  ])
+
+  return res
+  .status(200)
+  .json(new ResponseHandler(200,`Fetched the Playlist ${Playlist.name}`,playlist))
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -126,6 +199,50 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   const { name, description } = req.body;
   //TODO: update playlist
+  if (!isValidObjectId(playlistId)) {
+    throw new apiError(400, "Invalid PlaylistID.");
+  }
+
+  if (typeof name !== String || name.trim() == "") {
+    throw new apiError(400, "Playlist name required.");
+  }
+
+  if (typeof description !== String || description.trim() == "") {
+    throw new apiError(400, "Playlist description required.");
+  }
+
+  const playlist = await Playlist.findById(playlistId);
+  if (!playlist) {
+    throw new apiError(404, "Playlist not found.");
+  }
+
+  //check ownership
+  if (playlist.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "User not authorized to update the playlist.");
+  }
+
+  const updatePlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $set: {
+        name: name.trim(),
+        description: description.trim(),
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ResponseHandler(
+        200,
+        `Playlist ${Playlist.name} Updated.`,
+        updatePlaylist,
+      ),
+    );
 });
 
 export {
