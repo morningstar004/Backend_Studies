@@ -18,9 +18,8 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
 const getPlaylistById = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
-  //TODO: get playlist by id
-  if(!isValidObjectId(playlistId)){
-    throw new apiError(400,"Invalid PlaylistID.")
+  if (!isValidObjectId(playlistId)) {
+    throw new apiError(400, "Invalid PlaylistID.");
   }
 
   const playlist = await Playlist.aggregate([
@@ -80,7 +79,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     },{
       $addFields:{
         owner:{
-          $first:"owner"
+          $first: "$owner",
         },
         totalVideos:{
           $size:"$videos"
@@ -89,9 +88,20 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     }
   ])
 
+  const playlistDetails = playlist[0];
+  if (!playlistDetails) {
+    throw new apiError(404, "Playlist not found.");
+  }
+
   return res
-  .status(200)
-  .json(new ResponseHandler(200,`Fetched the Playlist ${Playlist.name}`,playlist))
+    .status(200)
+    .json(
+      new ResponseHandler(
+        200,
+        `Fetched the playlist ${playlistDetails.name}.`,
+        playlistDetails,
+      ),
+    );
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -198,17 +208,25 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
   const { name, description } = req.body;
-  //TODO: update playlist
   if (!isValidObjectId(playlistId)) {
     throw new apiError(400, "Invalid PlaylistID.");
   }
 
-  if (typeof name !== String || name.trim() == "") {
-    throw new apiError(400, "Playlist name required.");
+  const updates = {};
+  if (name !== undefined) {
+    if (typeof name !== "string" || name.trim().length < 3) {
+      throw new apiError(400, "Playlist name must be at least 3 characters.");
+    }
+    updates.name = name.trim();
   }
-
-  if (typeof description !== String || description.trim() == "") {
-    throw new apiError(400, "Playlist description required.");
+  if (description !== undefined) {
+    if (typeof description !== "string" || description.trim().length < 10) {
+      throw new apiError(400, "Description must be at least 10 characters.");
+    }
+    updates.description = description.trim();
+  }
+  if (Object.keys(updates).length === 0) {
+    throw new apiError(400, "Provide a name or description to update.");
   }
 
   const playlist = await Playlist.findById(playlistId);
@@ -221,16 +239,12 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     throw new apiError(403, "User not authorized to update the playlist.");
   }
 
-  const updatePlaylist = await Playlist.findByIdAndUpdate(
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
     playlistId,
-    {
-      $set: {
-        name: name.trim(),
-        description: description.trim(),
-      },
-    },
+    { $set: updates },
     {
       new: true,
+      runValidators: true,
     },
   );
 
@@ -239,8 +253,8 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     .json(
       new ResponseHandler(
         200,
-        `Playlist ${Playlist.name} Updated.`,
-        updatePlaylist,
+        `Playlist ${updatedPlaylist.name} updated.`,
+        updatedPlaylist,
       ),
     );
 });
