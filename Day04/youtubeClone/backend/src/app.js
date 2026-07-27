@@ -51,4 +51,11 @@ app.use("/api/v1/tweets", tweetsRouter);
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
 export default app;
