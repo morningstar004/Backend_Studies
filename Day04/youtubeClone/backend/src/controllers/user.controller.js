@@ -8,6 +8,36 @@ import {
 import { ResponseHandler } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const sendPasswordResetOtp = async (email, otp) => {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } =
+    process.env;
+
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
+    throw new apiError(
+      500,
+      "Email service is not configured. Set the SMTP environment variables.",
+    );
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT),
+    secure: Number(SMTP_PORT) === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to: email,
+    subject: "Your password reset OTP",
+    text: `Your password reset OTP is ${otp}. It expires in 10 minutes. Do not share it with anyone.`,
+  });
+};
 
 const registerUser = asyncHandler(async (req, res) => {
   // get details about the User from its model
@@ -23,6 +53,10 @@ const registerUser = asyncHandler(async (req, res) => {
     )
   ) {
     throw new apiError(400, "All fields should be filled");
+  }
+
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    throw new apiError(400, "Please provide a valid email address");
   }
 
   // check if the user already exists: username, email
@@ -173,6 +207,50 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const email = req.body?.email?.trim().toLowerCase();
+
+  if (!email) {
+    throw new apiError(400, "Email is required");
+  }
+
+  if (!EMAIL_PATTERN.test(email)) {
+    throw new apiError(400, "Please provide a valid email address");
+  }
+
+  const user = await User.findOne({ email }).select(
+    "+passwordResetOtpHash +passwordResetOtpExpires",
+  );
+
+  if (!user) {
+    // Do not reveal whether an address is registered.
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "If this email is registered, an OTP has been sent.", {}));
+  }
+
+  const otp = crypto.randomInt(1000, 9999).toString();
+  user.passwordResetOtpHash = crypto
+    .createHash("sha256")
+    .update(otp)
+    .digest("hex");
+  user.passwordResetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save({ validateBeforeSave: false });
+
+  try {
+    await sendPasswordResetOtp(user.email, otp);
+  } catch (error) {
+    user.passwordResetOtpHash = undefined;
+    user.passwordResetOtpExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    throw error;
+  }
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Password reset OTP sent to your email.", {}));
+});
+
 const logoutUser = asyncHandler(async (req, res) => {
   //clear cookie and remove the refresh token
   await User.findByIdAndUpdate(
@@ -302,6 +380,10 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
 
   if ([fullName, email, username].some((field) => field?.trim() === "")) {
     throw new apiError(400, "All fields should be filled");
+  }
+
+  if (!EMAIL_PATTERN.test(email.trim())) {
+    throw new apiError(400, "Please provide a valid email address");
   }
 
   const user = await User.findByIdAndUpdate(
@@ -568,6 +650,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 export {
   registerUser,
   loginUser,
+  forgotPassword,
   logoutUser,
   refreshAccessToken,
   changeCurrentPassword,
