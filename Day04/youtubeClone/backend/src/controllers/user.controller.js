@@ -504,6 +504,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
+  //Todo: adduser verification via otp/password before deleting
   const userId = req.params.id;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
