@@ -46,10 +46,34 @@ The backend is built with Express and exposes a modular API under `/api/v1`. `ba
 3. Configure `.env` with `MONGODB_URI`, `PORT`, and `FRONTEND_URL`
 4. Start the backend with `npm run dev`
 
-## 📁 Structure
+## 📁 Project Structure
 
-- `backend/src/` contains controllers, models, routes, middleware, and utilities.
-- `frontend/` contains the client-side React/Vite application.
+### Backend
+
+- `backend/src/app.js` - Express app setup, middleware, and router registration
+- `backend/src/index.js` - env loading, MongoDB connection, and server startup
+- `backend/src/controllers/` - request handlers and business logic
+- `backend/src/routes/` - route definitions and endpoint grouping
+- `backend/src/models/` - Mongoose schema definitions
+- `backend/src/middlewares/` - authentication, file upload, and error handling
+- `backend/src/db/` - database connection utilities
+- `backend/src/utils/` - reusable helpers and API response formatting
+- `backend/.env` - runtime configuration values
+- `backend/package.json` - backend dependencies and scripts
+
+### Frontend
+
+- `frontend/index.html` - application shell and root element
+- `frontend/src/main.jsx` - render entry point for React
+- `frontend/src/App.jsx` - top-level React application component
+- `frontend/src/index.css` - global styles and Tailwind imports
+- `frontend/src/api/apiClient.js` - frontend API client configuration
+- `frontend/src/components/` - reusable UI components
+- `frontend/src/context/` - app state and authentication context
+- `frontend/src/pages/` - page-level views: `Home`, `Login`, `Register`, `Profile`, `VideoDetail`, `NotFound`
+- `frontend/package.json` - frontend dependencies and Vite scripts
+- `frontend/vite.config.js` - Vite build config
+- `frontend/tailwind.config.js` - Tailwind CSS config
 
 ## 📄 License
 
