@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/apiClient.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -19,7 +20,7 @@ const Login = () => {
     setError('');
 
     try {
-      await api.post('/users/login', form);
+      await login(form);
       navigate('/profile');
     } catch (err) {
       setError(err.message);
