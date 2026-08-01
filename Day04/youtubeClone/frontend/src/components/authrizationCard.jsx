@@ -33,7 +33,7 @@ const fieldConfigs = {
 
 const cardStyles = {
   wrapper: {
-    width: '360px',
+    width: '460px',
     aspectRatio: '16 / 9',
     maxWidth: '100%',
     minHeight: '240px',
