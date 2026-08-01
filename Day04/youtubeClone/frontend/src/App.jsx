@@ -24,7 +24,6 @@ function App() {
           </nav>
         </div>
       </header>
-
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Routes>
           <Route path="/" element={<Home />} />
