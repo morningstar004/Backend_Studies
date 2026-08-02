@@ -5,6 +5,7 @@ import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import VideoDetail from './pages/VideoDetail.jsx';
 import NotFound from './pages/NotFound.jsx';
+import AuthrizationPage from './components/AuthrizationPage.jsx';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/video/:videoId" element={<VideoDetail />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/auth" element={<AuthrizationPage />} />
         </Routes>
       </main>
     </div>
