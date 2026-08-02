@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthrizationCard from "../components/authrizationCard.jsx";
+import { authApi } from '../api/authApi.js';
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -23,20 +24,14 @@ const Register = () => {
 
     try {
       const formData = new FormData();
-      formData.append("fullName", values.fullName || "");
-      formData.append("email", values.email || "");
-      formData.append("username", values.username || "");
-      formData.append("password", values.password || "");
+      formData.append('fullName', values.fullName || '');
+      formData.append('email', values.email || '');
+      formData.append('username', values.username || '');
+      formData.append('password', values.password || '');
+      formData.append('avatar', values.avatar);
+      if (values.coverImage) formData.append('coverImage', values.coverImage);
 
-      await fetch("http://localhost:5000/api/v1/users/register", {
-        method: "POST",
-        body: formData,
-      }).then(async (response) => {
-        if (!response.ok) {
-          const result = await response.json();
-          throw new Error(result?.message || "Registration failed");
-        }
-      });
+      await authApi.register(formData);
 
       navigate("/login");
     } catch (err) {
@@ -49,18 +44,19 @@ const Register = () => {
   return (
     <div className="mx-auto flex justify-center max-w-xl">
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 p-4 text-rose-200">
+        <div className="rounded-2xl bg-red-950/40 p-4 text-mist">
           {error}
         </div>
       )}
 
       <AuthrizationCard
-        fields={["fullName", "email", "username", "password"]}
+        fields={["fullName", "email", "username", "password", "avatar", "coverImage"]}
         values={form}
         onChange={handleChange}
         onSubmit={handleSubmit}
         title="Create account"
         submitLabel={loading ? "Creating account..." : "Create account"}
+        disabled={loading}
       />
     </div>
   );

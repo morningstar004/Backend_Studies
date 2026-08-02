@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AuthrizationCard from "../components/authrizationCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -8,6 +8,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const handleChange = (name, value) => {
@@ -20,7 +21,7 @@ const Login = () => {
 
     try {
       await login(values);
-      navigate("/profile");
+      navigate(location.state?.from?.pathname || "/profile", { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,7 +32,7 @@ const Login = () => {
   return (
     <div className="mx-auto flex justify-center max-w-xl">
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 p-4 text-rose-200">
+        <div className="rounded-2xl bg-red-950/40 p-4 text-mist">
           {error}
         </div>
       )}
@@ -48,6 +49,7 @@ const Login = () => {
           setError("Password recovery is not available yet.")
         }
         submitLabel={loading ? "Signing in..." : "Sign In"}
+        disabled={loading}
       />
     </div>
   );

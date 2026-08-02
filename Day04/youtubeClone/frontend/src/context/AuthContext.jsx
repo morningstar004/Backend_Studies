@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { api } from '../api/apiClient.js';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { authApi } from '../api/authApi.js';
 
 const AuthContext = createContext(null);
 
@@ -8,11 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get('/users/current-user');
+      const data = await authApi.currentUser();
       setUser(data?.data || null);
     } catch (err) {
       setUser(null);
@@ -20,20 +20,20 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCurrentUser();
   }, []);
 
   const login = async (credentials) => {
-    await api.post('/users/login', credentials);
+    await authApi.login(credentials);
     await fetchCurrentUser();
   };
 
   const logout = async () => {
     try {
-      await api.post('/users/logout', {});
+      await authApi.logout();
     } finally {
       setUser(null);
       setError(null);
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       refreshUser: fetchCurrentUser,
     }),
-    [user, loading, error],
+    [user, loading, error, fetchCurrentUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
