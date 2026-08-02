@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/apiClient.js';
+import { videoApi } from '../api/videoApi.js';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
   const [videos, setVideos] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/video/getAllVideos')
+    videoApi.list()
       .then((data) => setVideos(data?.data?.videos || []))
-      .catch((err) => setError(err.message));
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -18,17 +20,19 @@ const Home = () => {
         <h1 className="text-3xl font-semibold">Latest Videos</h1>
       </div>
 
-      {error ? (
-        <div className="rounded-xl bg-rose-500/10 p-4 text-rose-200">{error}</div>
+      {loading ? <p className="text-steel-light">Loading videos…</p> : error ? (
+        <div className="rounded-xl bg-red-950/40 p-4 text-mist">{error}</div>
+      ) : videos.length === 0 ? (
+        <p className="rounded-xl bg-navy-light p-6 text-steel-light">No videos have been published yet.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {videos.map((video) => (
             <Link
               key={video._id}
               to={`/video/${video._id}`}
-              className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/70 p-4 transition hover:-translate-y-1 hover:border-cyan-400/40"
+              className="overflow-hidden rounded-3xl border border-steel bg-navy-light p-4 transition hover:-translate-y-1 hover:border-steel-light"
             >
-              <div className="h-48 overflow-hidden rounded-2xl bg-slate-800">
+              <div className="h-48 overflow-hidden rounded-2xl bg-steel">
                 <img
                   src={video.thumbnail}
                   alt={video.title}
@@ -36,8 +40,8 @@ const Home = () => {
                 />
               </div>
               <div className="mt-4">
-                <h2 className="text-xl font-semibold text-slate-100">{video.title}</h2>
-                <p className="mt-2 text-sm text-slate-400">{video.description}</p>
+                <h2 className="text-xl font-semibold text-mist">{video.title}</h2>
+                <p className="mt-2 text-sm text-steel-light">{video.description}</p>
               </div>
             </Link>
           ))}
