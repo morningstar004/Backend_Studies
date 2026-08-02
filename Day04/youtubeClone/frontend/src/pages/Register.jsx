@@ -44,7 +44,7 @@ const Register = () => {
   return (
     <div className="mx-auto flex justify-center max-w-xl">
       {error && (
-        <div className="rounded-2xl bg-red-950/40 p-4 text-mist">
+        <div className="rounded-2xl bg-danger/20 p-4 text-mist">
           {error}
         </div>
       )}

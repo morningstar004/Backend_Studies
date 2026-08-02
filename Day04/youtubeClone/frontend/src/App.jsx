@@ -14,10 +14,10 @@ import UploadVideo from './pages/UploadVideo.jsx';
 function App() {
   const { user, logout } = useAuth();
   return (
-    <div className="min-h-screen bg-navy text-mist">
+    <div className="min-h-screen bg-mist text-navy">
       <header className="border-b border-steel">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <NavLink to="/" className="text-2xl font-bold text-mist">
+          <NavLink to="/" className="text-2xl font-bold text-navy">
             YouTube Clone
           </NavLink>
           <nav className="flex items-center gap-4 text-sm text-steel-light">

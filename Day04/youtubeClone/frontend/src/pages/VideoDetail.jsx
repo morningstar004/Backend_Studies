@@ -14,7 +14,7 @@ const VideoDetail = () => {
   }, [videoId]);
 
   if (error) {
-    return <div className="rounded-3xl bg-red-950/40 p-8 text-mist">{error}</div>;
+    return <div className="rounded-3xl bg-danger/20 p-8 text-mist">{error}</div>;
   }
 
   if (!video) {

@@ -28,7 +28,7 @@ const UploadVideo = () => {
       <label className="block text-sm text-steel-light">Video file<input required type="file" accept="video/*" onChange={(e) => setForm({ ...form, videoFile: e.target.files?.[0] || null })} className="mt-1 block w-full" /></label>
       <label className="block text-sm text-steel-light">Thumbnail<input required type="file" accept="image/*" onChange={(e) => setForm({ ...form, thumbnail: e.target.files?.[0] || null })} className="mt-1 block w-full" /></label>
     </div>
-    {error && <p className="mt-4 rounded-xl bg-red-950/40 p-3 text-mist">{error}</p>}
+    {error && <p className="mt-4 rounded-xl bg-danger/20 p-3 text-mist">{error}</p>}
     <button disabled={loading} className="mt-6 rounded-xl bg-mist px-5 py-2.5 font-semibold text-navy disabled:opacity-60">{loading ? 'Uploading…' : 'Publish video'}</button>
   </form>;
 };

@@ -21,7 +21,7 @@ const Home = () => {
       </div>
 
       {loading ? <p className="text-steel-light">Loading videos…</p> : error ? (
-        <div className="rounded-xl bg-red-950/40 p-4 text-mist">{error}</div>
+        <div className="rounded-xl bg-danger/20 p-4 text-mist">{error}</div>
       ) : videos.length === 0 ? (
         <p className="rounded-xl bg-navy-light p-6 text-steel-light">No videos have been published yet.</p>
       ) : (
