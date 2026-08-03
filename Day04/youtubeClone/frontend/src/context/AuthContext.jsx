@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authApi } from '../api/authApi.js';
+import { toast } from 'sonner';
 
 const AuthContext = createContext(null);
 
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setError(null);
+      toast.success('Signed out');
     }
   };
 
