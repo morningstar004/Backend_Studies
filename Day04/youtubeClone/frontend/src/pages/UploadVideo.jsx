@@ -1,35 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { videoApi } from '../api/videoApi.js';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { videoService } from '../api/services.ts';
+import { toast } from 'sonner';
+const schema = z.object({ title: z.string().trim().min(1, 'A title is required'), description: z.string().trim().min(1, 'A description is required'), videoFile: z.instanceof(File, { message: 'Select a video file' }), thumbnail: z.instanceof(File, { message: 'Select a thumbnail' }) });
 
 const UploadVideo = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', description: '', videoFile: null, thumbnail: null });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(schema) });
 
-  const submit = async (event) => {
-    event.preventDefault();
-    setLoading(true); setError('');
+  const submit = async (form) => {
     try {
       const body = new FormData();
       body.append('title', form.title); body.append('description', form.description);
       body.append('videoFile', form.videoFile); body.append('thumbnail', form.thumbnail);
-      const result = await videoApi.publish(body);
+      const result = await videoService.publish(body);
+      toast.success('Video published');
       navigate(`/video/${result?.data?._id || ''}`);
-    } catch (err) { setError(err.message); } finally { setLoading(false); }
+    } catch (err) { toast.error(err.message); }
   };
 
-  return <form onSubmit={submit} className="mx-auto max-w-2xl rounded-3xl border border-steel bg-navy-light p-6">
-    <h1 className="text-2xl font-bold text-mist">Publish a video</h1>
+  return <form onSubmit={handleSubmit(submit)} className="surface mx-auto max-w-2xl p-5 sm:p-7">
+    <h1 className="text-2xl font-bold">Publish a video</h1><p className="mt-1 text-sm text-black/55 dark:text-white/55">Share a new video with your audience.</p>
     <div className="mt-6 space-y-4">
-      <label className="block text-sm text-steel-light">Title<input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="mt-1 block w-full rounded-xl border border-steel bg-navy px-3 py-2 text-mist" /></label>
-      <label className="block text-sm text-steel-light">Description<textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1 block min-h-28 w-full rounded-xl border border-steel bg-navy px-3 py-2 text-mist" /></label>
-      <label className="block text-sm text-steel-light">Video file<input required type="file" accept="video/*" onChange={(e) => setForm({ ...form, videoFile: e.target.files?.[0] || null })} className="mt-1 block w-full" /></label>
-      <label className="block text-sm text-steel-light">Thumbnail<input required type="file" accept="image/*" onChange={(e) => setForm({ ...form, thumbnail: e.target.files?.[0] || null })} className="mt-1 block w-full" /></label>
+      <label className="block text-sm font-medium">Title<input {...register('title')} className="input mt-1" /></label>{errors.title && <p className="text-xs text-primary">{errors.title.message}</p>}
+      <label className="block text-sm font-medium">Description<textarea {...register('description')} className="input mt-1 min-h-28" /></label>{errors.description && <p className="text-xs text-primary">{errors.description.message}</p>}
+      <label className="block text-sm font-medium">Video file<input type="file" accept="video/*" onChange={e => setValue('videoFile', e.target.files?.[0], {shouldValidate:true})} className="mt-2 block w-full text-sm" /></label>{errors.videoFile && <p className="text-xs text-primary">{errors.videoFile.message}</p>}
+      <label className="block text-sm font-medium">Thumbnail<input type="file" accept="image/*" onChange={e => setValue('thumbnail', e.target.files?.[0], {shouldValidate:true})} className="mt-2 block w-full text-sm" /></label>{errors.thumbnail && <p className="text-xs text-primary">{errors.thumbnail.message}</p>}
     </div>
-    {error && <p className="mt-4 rounded-xl bg-danger/20 p-3 text-mist">{error}</p>}
-    <button disabled={loading} className="mt-6 rounded-xl bg-mist px-5 py-2.5 font-semibold text-navy disabled:opacity-60">{loading ? 'Uploading…' : 'Publish video'}</button>
+    <button disabled={isSubmitting} className="mt-6 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:opacity-60">{isSubmitting ? 'Uploading…' : 'Publish video'}</button>
   </form>;
 };
 
