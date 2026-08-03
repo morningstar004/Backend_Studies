@@ -8,38 +8,39 @@ const Profile = () => {
     refreshUser();
   }, [refreshUser]);
 
-  if (error) {
-    return <div className="rounded-3xl bg-danger/20 p-8 text-mist">{error}</div>;
-  }
+  if (error) return <div className="surface p-8 text-primary">{error}</div>;
 
   if (loading || !user) {
-    return <div className="rounded-3xl bg-navy-light p-8 text-steel-light">Loading profile…</div>;
+    return <div className="surface animate-pulse p-8">Loading profile…</div>;
   }
 
   return (
-    <div className="rounded-3xl border border-steel bg-navy-light p-8 shadow-xl shadow-navy/40">
+    <div className="mx-auto max-w-4xl space-y-5">
+      <div className="surface overflow-hidden">
+        <div className="h-36 bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10" />
+        <div className="p-5 sm:p-7">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <img
             src={user.avatar}
             alt={user.fullName}
-            className="h-24 w-24 rounded-3xl border border-steel object-cover"
+            className="-mt-16 h-24 w-24 rounded-2xl border-4 border-white object-cover dark:border-black"
           />
           <div>
-            <h1 className="text-3xl font-semibold text-mist">{user.fullName}</h1>
-            <p className="text-steel-light">@{user.username}</p>
+            <h1 className="text-3xl font-semibold">{user.fullName}</h1>
+            <p className="text-sm text-black/55 dark:text-white/55">@{user.username}</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-4 rounded-3xl border border-steel bg-navy p-6">
+      </div></div><div className="surface grid gap-4 p-6 sm:grid-cols-2">
         <div>
-          <h2 className="text-lg font-semibold text-mist">Email</h2>
-          <p className="text-steel-light">{user.email}</p>
+          <h2 className="text-sm font-semibold">Email</h2>
+          <p className="text-sm text-black/55 dark:text-white/55">{user.email}</p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-mist">Joined</h2>
-          <p className="text-steel-light">{new Date(user.createdAt).toLocaleDateString()}</p>
+          <h2 className="text-sm font-semibold">Joined</h2>
+          <p className="text-sm text-black/55 dark:text-white/55">{new Date(user.createdAt).toLocaleDateString()}</p>
         </div>
       </div>
     </div>
