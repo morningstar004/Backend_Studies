@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthrizationCard from "../components/authrizationCard.jsx";
-import { authApi } from '../api/authApi.js';
+import { authApi } from "../api/authApi.js";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -24,12 +24,12 @@ const Register = () => {
 
     try {
       const formData = new FormData();
-      formData.append('fullName', values.fullName || '');
-      formData.append('email', values.email || '');
-      formData.append('username', values.username || '');
-      formData.append('password', values.password || '');
-      formData.append('avatar', values.avatar);
-      if (values.coverImage) formData.append('coverImage', values.coverImage);
+      formData.append("fullName", values.fullName || "");
+      formData.append("email", values.email || "");
+      formData.append("username", values.username || "");
+      formData.append("password", values.password || "");
+      formData.append("avatar", values.avatar);
+      if (values.coverImage) formData.append("coverImage", values.coverImage);
 
       await authApi.register(formData);
 
@@ -50,7 +50,14 @@ const Register = () => {
       )}
 
       <AuthrizationCard
-        fields={["fullName", "email", "username", "password", "avatar", "coverImage"]}
+        fields={[
+          "fullName",
+          "email",
+          "username",
+          "password",
+          "avatar",
+          "coverImage",
+        ]}
         values={form}
         onChange={handleChange}
         onSubmit={handleSubmit}

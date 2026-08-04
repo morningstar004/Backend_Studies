@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 const AuthrizationPage = () => {
   return (
@@ -10,7 +10,7 @@ const AuthrizationPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AuthrizationPage
+export default AuthrizationPage;

@@ -1,18 +1,74 @@
-import { api } from './apiClient.js';
+import { api } from "./apiClient.js";
 
 const q = (params: Record<string, string | number | undefined>) => {
-  const query = new URLSearchParams(); Object.entries(params).forEach(([key, value]) => value !== undefined && query.set(key, String(value)));
-  return query.toString() ? `?${query}` : '';
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(
+    ([key, value]) => value !== undefined && query.set(key, String(value)),
+  );
+  return query.toString() ? `?${query}` : "";
 };
 export const videoService = {
   list: (params = {}) => api.get(`/video/getAllVideos${q(params)}`),
-  byId: (id: string) => api.get(`/video/${id}/getVideoById`), publish: (body: FormData) => api.postForm('/video/publishAVideo', body),
-  update: (id: string, body: unknown) => api.patch(`/video/${id}/updateVideo`, body), delete: (id: string) => api.delete(`/video/${id}/deleteVideo`), togglePublish: (id: string) => api.patch(`/video/${id}/togglePublishStatus`, {}),
+  byId: (id: string) => api.get(`/video/${id}/getVideoById`),
+  publish: (body: FormData) => api.postForm("/video/publishAVideo", body),
+  update: (id: string, body: unknown) =>
+    api.patch(`/video/${id}/updateVideo`, body),
+  delete: (id: string) => api.delete(`/video/${id}/deleteVideo`),
+  togglePublish: (id: string) =>
+    api.patch(`/video/${id}/togglePublishStatus`, {}),
 };
-export const commentService = { list: (id: string, page = 1) => api.get(`/comments/${id}/getComments?page=${page}`), create: (id: string, content: string) => api.post(`/comments/${id}/addComment`, { content }), update: (id: string, content: string) => api.patch(`/comments/${id}/editComment`, { content }), delete: (id: string) => api.delete(`/comments/${id}/deleteComment`) };
-export const likeService = { video: (id: string) => api.patch(`/likes/toggleVideoLike/${id}`, {}), comment: (id: string) => api.patch(`/likes/toggleCommentLike/${id}`, {}), tweet: (id: string) => api.patch(`/likes/toggleTweetLike/${id}`, {}), videos: () => api.get('/likes/getLikedVideos') };
-export const playlistService = { list: (id: string) => api.get(`/playlists/${id}/getUserPlaylists`), byId: (id: string) => api.get(`/playlists/${id}/getPlaylistById`), create: (body: unknown) => api.post('/playlists/createPlaylist', body), update: (id: string, body: unknown) => api.patch(`/playlists/${id}/updatePlaylist`, body), remove: (id: string, videoId: string) => api.delete(`/playlists/${id}/removeVideoFromPlaylist/${videoId}`), add: (id: string, videoId: string) => api.patch(`/playlists/${id}/addVideoToPlaylist/${videoId}`, {}), delete: (id: string) => api.delete(`/playlists/${id}/deletePlaylist`) };
-export const subscriptionService = { toggle: (id: string) => api.patch(`/subscription/${id}`, {}), subscribers: (id: string) => api.get(`/subscription/${id}/subscribers`), subscribed: (id: string) => api.get(`/subscription/${id}/subscriptions`) };
-export const tweetService = { list: (id: string) => api.get(`/tweets/getUserTweets/${id}`), create: (content: string) => api.post('/tweets/createTweet', { content }), update: (id: string, content: string) => api.patch(`/tweets/updateTweet/${id}`, { content }), delete: (id: string) => api.delete(`/tweets/deleteTweet/${id}`) };
-export const dashboardService = { stats: () => api.get('/dashboard/stats'), videos: () => api.get('/dashboard/videos') };
-export const userService = { current: () => api.get('/users/current-user'), channel: (username: string) => api.get(`/users/c/${username}`), history: () => api.get('/users/history'), forgotPassword: (email: string) => api.post('/users/forgot-password', { email }), changePassword: (body: unknown) => api.post('/users/change-password', body), update: (body: unknown) => api.patch('/users/update-account-details', body), avatar: (body: FormData) => api.patchForm('/users/change-avatar', body), cover: (body: FormData) => api.patchForm('/users/change-cover-image', body), remove: () => api.delete('/users/delete-user') };
+export const commentService = {
+  list: (id: string, page = 1) =>
+    api.get(`/comments/${id}/getComments?page=${page}`),
+  create: (id: string, content: string) =>
+    api.post(`/comments/${id}/addComment`, { content }),
+  update: (id: string, content: string) =>
+    api.patch(`/comments/${id}/editComment`, { content }),
+  delete: (id: string) => api.delete(`/comments/${id}/deleteComment`),
+};
+export const likeService = {
+  video: (id: string) => api.patch(`/likes/toggleVideoLike/${id}`, {}),
+  comment: (id: string) => api.patch(`/likes/toggleCommentLike/${id}`, {}),
+  tweet: (id: string) => api.patch(`/likes/toggleTweetLike/${id}`, {}),
+  videos: () => api.get("/likes/getLikedVideos"),
+};
+export const playlistService = {
+  list: (id: string) => api.get(`/playlists/${id}/getUserPlaylists`),
+  byId: (id: string) => api.get(`/playlists/${id}/getPlaylistById`),
+  create: (body: unknown) => api.post("/playlists/createPlaylist", body),
+  update: (id: string, body: unknown) =>
+    api.patch(`/playlists/${id}/updatePlaylist`, body),
+  remove: (id: string, videoId: string) =>
+    api.delete(`/playlists/${id}/removeVideoFromPlaylist/${videoId}`),
+  add: (id: string, videoId: string) =>
+    api.patch(`/playlists/${id}/addVideoToPlaylist/${videoId}`, {}),
+  delete: (id: string) => api.delete(`/playlists/${id}/deletePlaylist`),
+};
+export const subscriptionService = {
+  toggle: (id: string) => api.patch(`/subscription/${id}`, {}),
+  subscribers: (id: string) => api.get(`/subscription/${id}/subscribers`),
+  subscribed: (id: string) => api.get(`/subscription/${id}/subscriptions`),
+};
+export const tweetService = {
+  list: (id: string) => api.get(`/tweets/getUserTweets/${id}`),
+  create: (content: string) => api.post("/tweets/createTweet", { content }),
+  update: (id: string, content: string) =>
+    api.patch(`/tweets/updateTweet/${id}`, { content }),
+  delete: (id: string) => api.delete(`/tweets/deleteTweet/${id}`),
+};
+export const dashboardService = {
+  stats: () => api.get("/dashboard/stats"),
+  videos: () => api.get("/dashboard/videos"),
+};
+export const userService = {
+  current: () => api.get("/users/current-user"),
+  channel: (username: string) => api.get(`/users/c/${username}`),
+  history: () => api.get("/users/history"),
+  forgotPassword: (email: string) =>
+    api.post("/users/forgot-password", { email }),
+  changePassword: (body: unknown) => api.post("/users/change-password", body),
+  update: (body: unknown) => api.patch("/users/update-account-details", body),
+  avatar: (body: FormData) => api.patchForm("/users/change-avatar", body),
+  cover: (body: FormData) => api.patchForm("/users/change-cover-image", body),
+  remove: () => api.delete("/users/delete-user"),
+};

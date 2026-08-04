@@ -1,6 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { authApi } from '../api/authApi.js';
-import { toast } from 'sonner';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { authApi } from "../api/authApi.js";
+import { toast } from "sonner";
 
 const AuthContext = createContext(null);
 
@@ -38,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setError(null);
-      toast.success('Signed out');
+      toast.success("Signed out");
     }
   };
 
@@ -61,7 +68,7 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;
