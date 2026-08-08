@@ -47,6 +47,7 @@ export default function AuthrizationCard({
   onForgotPassword = () => {},
   submitLabel = "Submit",
   disabled = false,
+  optionalFields = [],
 }) {
   return (
     <form
@@ -65,7 +66,7 @@ export default function AuthrizationCard({
               <label key={field} className="block text-sm font-medium">
                 {config.label}
                 <input
-                  required={config.required ?? config.type !== "file"}
+                  required={config.required ?? (config.type !== "file" && !optionalFields.includes(field))}
                   type={config.type}
                   name={field}
                   autoComplete={config.autoComplete}
