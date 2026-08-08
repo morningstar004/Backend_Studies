@@ -251,6 +251,47 @@ const forgotPassword = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Password reset OTP sent to your email.", {}));
 });
 
+const resetPassword = asyncHandler(async (req, res) => {
+  const email = req.body?.email?.trim().toLowerCase();
+  const otp = req.body?.otp?.trim();
+  const newPassword = req.body?.newPassword;
+  const confirmPassword = req.body?.confirmPassword;
+
+  if (!email || !otp || !newPassword || !confirmPassword) {
+    throw new apiError(400, "Email, OTP, and both password fields are required.");
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    throw new apiError(400, "Please provide a valid email address");
+  }
+  if (newPassword !== confirmPassword) {
+    throw new apiError(400, "New passwords do not match.");
+  }
+  if (newPassword.length < 6) {
+    throw new apiError(400, "New password must be at least 6 characters long.");
+  }
+
+  const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+  const user = await User.findOne({
+    email,
+    passwordResetOtpHash: otpHash,
+    passwordResetOtpExpires: { $gt: new Date() },
+  }).select("+passwordResetOtpHash +passwordResetOtpExpires");
+
+  if (!user) {
+    throw new apiError(400, "The OTP is invalid or has expired. Request a new one.");
+  }
+
+  user.password = newPassword;
+  user.passwordResetOtpHash = undefined;
+  user.passwordResetOtpExpires = undefined;
+  user.refreshToken = undefined;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Password reset successfully. You can now sign in.", {}));
+});
+
 const logoutUser = asyncHandler(async (req, res) => {
   //clear cookie and remove the refresh token
   await User.findByIdAndUpdate(
@@ -652,6 +693,7 @@ export {
   registerUser,
   loginUser,
   forgotPassword,
+  resetPassword,
   logoutUser,
   refreshAccessToken,
   changeCurrentPassword,
