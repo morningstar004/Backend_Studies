@@ -1,12 +1,7 @@
-import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const Profile = () => {
-  const { user, loading, error, refreshUser } = useAuth();
-
-  useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+  const { user, loading, error } = useAuth();
 
   if (error) return <div className="surface p-8 text-primary">{error}</div>;
 
@@ -17,7 +12,7 @@ const Profile = () => {
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <div className="surface overflow-hidden">
-        <div className="h-36 bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10" />
+        <div className="h-36 bg-cover bg-center bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10" style={user.coverImage ? { backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)), url(${user.coverImage})` } : undefined} />
         <div className="p-5 sm:p-7">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">

@@ -109,12 +109,14 @@ export default function AppShell() {
                 </button>
               </>
             ) : (
-              <NavLink
-                to="/login"
-                className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white"
-              >
-                Sign in
-              </NavLink>
+              <div className="flex items-center gap-2">
+                <NavLink to="/register" className="hidden rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black/5 sm:block dark:hover:bg-white/10">
+                  Register
+                </NavLink>
+                <NavLink to="/login" className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white">
+                  Sign in
+                </NavLink>
+              </div>
             )}
           </div>
         </div>

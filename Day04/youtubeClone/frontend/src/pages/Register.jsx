@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthrizationCard from "../components/authrizationCard.jsx";
 import { authApi } from "../api/authApi.js";
 
@@ -42,7 +42,7 @@ const Register = () => {
   };
 
   return (
-    <div className="mx-auto flex max-w-xl justify-center py-6">
+    <div className="mx-auto max-w-xl py-6">
       {error && (
         <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">
           {error}
@@ -65,6 +65,9 @@ const Register = () => {
         submitLabel={loading ? "Creating account..." : "Create account"}
         disabled={loading}
       />
+      <p className="mt-5 text-center text-sm text-black/60 dark:text-white/60">
+        Already have an account? <Link className="font-semibold text-primary hover:underline" to="/login">Sign in</Link>
+      </p>
     </div>
   );
 };

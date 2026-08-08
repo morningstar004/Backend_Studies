@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthrizationCard from "../components/authrizationCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -16,6 +16,10 @@ const Login = () => {
   };
 
   const handleSubmit = async (values) => {
+    if (!values.email.trim() && !values.username.trim()) {
+      setError("Enter either your email address or username.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -30,27 +34,24 @@ const Login = () => {
   };
 
   return (
-    <div className="mx-auto flex max-w-xl justify-center py-6">
-      {error && (
-        <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">
-          {error}
-        </div>
-      )}
-
+    <div className="mx-auto max-w-xl py-6">
+      {error && <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">{error}</div>}
       <AuthrizationCard
-        fields={["email", "username", "password"]}
-        values={form}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-        title="Login"
-        showForgotPassword
-        forgotPasswordText="Forgot password?"
-        onForgotPassword={() =>
-          setError("Password recovery is not available yet.")
-        }
-        submitLabel={loading ? "Signing in..." : "Sign In"}
-        disabled={loading}
+          fields={["email", "username", "password"]}
+          optionalFields={["email", "username"]}
+          values={form}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          title="Login"
+          showForgotPassword
+          forgotPasswordText="Forgot password?"
+          onForgotPassword={() => navigate("/forgot-password")}
+          submitLabel={loading ? "Signing in..." : "Sign In"}
+          disabled={loading}
       />
+      <p className="mt-5 text-center text-sm text-black/60 dark:text-white/60">
+        New here? <Link className="font-semibold text-primary hover:underline" to="/register">Create an account</Link>
+      </p>
     </div>
   );
 };
