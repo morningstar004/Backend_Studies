@@ -1,5 +1,7 @@
 import { api } from "./apiClient.js";
 
+// This file is a domain-driven service layer: each exported object groups the API calls relevant to one resource/feature (videos, comments, likes, playlists, subscriptions, tweets, dashboard, users). All of them funnel through the same low-level api client
+
 const q = (params: Record<string, string | number | undefined>) => {
   const query = new URLSearchParams();
   Object.entries(params).forEach(

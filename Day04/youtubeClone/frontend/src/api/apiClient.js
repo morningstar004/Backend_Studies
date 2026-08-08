@@ -1,9 +1,10 @@
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '');
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL).replace(/\/$/, '');
 
 const request = async (path, options = {}) => {
   const isFormData = options.body instanceof FormData;
   const response = await fetch(`${BASE_URL}${path}`, {
     credentials: 'include',
+    // Tells the browser to send cookies (e.g., session/auth cookies) even for cross-origin requests, which is needed for cookie-based authentication.
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
