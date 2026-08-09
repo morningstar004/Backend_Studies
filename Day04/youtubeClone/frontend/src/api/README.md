@@ -6,7 +6,7 @@ This folder is the boundary between the React interface and the Express backend.
 
 `apiClient.js` is the shared HTTP client. It joins `VITE_API_BASE_URL` with a route such as `/users/login`. With the example environment file, that becomes `/api/v1/users/login`.
 
-In development, Vite receives that `/api` request and forwards it to `VITE_API_PROXY_TARGET` (normally `http://localhost:8000`). This avoids browser CORS problems. In production, set `VITE_API_BASE_URL` to the public API URL and set the backend's `FRONTEND_URL` to the deployed frontend URL.
+In development, Vite receives that `/api` request and forwards it to `VITE_API_PROXY_TARGET` (normally `http://localhost:9000`). This avoids browser CORS problems. In production, set `VITE_API_BASE_URL` to the public API URL and set the backend's `FRONTEND_URL` to the deployed frontend URL.
 
 ## How a request moves through the app
 
