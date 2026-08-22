@@ -28,6 +28,11 @@
     color: #1a1a1b;
   }
 
+  html.dark body {
+    background-color: #000000;
+    color: #f8f9fa;
+  }
+
   button,
   input,
   textarea,
