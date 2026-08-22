@@ -1,3 +1,4 @@
+// Import useQuery hook for managing asynchronous data fetching and caching
 import { useQuery } from "@tanstack/react-query";
 import { Eye, Heart, Users, Video } from "lucide-react";
 import { dashboardService } from "../api/services.ts";
@@ -11,19 +12,21 @@ const stat = [
 export default function Dashboard() {
   const stats = useQuery({
     queryKey: ["dashboard", "stats"],
+    // Fetch dashboard statistics using the dashboardService (dashboardController is has responsible for this)
     queryFn: dashboardService.stats,
   });
   const videos = useQuery({
     queryKey: ["dashboard", "videos"],
     queryFn: dashboardService.videos,
   });
+  // Extract the data from the stats query result that is returned from the backend API as an response object.
   const data = stats.data?.data;
   return (
     <section className="space-y-7">
       <div>
         <h1 className="text-2xl font-bold">Creator studio</h1>
         <p className="text-sm text-black/55 dark:text-white/55">
-          A concise view of your channel.
+          A state view of your channel.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -37,12 +40,14 @@ export default function Dashboard() {
       </div>
       <div>
         <h2 className="mb-4 text-lg font-bold">Your videos</h2>
+        {/* Displaying a skeleton of the video cards, while the videos complete loading from the DB. */}
         {videos.isLoading ? (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3].map((x) => (
               <SkeletonCard key={x} />
             ))}
           </div>
+          // Displaying the videos if they are available, otherwise showing an empty state message.
         ) : videos.data?.data?.length ? (
           <div className="space-y-2">
             {videos.data.data.map((v) => (
@@ -62,6 +67,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
+          // Displaying an empty state message if there are no videos available.
           <EmptyState
             title="No uploads yet"
             detail="Use Create to publish your first video."
