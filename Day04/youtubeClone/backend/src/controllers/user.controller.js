@@ -302,7 +302,7 @@ const logoutUser = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   );
   const options = {
@@ -436,7 +436,7 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
       },
     },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   ).select("-password -refreshToken");
 
   if (!user) {
@@ -489,7 +489,7 @@ const updateAvtar = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   ).select("-password -refreshToken");
 
@@ -533,7 +533,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   ).select("-password -refreshToken");
 

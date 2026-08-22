@@ -23,6 +23,12 @@ const fieldConfigs = {
     autoComplete: "current-password",
     placeholder: "Enter your password",
   },
+  otp:{
+    label: "OTP",
+    type: "number",
+    autoComplete: "one-time-code",
+    placeholder: "Enter your OTP",
+  },
   avatar: {
     label: "Profile picture",
     type: "file",
@@ -51,8 +57,8 @@ export default function AuthrizationCard({
 }) {
   return (
     <form
-      onSubmit={(event) => {
-        event.preventDefault();
+      onSubmit={(e) => {
+        e.preventDefault();
         onSubmit(values);
       }}
       className="surface w-full p-6 sm:p-8"

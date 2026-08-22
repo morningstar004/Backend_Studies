@@ -148,7 +148,7 @@ const editComment = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     },
   );

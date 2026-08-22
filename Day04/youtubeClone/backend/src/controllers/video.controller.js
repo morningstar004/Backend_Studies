@@ -212,7 +212,7 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const [updatedVideo] = await Promise.all([
-    Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } }, { new: true }),
+    Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } }, { returnDocument: "after" }),
     User.findByIdAndUpdate(req.user._id, {
       $addToSet: { watchHistory: video._id },
     }),
@@ -271,7 +271,7 @@ const updateVideo = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   );
 
@@ -355,7 +355,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   const updatedVideo = await Video.findByIdAndUpdate(
     videoId,
     { $set: { isPublished: !video.isPublished } },
-    { new: true },
+    { returnDocument: "after" },
   );
 
   return res
