@@ -8,10 +8,12 @@ import { Link } from "react-router-dom";
 const Home = () => {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
+  // Fetching the list of videos from the backend API using the videoService and react-query.
   const { data, isLoading, error } = useQuery({
     queryKey: ["videos", search],
     queryFn: () => videoService.list({ query: search, limit: 18 }),
   });
+  // Extracting the list of videos from the data returned by the query. If no videos are found, an empty array is used as a fallback.
   const videos = data?.data?.videos || [];
 
   return (
@@ -30,36 +32,39 @@ const Home = () => {
             e.preventDefault();
             setSearch(query);
           }}
-          className="relative max-w-sm flex-1"
+          className="relative max-w-sm flex-1 right-96"
         >
           <Search
             className="absolute left-3 top-3 text-black/40 dark:text-white/40"
             size={17}
           />
           <input
-            className="input pl-9"
+            className="input pl-9 rounded-3xl w-full"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search videos"
           />
         </form>
       </div>
-
+          {/* // Displaying the videos if they are available, otherwise showing a skeleton or an empty state message. */}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 9 }, (_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
+        // Displaying an error message if there is an error while fetching the videos.
       ) : error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           {error.message}
         </div>
+        // Displaying an empty state message if there are no videos available.
       ) : videos.length === 0 ? (
         <EmptyState
           title="No videos found"
           detail="Try a different search phrase."
         />
+        // Displaying the list of videos if they are available.
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {videos.map((video) => (
