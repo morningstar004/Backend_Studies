@@ -28,8 +28,10 @@ export default function AppShell() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  // menu component for navigation links, the links displayed on the left side of the screen
   const menu = (
     <nav className="space-y-1">
+      {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
         <NavLink
           onClick={() => setOpen(false)}
@@ -41,6 +43,7 @@ export default function AppShell() {
           {label}
         </NavLink>
       ))}
+      {/* appears only when user is logged in */}
       {user && (
         <>
           <NavLink className={active} to="/dashboard">
@@ -51,7 +54,7 @@ export default function AppShell() {
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
-              alt=""
+              alt="Your profile"
             />
             Your channel
           </NavLink>
@@ -63,6 +66,7 @@ export default function AppShell() {
     <div className="min-h-screen bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA]">
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-black/80">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4">
+          {/* button to open the menu on small screens */}
           <button
             className="icon-button lg:hidden"
             onClick={() => setOpen(true)}
@@ -79,6 +83,31 @@ export default function AppShell() {
             </span>
             Streamline
           </NavLink>
+          {/* // search bar */}
+          <div className="relative mx-auto hidden w-full max-w-md lg:block">
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full rounded-full border border-black/10 bg-transparent py-2 pl-4 pr-10 text-sm placeholder:text-black/50 focus:border-black/20 focus:outline-none focus:ring-1 focus:ring-black/20 dark:border-white/10 dark:placeholder:text-white/50 dark:focus:border-white/20 dark:focus:ring-white/20"
+            />
+            <button className="absolute right-1 top-1.5 rounded-full p-1.5 text-black/50 transition hover:bg-black/5 hover:text-black dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </button>
+          </div>
+          {/* // right side of the header, contains theme toggle and user authentication buttons */}
           <div className="ml-auto flex items-center gap-1">
             <button
               className="icon-button"
@@ -87,6 +116,7 @@ export default function AppShell() {
             >
               {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
             </button>
+            {/* // user authentication buttons, shows different buttons based on whether the user is logged in or not */}
             {user ? (
               <>
                 <button
@@ -121,12 +151,14 @@ export default function AppShell() {
           </div>
         </div>
       </header>
-      <div className="mx-auto flex max-w-[1600px]">
+      <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
+        {/* // left side of the screen, contains navigation links for different pages of the application, hidden on small screens and shown on large screens */}
         <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 border-r border-black/10 p-4 dark:border-white/10 lg:block">
           {menu}
         </aside>
         <main className="min-w-0 flex-1 p-4 sm:p-6">
           <AnimatePresence mode="wait">
+            {/* Animates page transitions by fading and sliding each route's content in and out. */}
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 6 }}
@@ -141,6 +173,7 @@ export default function AppShell() {
       </div>
       <AnimatePresence>
         {open && (
+          /* Animates the mobile menu overlay and drawer when the menu opens or closes. */
           <motion.div
             className="fixed inset-0 z-50 bg-black/50 lg:hidden"
             initial={{ opacity: 0 }}
