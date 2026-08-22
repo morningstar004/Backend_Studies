@@ -83,30 +83,6 @@ export default function AppShell() {
             </span>
             Streamline
           </NavLink>
-          {/* // search bar */}
-          <div className="relative mx-auto hidden w-full max-w-md lg:block">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full rounded-full border border-black/10 bg-transparent py-2 pl-4 pr-10 text-sm placeholder:text-black/50 focus:border-black/20 focus:outline-none focus:ring-1 focus:ring-black/20 dark:border-white/10 dark:placeholder:text-white/50 dark:focus:border-white/20 dark:focus:ring-white/20"
-            />
-            <button className="absolute right-1 top-1.5 rounded-full p-1.5 text-black/50 transition hover:bg-black/5 hover:text-black dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                />
-              </svg>
-            </button>
-          </div>
           {/* // right side of the header, contains theme toggle and user authentication buttons */}
           <div className="ml-auto flex items-center gap-1">
             <button
