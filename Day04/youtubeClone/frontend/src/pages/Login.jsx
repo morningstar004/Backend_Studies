@@ -35,22 +35,33 @@ const Login = () => {
 
   return (
     <div className="mx-auto flex-col max-w-xl py-6">
-      {error && <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">
+          {error}
+        </div>
+      )}
       <AuthrizationCard
-          fields={["email", "username", "password"]}
-          optionalFields={["email", "username"]}
-          values={form}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          title="Login"
-          showForgotPassword
-          forgotPasswordText="Forgot password?"
-          onForgotPassword={() => navigate("/forgot-password")}
-          submitLabel={loading ? "Signing in..." : "Sign In"}
-          disabled={loading}
+        fields={["email", "username", "password"]}
+        optionalFields={["email", "username"]}
+        values={form}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        title="Login"
+        description="Sign in to your account"
+        showForgotPassword
+        forgotPasswordText="Forgot password?"
+        onForgotPassword={() => navigate("/forgot-password")}
+        submitLabel={loading ? "Signing in..." : "Sign In"}
+        disabled={loading}
       />
       <p className="mt-5 text-center text-sm text-black/60 dark:text-white/60">
-        New here? <Link className="font-semibold text-primary hover:underline" to="/register">Create an account</Link>
+        New here?{" "}
+        <Link
+          className="font-semibold text-primary hover:underline"
+          to="/register"
+        >
+          Create an account
+        </Link>
       </p>
     </div>
   );

@@ -61,12 +61,19 @@ const Register = () => {
         values={form}
         onChange={handleChange}
         onSubmit={handleSubmit}
-        title="Create account"
+        title="Sign Up"
+        description="Create a new account"
         submitLabel={loading ? "Creating account..." : "Create account"}
         disabled={loading}
       />
       <p className="mt-5 text-center text-sm text-black/60 dark:text-white/60">
-        Already have an account? <Link className="font-semibold text-primary hover:underline" to="/login">Sign in</Link>
+        Already have an account?{" "}
+        <Link
+          className="font-semibold text-primary hover:underline"
+          to="/login"
+        >
+          Sign in
+        </Link>
       </p>
     </div>
   );

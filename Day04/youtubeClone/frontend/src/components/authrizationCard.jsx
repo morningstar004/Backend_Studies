@@ -121,6 +121,7 @@ export default function AuthrizationCard({
   onChange = () => {},
   onSubmit = () => {},
   title = "Authorization",
+  description = "Title Discription",
   showForgotPassword = false,
   forgotPasswordText = "Forgot password?",
   onForgotPassword = () => {},
@@ -136,9 +137,10 @@ export default function AuthrizationCard({
         e.preventDefault();
         onSubmit(values);
       }}
-      className="surface rounded-full h-full w-full p-6 sm:p-8"
+      className="surface rounded-full h-[560px] -m-4 mb-4 w-[560px] sm:p-8"
     >
-      <h1 className="text-center text-2xl font-bold">{title}</h1>
+      <h1 className="text-center text-4xl mt-5 font-bold">{title}</h1>
+      <p className="text-center text-sm mt-3 font-sans">{description}</p>
       <div className="mt-6 space-y-4">
         {fields.map((field) => {
           const config = fieldConfigs[field];
