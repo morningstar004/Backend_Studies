@@ -106,7 +106,7 @@ export default function AppShell() {
           {/* button to open the menu on small screens */}
           <button
             className="icon-button"
-            onClick={() => setOpen(true)}
+            onClick={() => setOpen((isOpen) => !isOpen)}
             aria-label="Open menu"
           >
             <Menu size={21} />
@@ -231,6 +231,28 @@ export default function AppShell() {
                   <X />
                 </button>
               </div>
+              {menu}
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {open && (
+          /* Animates the laptop menu overlay and drawer when the menu opens or closes. */
+          <motion.div
+            className="fixed inset-0 z-50 hidden translate-x-[13px] translate-y-[59px] bg-transparent lg:block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setOpen(false)}
+          >
+            <motion.aside
+              className="h-[80%] w-64 bg-white p-4  dark:bg-transparent"
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {menu}
             </motion.aside>
           </motion.div>
