@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { videoService } from "../api/services.ts";
 import { SkeletonCard, EmptyState } from "../components/States.jsx";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 const Home = () => {
-  const [query, setQuery] = useState("");
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search")?.trim() || "";
   // Fetching the list of videos from the backend API using the videoService and react-query.
   const { data, isLoading, error } = useQuery({
     queryKey: ["videos", search],
@@ -27,24 +26,7 @@ const Home = () => {
             Fresh ideas from the community.
           </p>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSearch(query);
-          }}
-          className="relative max-w-sm flex-1 right-96"
-        >
-          <Search
-            className="absolute left-3 top-3 text-black/40 dark:text-white/40"
-            size={17}
-          />
-          <input
-            className="input pl-9 rounded-3xl w-full"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search videos"
-          />
-        </form>
+
       </div>
           {/* // Displaying the videos if they are available, otherwise showing a skeleton or an empty state message. */}
       {isLoading ? (

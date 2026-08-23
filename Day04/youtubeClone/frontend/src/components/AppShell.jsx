@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
   Clapperboard,
   Compass,
@@ -9,6 +10,7 @@ import {
   Moon,
   Plus,
   Sun,
+  Search,
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -21,8 +23,9 @@ const links = [
   { to: "/history", label: "History", icon: History },
 ];
 const active = ({ isActive }) =>
-  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+  `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
 export default function AppShell() {
+    const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -68,7 +71,7 @@ export default function AppShell() {
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4">
           {/* button to open the menu on small screens */}
           <button
-            className="icon-button lg:hidden"
+            className="icon-button"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
           >
@@ -83,6 +86,24 @@ export default function AppShell() {
             </span>
             Streamline
           </NavLink>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate(`/?search=${encodeURIComponent(query.trim())}`);
+            }}
+            className="relative m-auto max-w-sm flex-1 left-36"
+          >
+            <Search
+              className="absolute left-3 top-3 text-black/40 dark:text-white/40"
+              size={17}
+            />
+            <input
+              className="input pl-9 rounded-3xl w-full"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search videos"
+            />
+          </form>
           {/* // right side of the header, contains theme toggle and user authentication buttons */}
           <div className="ml-auto flex items-center gap-1">
             <button
@@ -116,10 +137,16 @@ export default function AppShell() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <NavLink to="/register" className="hidden rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black/5 sm:block dark:hover:bg-white/10">
+                <NavLink
+                  to="/register"
+                  className="hidden rounded-xl px-3 py-2 text-sm font-semibold hover:bg-black/5 sm:block dark:hover:bg-white/10"
+                >
                   Register
                 </NavLink>
-                <NavLink to="/login" className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white">
+                <NavLink
+                  to="/login"
+                  className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white"
+                >
                   Sign in
                 </NavLink>
               </div>
@@ -129,7 +156,7 @@ export default function AppShell() {
       </header>
       <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
         {/* // left side of the screen, contains navigation links for different pages of the application, hidden on small screens and shown on large screens */}
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 border-r border-black/10 p-4 dark:border-white/10 lg:block">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-[100px] shrink-0 border-r border-black/10 p-4 dark:border-white/10 lg:block">
           {menu}
         </aside>
         <main className="min-w-0 flex-1 p-4 sm:p-6">
