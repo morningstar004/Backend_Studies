@@ -65,9 +65,9 @@ export default function AppShell() {
     </nav>
   );
   const lapActive = ({ isActive }) =>
-    `flex items-center gap-3 rounded-xl px-3 py-5 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+    `flex flex-col items-center gap-2 rounded-xl px-3 py-3 text-[10px] font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
   const lapMenu = (
-    <nav className="space-y-1">
+    <nav className="space-y-1 -m-1.5">
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
         <NavLink
@@ -93,7 +93,7 @@ export default function AppShell() {
               src={user.avatar}
               alt="Your profile"
             />
-            Your channel
+            You
           </NavLink>
         </>
       )}
