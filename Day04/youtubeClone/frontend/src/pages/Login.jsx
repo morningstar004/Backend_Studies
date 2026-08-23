@@ -34,7 +34,7 @@ const Login = () => {
   };
 
   return (
-    <div className="mx-auto max-w-xl py-6">
+    <div className="mx-auto flex-col max-w-xl py-6">
       {error && <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">{error}</div>}
       <AuthrizationCard
           fields={["email", "username", "password"]}
