@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import {
   Clapperboard,
   Compass,
@@ -25,7 +24,7 @@ const links = [
 const active = ({ isActive }) =>
   `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
 export default function AppShell() {
-    const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -65,6 +64,41 @@ export default function AppShell() {
       )}
     </nav>
   );
+  const lapActive = ({ isActive }) =>
+    `flex items-center gap-3 rounded-xl px-3 py-5 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+  const lapMenu = (
+    <nav className="space-y-1">
+      {/*navigation links on the left side */}
+      {links.map(({ to, label, icon: Icon }) => (
+        <NavLink
+          onClick={() => setOpen(false)}
+          className={lapActive}
+          to={to}
+          key={to}
+        >
+          <Icon size={18} />
+          {label}
+        </NavLink>
+      ))}
+      {/* appears only when user is logged in */}
+      {user && (
+        <>
+          <NavLink className={lapActive} to="/dashboard">
+            <Clapperboard size={18} />
+            Studio
+          </NavLink>
+          <NavLink className={lapActive} to="/profile">
+            <img
+              className="h-5 w-5 rounded-full object-cover"
+              src={user.avatar}
+              alt="Your profile"
+            />
+            Your channel
+          </NavLink>
+        </>
+      )}
+    </nav>
+  );
   return (
     <div className="min-h-screen bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA]">
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-black/80">
@@ -91,7 +125,7 @@ export default function AppShell() {
               e.preventDefault();
               navigate(`/?search=${encodeURIComponent(query.trim())}`);
             }}
-            className="relative m-auto max-w-sm flex-1 left-36"
+            className="relative m-auto max-w-sm flex-1 left-36 hidden lg:block"
           >
             <Search
               className="absolute left-3 top-3 text-black/40 dark:text-white/40"
@@ -157,7 +191,7 @@ export default function AppShell() {
       <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
         {/* // left side of the screen, contains navigation links for different pages of the application, hidden on small screens and shown on large screens */}
         <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-[100px] shrink-0 border-r border-black/10 p-4 dark:border-white/10 lg:block">
-          {menu}
+          {lapMenu}
         </aside>
         <main className="min-w-0 flex-1 p-4 sm:p-6">
           <AnimatePresence mode="wait">
