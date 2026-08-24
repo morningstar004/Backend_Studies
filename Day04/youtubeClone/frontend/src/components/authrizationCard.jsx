@@ -137,7 +137,7 @@ export default function AuthrizationCard({
         e.preventDefault();
         onSubmit(values);
       }}
-      className="surface rounded-full h-[560px] -m-4 mb-4 w-[560px] sm:p-8"
+      className="surface rounded-full px-0 h-[560px] -m-4 mb-4 w-[560px] sm:p-8"
     >
       <h1 className="text-center text-4xl mt-5 font-bold">{title}</h1>
       <p className="text-center text-sm mt-3 font-sans">{description}</p>
@@ -148,8 +148,8 @@ export default function AuthrizationCard({
             config && (
               <label key={field} className="block text-sm font-medium">
                 {config.icon ? (
-                  <div className="group relative mt-1.5">
-                    <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                  <div className="group relative mt-1.5 flex justify-center">
+                    <span className="pointer-events-none relative inset-y-0 left-8 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
                       {config.icon}
                     </span>
                     <input
@@ -172,7 +172,7 @@ export default function AuthrizationCard({
                             : event.target.value,
                         )
                       }
-                      className="input pl-10 pr-10"
+                      className="input pl-10 pr-10 w-80"
                     />
                     {field === "password" && (
                       <button
@@ -214,11 +214,11 @@ export default function AuthrizationCard({
           );
         })}
       </div>
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <div className="mt-6 flex flex-col items-center justify-center gap-4">
         {showForgotPassword ? (
           <button
             type="button"
-            className="text-sm text-primary hover:underline"
+            className="w-80 text-right text-sm -mt-4 mb-2 text-primary hover:underline"
             onClick={onForgotPassword}
           >
             {forgotPasswordText}
@@ -229,7 +229,7 @@ export default function AuthrizationCard({
         <button
           disabled={disabled}
           type="submit"
-          className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-primary w-80 px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitLabel}
         </button>
