@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Image, Upload } from "lucide-react";
 
 const avatar = (
   <svg
@@ -104,12 +104,14 @@ const fieldConfigs = {
   },
   avatar: {
     label: "Profile picture",
+    icon: Upload,
     type: "file",
     accept: "image/*",
     required: true,
   },
   coverImage: {
     label: "Cover image (optional)",
+    icon: Image,
     type: "file",
     accept: "image/*",
   },
@@ -142,7 +144,7 @@ export default function AuthrizationCard({
       <h1 className="text-center text-4xl mt-5 font-bold">{title}</h1>
       <p className="text-center text-sm mt-3 font-sans">{description}</p>
       <div className="mt-6 space-y-4">
-        {fields.map((field) => {
+        {fields.filter((field) => fieldConfigs[field]?.type !== "file").map((field) => {
           const config = fieldConfigs[field];
           return (
             config && (
@@ -179,7 +181,7 @@ export default function AuthrizationCard({
                         type="button"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                         onClick={() => setShowPassword((visible) => !visible)}
-                        className="absolute inset-y-0 right-3 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
+                        className="absolute inset-y-0 right-24 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -213,6 +215,34 @@ export default function AuthrizationCard({
             )
           );
         })}
+        {fields.some((field) => fieldConfigs[field]?.type === "file") && (
+          <div className="flex flex-wrap justify-center gap-6 pt-2">
+            {fields.filter((field) => fieldConfigs[field]?.type === "file").map((field) => {
+              const config = fieldConfigs[field];
+              return (
+                <div key={field} className="flex flex-col items-center gap-2">
+                  <label
+                    htmlFor={field}
+                    className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-primary/10 text-primary transition hover:bg-primary/20 [&>svg]:h-5 [&>svg]:w-5"
+                    title={config.label}
+                  >
+                    <config.icon aria-hidden="true" />
+                  </label>
+                  <span className="text-center text-xs font-semibold">{config.label}</span>
+                  <input
+                    id={field}
+                    required={config.required ?? false}
+                    type="file"
+                    name={field}
+                    accept={config.accept}
+                    onChange={(event) => onChange(field, event.target.files?.[0] || null)}
+                    className="sr-only"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div className="mt-6 flex flex-col items-center justify-center gap-4">
         {showForgotPassword ? (
