@@ -26,7 +26,10 @@ const key = (
     height="100"
     viewBox="0 0 24 24"
   >
-    <path fill="currentColor" d="M 6.5625 5.0136719 C 2.4595703 5.2668613 -0.68726562 9.0536406 0.13085938 13.369141 C 0.65285938 16.124141 2.8748594 18.347141 5.6308594 18.869141 C 9.378008 19.579519 12.720128 17.298793 13.703125 14 L 18 14 L 18 15 C 18 16.105 18.895 17 20 17 C 21.105 17 22 16.105 22 15 L 22 14 C 23.105 14 24 13.105 24 12 C 24 10.895 23.105 10 22 10 L 13.699219 10 C 12.979424 7.5432523 10.909496 5.6120152 8.3691406 5.1308594 C 7.7527656 5.0139844 7.1486328 4.977502 6.5625 5.0136719 z M 7 9 C 8.657 9 10 10.343 10 12 C 10 13.657 8.657 15 7 15 C 5.343 15 4 13.657 4 12 C 4 10.343 5.343 9 7 9 z"></path>
+    <path
+      fill="currentColor"
+      d="M 6.5625 5.0136719 C 2.4595703 5.2668613 -0.68726562 9.0536406 0.13085938 13.369141 C 0.65285938 16.124141 2.8748594 18.347141 5.6308594 18.869141 C 9.378008 19.579519 12.720128 17.298793 13.703125 14 L 18 14 L 18 15 C 18 16.105 18.895 17 20 17 C 21.105 17 22 16.105 22 15 L 22 14 C 23.105 14 24 13.105 24 12 C 24 10.895 23.105 10 22 10 L 13.699219 10 C 12.979424 7.5432523 10.909496 5.6120152 8.3691406 5.1308594 C 7.7527656 5.0139844 7.1486328 4.977502 6.5625 5.0136719 z M 7 9 C 8.657 9 10 10.343 10 12 C 10 13.657 8.657 15 7 15 C 5.343 15 4 13.657 4 12 C 4 10.343 5.343 9 7 9 z"
+    ></path>
   </svg>
 );
 const mail = (
@@ -144,22 +147,70 @@ export default function AuthrizationCard({
       <h1 className="text-center text-4xl mt-5 font-bold">{title}</h1>
       <p className="text-center text-sm mt-3 font-sans">{description}</p>
       <div className="mt-6 space-y-4">
-        {fields.filter((field) => fieldConfigs[field]?.type !== "file").map((field) => {
-          const config = fieldConfigs[field];
-          return (
-            config && (
-              <label key={field} className="block text-sm font-medium">
-                {config.icon ? (
-                  <div className="group relative mt-1.5 flex justify-center">
-                    <span className="pointer-events-none relative inset-y-0 left-8 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
-                      {config.icon}
-                    </span>
+        {fields
+          .filter((field) => fieldConfigs[field]?.type !== "file")
+          .map((field) => {
+            const config = fieldConfigs[field];
+            return (
+              config && (
+                <label key={field} className="block text-sm font-medium">
+                  {config.icon ? (
+                    <div className="group relative mt-1.5 flex justify-center">
+                      <span className="pointer-events-none relative inset-y-0 left-8 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                        {config.icon}
+                      </span>
+                      <input
+                        required={
+                          config.required ??
+                          (config.type !== "file" &&
+                            !optionalFields.includes(field))
+                        }
+                        type={
+                          field === "password" && showPassword
+                            ? "text"
+                            : config.type
+                        }
+                        name={field}
+                        autoComplete={config.autoComplete}
+                        placeholder={config.placeholder}
+                        {...(config.type === "file"
+                          ? { accept: config.accept }
+                          : { value: values[field] || "" })}
+                        onChange={(event) =>
+                          onChange(
+                            field,
+                            config.type === "file"
+                              ? event.target.files?.[0] || null
+                              : event.target.value,
+                          )
+                        }
+                        className="input pl-10 pr-10 w-80"
+                      />
+                      {field === "password" && (
+                        <button
+                          type="button"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                          onClick={() => setShowPassword((visible) => !visible)}
+                          className="absolute inset-y-0 right-24 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
+                        >
+                          {showPassword ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
                     <input
                       required={
                         config.required ??
-                        (config.type !== "file" && !optionalFields.includes(field))
+                        (config.type !== "file" &&
+                          !optionalFields.includes(field))
                       }
-                      type={field === "password" && showPassword ? "text" : config.type}
+                      type={config.type}
                       name={field}
                       autoComplete={config.autoComplete}
                       placeholder={config.placeholder}
@@ -174,73 +225,45 @@ export default function AuthrizationCard({
                             : event.target.value,
                         )
                       }
-                      className="input pl-10 pr-10 w-80"
+                      className="input"
                     />
-                    {field === "password" && (
-                      <button
-                        type="button"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        onClick={() => setShowPassword((visible) => !visible)}
-                        className="absolute inset-y-0 right-24 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <input
-                    required={
-                      config.required ??
-                      (config.type !== "file" && !optionalFields.includes(field))
-                    }
-                    type={config.type}
-                    name={field}
-                    autoComplete={config.autoComplete}
-                    placeholder={config.placeholder}
-                    {...(config.type === "file"
-                      ? { accept: config.accept }
-                      : { value: values[field] || "" })}
-                    onChange={(event) =>
-                      onChange(
-                        field,
-                        config.type === "file"
-                          ? event.target.files?.[0] || null
-                          : event.target.value,
-                      )
-                    }
-                    className="input"
-                  />
-                )}
-              </label>
-            )
-          );
-        })}
+                  )}
+                </label>
+              )
+            );
+          })}
         {fields.some((field) => fieldConfigs[field]?.type === "file") && (
           <div className="mt-[6px] flex flex-wrap justify-center gap-[6rem]">
-            {fields.filter((field) => fieldConfigs[field]?.type === "file").map((field) => {
-              const config = fieldConfigs[field];
-              return (
-                <div key={field} className="flex flex-col items-center gap-2">
-                  <label
-                    htmlFor={field}
-                    className={`flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 [&>svg]:h-5 [&>svg]:w-5 ${values[field] ? "text-primary" : "text-[#8D8D8D]"}`}
-                    title={config.label}
-                  >
-                    <config.icon aria-hidden="true" />
-                  </label>
-                  <span className="text-center -mt-2 text-xs font-semibold">{config.label}</span>
-                  <input
-                    id={field}
-                    required={config.required ?? false}
-                    type="file"
-                    name={field}
-                    accept={config.accept}
-                    onChange={(event) => onChange(field, event.target.files?.[0] || null)}
-                    className="sr-only"
-                  />
-                </div>
-              );
-            })}
+            {fields
+              .filter((field) => fieldConfigs[field]?.type === "file")
+              .map((field) => {
+                const config = fieldConfigs[field];
+                return (
+                  <div key={field} className="flex flex-col items-center gap-2">
+                    <label
+                      htmlFor={field}
+                      className={`flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 [&>svg]:h-5 [&>svg]:w-5 ${values[field] ? "text-primary" : "text-[#8D8D8D]"}`}
+                      title={config.label}
+                    >
+                      <config.icon aria-hidden="true" />
+                    </label>
+                    <span className="text-center -mt-2 text-xs font-semibold">
+                      {config.label}
+                    </span>
+                    <input
+                      id={field}
+                      required={config.required ?? false}
+                      type="file"
+                      name={field}
+                      accept={config.accept}
+                      onChange={(event) =>
+                        onChange(field, event.target.files?.[0] || null)
+                      }
+                      className="sr-only"
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
