@@ -103,14 +103,14 @@ const fieldConfigs = {
     placeholder: "Enter your OTP",
   },
   avatar: {
-    label: "Profile picture",
+    label: "Avatar",
     icon: Upload,
     type: "file",
     accept: "image/*",
     required: true,
   },
   coverImage: {
-    label: "Cover image (optional)",
+    label: "Cover image",
     icon: Image,
     type: "file",
     accept: "image/*",
@@ -208,7 +208,7 @@ export default function AuthrizationCard({
                           : event.target.value,
                       )
                     }
-                    className="input mt-1.5"
+                    className="input"
                   />
                 )}
               </label>
@@ -216,19 +216,19 @@ export default function AuthrizationCard({
           );
         })}
         {fields.some((field) => fieldConfigs[field]?.type === "file") && (
-          <div className="flex flex-wrap justify-center gap-6 pt-2">
+          <div className="mt-[6px] flex flex-wrap justify-center gap-[6rem]">
             {fields.filter((field) => fieldConfigs[field]?.type === "file").map((field) => {
               const config = fieldConfigs[field];
               return (
                 <div key={field} className="flex flex-col items-center gap-2">
                   <label
                     htmlFor={field}
-                    className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-primary/10 text-primary transition hover:bg-primary/20 [&>svg]:h-5 [&>svg]:w-5"
+                    className={`flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 [&>svg]:h-5 [&>svg]:w-5 ${values[field] ? "text-primary" : "text-[#8D8D8D]"}`}
                     title={config.label}
                   >
                     <config.icon aria-hidden="true" />
                   </label>
-                  <span className="text-center text-xs font-semibold">{config.label}</span>
+                  <span className="text-center -mt-2 text-xs font-semibold">{config.label}</span>
                   <input
                     id={field}
                     required={config.required ?? false}
@@ -244,11 +244,11 @@ export default function AuthrizationCard({
           </div>
         )}
       </div>
-      <div className="mt-6 flex flex-col items-center justify-center gap-4">
+      <div className=" flex flex-col items-center justify-center gap-2">
         {showForgotPassword ? (
           <button
             type="button"
-            className="w-80 text-right text-sm -mt-4 mb-2 text-primary hover:underline"
+            className="w-80 text-right text-sm mt-1 mb-2 text-primary hover:underline"
             onClick={onForgotPassword}
           >
             {forgotPasswordText}
@@ -259,7 +259,7 @@ export default function AuthrizationCard({
         <button
           disabled={disabled}
           type="submit"
-          className="rounded-xl bg-primary w-80 px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl translate-x-2.5 bg-primary w-80 px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitLabel}
         </button>
