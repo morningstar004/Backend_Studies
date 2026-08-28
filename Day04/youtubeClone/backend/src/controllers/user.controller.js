@@ -31,12 +31,25 @@ const sendPasswordResetOtp = async (email, otp) => {
     auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
 
-  await transporter.sendMail({
-    from: SMTP_FROM,
-    to: email,
-    subject: "Your password reset OTP",
-    text: `Your password reset OTP is ${otp}. It expires in 10 minutes. Do not share it with anyone.`,
-  });
+  try {
+    await transporter.sendMail({
+      from: SMTP_FROM,
+      to: email,
+      subject: "Your password reset OTP",
+      text: `Your password reset OTP is ${otp}. It expires in 10 minutes. Do not share it with anyone.`,
+    });
+  } catch (error) {
+    // Gmail does not allow a normal account password for SMTP. Keeping this
+    // message explicit prevents the Nodemailer stack trace from reaching users.
+    if (error.code === "EAUTH" || error.responseCode === 535) {
+      throw new apiError(
+        502,
+        "Gmail rejected the SMTP credentials. Set SMTP_USER to the Google account that created SMTP_PASS, and use a current 16-character Google App Password (not the account password).",
+      );
+    }
+
+    throw error;
+  }
 };
 
 const registerUser = asyncHandler(async (req, res) => {
