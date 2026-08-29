@@ -25,18 +25,26 @@ const active = ({ isActive }) =>
   `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
 export default function AppShell() {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const toggleMenu = () => {
+    if (window.matchMedia("(min-width: 1024px)").matches) {
+      setDesktopSidebarExpanded((isExpanded) => !isExpanded);
+    } else {
+      setMobileMenuOpen((isOpen) => !isOpen);
+    }
+  };
   // menu component for navigation links, the links displayed on the left side of the screen
   const menu = (
     <nav className="space-y-1">
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
         <NavLink
-          onClick={() => setOpen(false)}
+          onClick={() => setMobileMenuOpen(false)}
           className={active}
           to={to}
           key={to}
@@ -64,36 +72,33 @@ export default function AppShell() {
       )}
     </nav>
   );
-  const lapActive = ({ isActive }) =>
-    `flex flex-col items-center gap-2 rounded-xl px-3 py-3 text-[10px] font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+  const desktopActive = ({ isActive }) =>
+    `flex items-center rounded-xl px-3 py-3 font-medium transition ${
+      desktopSidebarExpanded ? "gap-3 text-sm" : "flex-col gap-2 text-[10px]"
+    } ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
   const lapMenu = (
     <nav className="space-y-1 -m-1.5">
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
-        <NavLink
-          onClick={() => setOpen(false)}
-          className={lapActive}
-          to={to}
-          key={to}
-        >
+        <NavLink className={desktopActive} to={to} key={to}>
           <Icon size={18} />
-          {label}
+          <span>{label}</span>
         </NavLink>
       ))}
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <NavLink className={lapActive} to="/dashboard">
+          <NavLink className={desktopActive} to="/dashboard">
             <Clapperboard size={18} />
-            Studio
+            <span>Studio</span>
           </NavLink>
-          <NavLink className={lapActive} to="/profile">
+          <NavLink className={desktopActive} to="/profile">
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
               alt="Your profile"
             />
-            You
+            <span>{desktopSidebarExpanded ? "Your channel" : "You"}</span>
           </NavLink>
         </>
       )}
@@ -106,7 +111,7 @@ export default function AppShell() {
           {/* button to open the menu on small screens */}
           <button
             className="icon-button"
-            onClick={() => setOpen((isOpen) => !isOpen)}
+            onClick={toggleMenu}
             aria-label="Open menu"
           >
             <Menu size={21} />
@@ -190,9 +195,13 @@ export default function AppShell() {
       </header>
       <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
         {/* // left side of the screen, contains navigation links for different pages of the application, hidden on small screens and shown on large screens */}
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-[100px] shrink-0 border-r border-black/10 p-4 dark:border-white/10 lg:block">
+        <motion.aside
+          className="sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-r border-black/10 p-4 dark:border-white/10 lg:block"
+          animate={{ width: desktopSidebarExpanded ? 256 : 100 }}
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+        >
           {lapMenu}
-        </aside>
+        </motion.aside>
         <main className="min-w-0 flex-1 p-4 sm:p-6">
           <AnimatePresence mode="wait">
             {/* Animates page transitions by fading and sliding each route's content in and out. */}
@@ -209,50 +218,33 @@ export default function AppShell() {
         </main>
       </div>
       <AnimatePresence>
-        {open && (
+        {mobileMenuOpen && (
           /* Animates the mobile menu overlay and drawer when the menu opens or closes. */
           <motion.div
             className="fixed inset-0 z-50 bg-black/50 lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
+            transition={{ duration: 0.3, ease: "easeIn" }}
+            onClick={() => setMobileMenuOpen(false)}
           >
             <motion.aside
               className="h-full w-72 bg-white p-4 dark:bg-black"
               initial={{ x: -280 }}
               animate={{ x: 0 }}
               exit={{ x: -280 }}
+              transition={{ duration: 0.3, ease: "easeIn" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-6 flex items-center justify-between font-bold">
                 <span>Menu</span>
-                <button className="icon-button" onClick={() => setOpen(false)}>
+                <button
+                  className="icon-button"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <X />
                 </button>
               </div>
-              {menu}
-            </motion.aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {open && (
-          /* Animates the laptop menu overlay and drawer when the menu opens or closes. */
-          <motion.div
-            className="fixed inset-0 z-50 hidden translate-x-[13px] translate-y-[59px] bg-transparent lg:block"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-          >
-            <motion.aside
-              className="h-[80%] w-64 bg-white p-4  dark:bg-transparent"
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              onClick={(e) => e.stopPropagation()}
-            >
               {menu}
             </motion.aside>
           </motion.div>
