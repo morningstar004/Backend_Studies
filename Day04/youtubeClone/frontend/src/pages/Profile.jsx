@@ -10,22 +10,30 @@ const Profile = () => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
+    <div className="mx-auto space-y-5">
       <div className="surface overflow-hidden">
-        <div className="h-36 bg-cover bg-center bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10" style={user.coverImage ? { backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)), url(${user.coverImage})` } : undefined} />
+        <div className="h-52 bg-cover bg-center bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10" style={user.coverImage ? { backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)), url(${user.coverImage})` } : undefined} />
         <div className="p-5 sm:p-7">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
               <img
                 src={user.avatar}
                 alt={user.fullName}
-                className="-mt-16 h-24 w-24 rounded-2xl border-4 border-white object-cover dark:border-black"
+                className="-mt-12 h-24 w-24 rounded-2xl border-4 border-white object-cover dark:border-black"
               />
-              <div>
-                <h1 className="text-3xl font-semibold">{user.fullName}</h1>
+              <div className="-mt-8">
+                <h1 className="text-3xl font-semibold text-ellipsis leading-wide font-mono">{user.fullName}</h1>
                 <p className="text-sm text-black/55 dark:text-white/55">
-                  @{user.username}
+                  <span>@_{user.username}</span>
                 </p>
+                <div className="flex items-baseline gap-4 text-sm font-mono text-black/70 dark:text-white/70"> 
+                  <p>
+                    <span className="font-semibold">{user.subscribersCount || 0}</span> subscribers
+                  </p>
+                  <p>
+                    <span className="font-semibold">{user.videosCount || 0}</span> videos
+                  </p>
+                </div>
               </div>
             </div>
           </div>
