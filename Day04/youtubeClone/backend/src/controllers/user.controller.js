@@ -416,7 +416,53 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  const currentUser = req.user;
+  const userId = req.user._id;
+
+  // Aggregate to get user with subscriber and video counts
+  const userWithCounts = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "_id",
+        foreignField: "owner",
+        as: "videos",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        videosCount: {
+          $size: "$videos",
+        },
+      },
+    },
+    {
+      $project: {
+        password: 0,
+        refreshToken: 0,
+        subscribers: 0,
+        videos: 0,
+        __v: 0,
+      },
+    },
+  ]);
+
+  const currentUser = userWithCounts[0] || req.user;
 
   return res
     .status(200)
