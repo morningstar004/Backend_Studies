@@ -17,37 +17,27 @@ const Home = () => {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Discover videos
-          </h1>
-          <p className="mt-1 text-sm text-black/55 dark:text-white/55">
-            Fresh ideas from the community.
-          </p>
-        </div>
-
-      </div>
-          {/* // Displaying the videos if they are available, otherwise showing a skeleton or an empty state message. */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"></div>
+      {/* // Displaying the videos if they are available, otherwise showing a skeleton or an empty state message. */}
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 9 }, (_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
-        // Displaying an error message if there is an error while fetching the videos.
-      ) : error ? (
+      ) : // Displaying an error message if there is an error while fetching the videos.
+      error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           {error.message}
         </div>
-        // Displaying an empty state message if there are no videos available.
-      ) : videos.length === 0 ? (
+      ) : // Displaying an empty state message if there are no videos available.
+      videos.length === 0 ? (
         <EmptyState
           title="No videos found"
           detail="Try a different search phrase."
         />
-        // Displaying the list of videos if they are available.
       ) : (
+        // Displaying the list of videos if they are available.
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {videos.map((video) => (
             <Link

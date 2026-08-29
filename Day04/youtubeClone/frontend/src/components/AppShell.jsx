@@ -110,15 +110,15 @@ export default function AppShell() {
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4">
           {/* button to open the menu on small screens */}
           <button
-            className="icon-button"
+            className="icon-button translate-x-3"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
-            <Menu size={21} />
+            <Menu size={21}/>
           </button>
           <NavLink
             to="/"
-            className="flex items-center gap-2 font-bold tracking-tight"
+            className="flex items-center gap-2 font-bold tracking-tight translate-x-3"
           >
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-white">
               <Clapperboard size={18} />

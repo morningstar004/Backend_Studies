@@ -12,14 +12,9 @@ export default function Library({ mode }) {
     mode === "history" ? entries : entries.map((item) => item.video);
   return (
     <section>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-2xl font-bold mb-2">
         {mode === "history" ? "Watch history" : "Liked videos"}
       </h1>
-      <p className="mb-6 mt-1 text-sm text-black/55 dark:text-white/55">
-        {mode === "history"
-          ? "Recently watched from your account."
-          : "Videos you have saved with a like."}
-      </p>
       {query.isLoading ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((x) => (
