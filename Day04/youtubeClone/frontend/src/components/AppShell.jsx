@@ -15,6 +15,7 @@ import {
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import ProfileOption from "./profileOption.jsx";
+import SearchPage from "./search.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 const links = [
@@ -29,6 +30,7 @@ export default function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -109,10 +111,10 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA]">
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-black/80">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4">
+        <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
           <button
-            className="icon-button translate-x-3"
+            className="icon-button duration-0 lg:translate-x-3"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
@@ -120,7 +122,7 @@ export default function AppShell() {
           </button>
           <NavLink
             to="/"
-            className="flex items-center gap-2 font-bold tracking-tight translate-x-3"
+            className="flex items-center gap-2 font-bold tracking-tight lg:translate-x-3"
           >
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-white">
               <Clapperboard size={18} />
@@ -130,23 +132,37 @@ export default function AppShell() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              navigate(`/?search=${encodeURIComponent(query.trim())}`);
+              const trimmedQuery = query.trim();
+              if (!trimmedQuery) return;
+              setMobileSearchOpen(false);
+              navigate(`/?search=${encodeURIComponent(trimmedQuery)}`);
             }}
-            className="relative m-auto max-w-sm flex-1 left-36 hidden lg:block"
+            className="relative hidden flex-1 justify-center lg:flex"
           >
-            <Search
-              className="absolute left-3 top-3 text-black/40 dark:text-white/40"
-              size={17}
-            />
-            <input
-              className="input pl-9 rounded-3xl w-full"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search videos"
-            />
+            <div className="relative w-full max-w-xl">
+              <Search
+                className="absolute left-3 top-3 text-black/40 dark:text-white/40"
+                size={17}
+              />
+              <input
+                className="input w-full rounded-3xl pl-9"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search videos"
+              />
+            </div>
           </form>
           {/* // right side of the header, contains theme toggle and user authentication buttons */}
           <div className="ml-auto flex items-center gap-1">
+            <button
+              type="button"
+              className="icon-button lg:hidden"
+              onClick={() => setMobileSearchOpen(true)}
+              aria-label="Open search"
+            >
+              <Search size={18} />
+            </button>
+
             <button
               className="icon-button"
               onClick={toggleTheme}
@@ -235,6 +251,20 @@ export default function AppShell() {
           </AnimatePresence>
         </main>
       </div>
+      <SearchPage
+        open={mobileSearchOpen}
+        query={query}
+        setQuery={setQuery}
+        onClose={() => setMobileSearchOpen(false)}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const trimmedQuery = query.trim();
+          if (!trimmedQuery) return;
+          setMobileSearchOpen(false);
+          navigate(`/?search=${encodeURIComponent(trimmedQuery)}`);
+        }}
+      />
+
       <AnimatePresence>
         {mobileMenuOpen && (
           /* Animates the mobile menu overlay and drawer when the menu opens or closes. */
