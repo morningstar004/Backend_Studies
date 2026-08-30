@@ -188,13 +188,6 @@ export default function AppShell() {
               <Search size={18} />
             </button>
 
-            <button
-              className="icon-button"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
             {/* // user authentication buttons, shows different buttons based on whether the user is logged in or not */}
             {user ? (
               <>

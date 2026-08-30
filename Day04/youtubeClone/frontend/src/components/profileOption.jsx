@@ -1,9 +1,11 @@
-import { NavLink, redirect } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
+import { useTheme } from "../context/ThemeContext.jsx";
 
 const ProfileOption = ({ onClose }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const links = [
     { to: "/profile", label: user?.username || "Your profile" },
@@ -35,7 +37,19 @@ const ProfileOption = ({ onClose }) => {
           {label}
         </NavLink>
       ))}
-        {/* <div className="h-[1px] flex justify-center align-center bg-green-200 w-52">g</div> */}
+
+      <button
+        type="button"
+        onClick={() => {
+          toggleTheme();
+          onClose?.();
+        }}
+        className="flex w-full items-center justify-between border-t border-black/10 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+      >
+        <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </button>
+
       <button
         type="button"
         onClick={() => {
@@ -45,7 +59,7 @@ const ProfileOption = ({ onClose }) => {
         className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-red-500 transition hover:bg-red-500/5 border-t border-black/10 dark:border-white/10"
       >
         Logout
-        <LogOut className="h-4 w-4"></LogOut>
+        <LogOut className="h-4 w-4" />
       </button>
     </div>
   );
