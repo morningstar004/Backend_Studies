@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import ProfileOption from "./profileOption.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 const links = [
@@ -27,6 +28,7 @@ export default function AppShell() {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -162,17 +164,33 @@ export default function AppShell() {
                   <Plus size={17} />
                   Create
                 </button>
-                <button
-                  className="ml-1 flex items-center gap-2 rounded-xl p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
-                  onClick={logout}
-                >
-                  <img
-                    className="h-7 w-7 rounded-lg object-cover"
-                    src={user.avatar}
-                    alt="Your profile"
-                  />
-                  <LogOut className="hidden sm:block" size={16} />
-                </button>
+                <div className="relative">
+                  <button
+                    className="ml-1 flex items-center gap-2 rounded-full duration-500 p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
+                    onClick={() => setProfileMenuOpen((open) => !open)}
+                    aria-label="Open profile menu"
+                  >
+                    <img
+                      className="h-7 w-7 rounded-full ring-1 ring-opacity-75 transition-opacity hover:ring-opacity-100 ring-offset-white dark:ring-offset-black ring-offset-1 object-cover"
+                      src={user.avatar}
+                      alt="Your profile"
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {profileMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute right-0 top-full z-40 mt-2"
+                      >
+                        <ProfileOption onClose={() => setProfileMenuOpen(false)} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </>
             ) : (
               <div className="flex items-center gap-2">
