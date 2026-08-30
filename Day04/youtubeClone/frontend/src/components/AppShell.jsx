@@ -214,9 +214,9 @@ export default function AppShell() {
       <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
         {/* // left side of the screen, contains navigation links for different pages of the application, hidden on small screens and shown on large screens */}
         <motion.aside
-          className="sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-r border-black/10 p-4 dark:border-white/10 lg:block"
-          animate={{ width: desktopSidebarExpanded ? 256 : 100 }}
-          transition={{ duration: 0.22, ease: "easeInOut" }}
+          className="sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-r border-black/10 py-4 px-2.5 dark:border-white/10 lg:block"
+          animate={{ width: desktopSidebarExpanded ? 256 : 92 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
         >
           {lapMenu}
         </motion.aside>
