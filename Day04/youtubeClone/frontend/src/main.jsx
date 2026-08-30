@@ -18,7 +18,23 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <BrowserRouter>
           <AuthProvider>
             <App />
-            <Toaster richColors theme="system" position="top-right" />
+            <Toaster
+              richColors
+              theme="system"
+              position="bottom-center"
+              toastOptions={{
+                classNames: {
+                  toast:
+                    "group toast group-[.toaster]:bg-white group-[.toaster]:text-[#1A1A1B] group-[.toaster]:border group-[.toaster]:border-black/10 group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl group-[.toaster]:dark:bg-[#111111] group-[.toaster]:dark:text-[#F8F9FA] group-[.toaster]:dark:border-white/10",
+                  title: "text-sm font-semibold",
+                  description: "text-xs opacity-80",
+                  actionButton: "bg-primary text-white",
+                  cancelButton: "bg-black/5 text-black dark:bg-white/10 dark:text-white",
+                  closeButton:
+                    "bg-transparent text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white",
+                },
+              }}
+            />
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

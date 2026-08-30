@@ -25,7 +25,7 @@ const Login = () => {
 
     try {
       await login(values);
-      navigate(location.state?.from?.pathname || "/profile", { replace: true });
+      navigate(location.state?.from?.pathname || "/", { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
