@@ -4,7 +4,6 @@ import {
   Compass,
   History,
   Library,
-  LogOut,
   Menu,
   Moon,
   Plus,
@@ -13,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -31,10 +30,36 @@ export default function AppShell() {
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const profileMenuRef = useRef(null);
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handlePointerDown = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [profileMenuOpen]);
+
   const toggleMenu = () => {
     if (window.matchMedia("(min-width: 1024px)").matches) {
       setDesktopSidebarExpanded((isExpanded) => !isExpanded);
@@ -180,7 +205,7 @@ export default function AppShell() {
                   <Plus size={17} />
                   Create
                 </button>
-                <div className="relative">
+                <div ref={profileMenuRef} className="relative">
                   <button
                     className="ml-1 flex items-center gap-2 rounded-full duration-500 p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
                     onClick={() => setProfileMenuOpen((open) => !open)}
