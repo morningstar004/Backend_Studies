@@ -205,7 +205,7 @@ export default function AppShell() {
                     aria-label="Open profile menu"
                   >
                     <img
-                      className="h-7 w-7 rounded-full ring-1 ring-opacity-75 transition-opacity hover:ring-opacity-100 ring-offset-white dark:ring-offset-black ring-offset-1 object-cover"
+                      className="h-7 w-7 rounded-full ring-1 ring-blue-500 ring-opacity-75 transition-opacity hover:ring-opacity-100 ring-offset-white dark:ring-offset-black ring-offset-1 object-cover"
                       src={user.avatar}
                       alt="Your profile"
                     />

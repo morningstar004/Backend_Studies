@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { videoService } from "../api/services.ts";
 import { SkeletonCard, EmptyState } from "../components/States.jsx";
+import VideoOptionsMenu from "../components/VideoOptionsMenu.jsx";
 import { Link, useSearchParams } from "react-router-dom";
 
 const getDominantColor = (src) => {
@@ -41,13 +42,19 @@ const getDominantColor = (src) => {
 
           // Ignore near-black, near-white, and grey pixels so an actual scene colour
           // (sky blue, fire orange, grass green, etc.) is selected instead.
-          if (saturation < 0.12 || brightness < 0.12 || brightness > 0.96) continue;
+          if (saturation < 0.12 || brightness < 0.12 || brightness > 0.96)
+            continue;
 
           // Group similar RGB pixels, while retaining their real RGB values rather
           // than converting every thumbnail to one fixed saturation/lightness.
           const bucket = `${Math.round(r / 32) * 32}-${Math.round(g / 32) * 32}-${Math.round(b / 32) * 32}`;
           const weight = 0.5 + saturation;
-          const existing = colorBuckets.get(bucket) || { weight: 0, r: 0, g: 0, b: 0 };
+          const existing = colorBuckets.get(bucket) || {
+            weight: 0,
+            r: 0,
+            g: 0,
+            b: 0,
+          };
 
           existing.weight += weight;
           existing.r += r * weight;
@@ -70,7 +77,9 @@ const getDominantColor = (src) => {
         }
 
         const { weight, r, g, b } = dominantColor;
-        resolve(`rgb(${Math.round(r / weight)} ${Math.round(g / weight)} ${Math.round(b / weight)})`);
+        resolve(
+          `rgb(${Math.round(r / weight)} ${Math.round(g / weight)} ${Math.round(b / weight)})`,
+        );
       } catch {
         resolve("hsl(210 80% 60%)");
       }
@@ -170,7 +179,10 @@ const Home = () => {
       error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           <div className="font-semibold">Failed to load videos</div>
-          <div className="mt-1">{error.message || "An unexpected error occurred. Please try again later."}</div>
+          <div className="mt-1">
+            {error.message ||
+              "An unexpected error occurred. Please try again later."}
+          </div>
         </div>
       ) : // Displaying an empty state message if there are no videos available.
       videos.length === 0 ? (
@@ -185,12 +197,14 @@ const Home = () => {
             <Link
               key={video._id}
               to={`/video/${video._id}`}
-              className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out"
+              className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold"
             >
               <span
                 aria-hidden="true"
                 className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-2xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
-                style={{ backgroundColor: dominantColors[video._id] }}
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${dominantColors[video._id] || "hsl(210 80% 60%)"} 65%, black)`,
+                }}
               />
               <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
                 <img
@@ -203,31 +217,41 @@ const Home = () => {
                 </div>
               </div>
               <div className="relative z-10 flex-col px-4 pb-2">
-                <h2 className="line-clamp-2 font-semibold">{video.title}</h2>
-                <div className="mt-2 flex items-center gap-2 text-xs text-black/55 dark:text-white/55">
+                <h2 className="line-clamp-2 font-bold text-white">{video.title}</h2>
+                <div className="absolute bottom-3 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
+                  <VideoOptionsMenu videoFile={video.videoFile} title={video.title} />
+                </div>
+                <div className="flex items-center gap-2 text-xs">
                   {video.owner?.avatar && (
                     <img
                       src={video.owner.avatar}
                       alt=""
-                      className="h-5 w-5 rounded-full object-cover"
+                      className="h-7 w-7 rounded-full object-cover"
                     />
                   )}
-                  <Link
-                    to={video.owner?.username ? `/channel/${video.owner.username}` : "#"}
-                    className="transition-colors hover:text-primary"
-                    onClick={(event) => {
-                      if (!video.owner?.username) event.preventDefault();
-                    }}
-                  >
-                    {video.owner?.fullName || "Creator"}
-                  </Link>
-                  <span>•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Eye size={12} />
-                    {video.views || 0}
-                  </span>
-                  <span>•</span>
-                  <span>{formatRelativeTime(video.createdAt)}</span>
+                  <div className="flex-col gap-2 font-mono">
+                    <Link
+                      to={
+                        video.owner?.username
+                          ? `/channel/${video.owner.username}`
+                          : "#"
+                      }
+                      className="transition-colors text-sm hover:text-primary"
+                      onClick={(event) => {
+                        if (!video.owner?.username) event.preventDefault();
+                      }}
+                    >
+                      {video.owner?.fullName || "Creator"}
+                    </Link>
+                    <div className="flex gap-1">
+                      <span className="inline-flex items-center gap-1">
+                        <Eye size={12} />
+                        {video.views || 0}
+                      </span>
+                      <span>•</span>
+                      <span>{formatRelativeTime(video.createdAt)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>
