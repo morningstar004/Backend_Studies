@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    watchlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     username: {
       type: String,
       required: true,

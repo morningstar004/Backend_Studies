@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
+import { Video } from "../models/video.model.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
@@ -698,6 +699,46 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     );
 });
 
+const toggleWatchlist = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!mongoose.isValidObjectId(videoId)) {
+    throw new apiError(400, "Invalid VideoID.");
+  }
+
+  const video = await Video.findById(videoId);
+  if (!video) {
+    throw new apiError(404, "Video not found.");
+  }
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new apiError(404, "User not found.");
+  }
+
+  const alreadySaved = user.watchlist.some(
+    (id) => id.toString() === videoId,
+  );
+
+  if (alreadySaved) {
+    user.watchlist = user.watchlist.filter(
+      (id) => id.toString() !== videoId,
+    );
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "Video removed from watchlist.", user.watchlist));
+  }
+
+  user.watchlist.push(videoId);
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Video added to watchlist.", user.watchlist));
+});
+
 const getWatchHistory = asyncHandler(async (req, res) => {
   const _ = await req.user._id; //provide you with the string of user id ..//!Not the object that is stored in mongoDB
   const user = await User.aggregate([
@@ -748,6 +789,54 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   .json(new ResponseHandler(200,"Users WatchHistory",user[0].watchHistory))
 });
 
+const getWatchlist = asyncHandler(async (req, res) => {
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchlist",
+        foreignField: "_id",
+        as: "watchlist",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Users Watchlist", user[0]?.watchlist || []));
+});
+
 export {
   registerUser,
   loginUser,
@@ -762,5 +851,7 @@ export {
   updateCoverImage,
   deleteUser,
   getUserChannelProfile,
+  toggleWatchlist,
   getWatchHistory,
+  getWatchlist,
 };

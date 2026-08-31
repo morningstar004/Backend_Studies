@@ -1,34 +1,55 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { likeService, userService } from "../api/services.ts";
+import { likeService, playlistService, userService } from "../api/services.ts";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+
 export default function Library({ mode }) {
+  const { user } = useAuth();
+  const currentMode = mode || "library";
+
   const query = useQuery({
-    queryKey: [mode || "library"],
-    queryFn: mode === "history" ? userService.history : likeService.videos,
+    queryKey: [currentMode],
+    queryFn:
+      currentMode === "history"
+        ? userService.history
+        : currentMode === "watchlist"
+          ? userService.watchlist
+          : likeService.videos,
   });
+
+  const playlistQuery = useQuery({
+    queryKey: ["user-playlists", user?._id],
+    enabled: !!user?._id,
+    queryFn: () => playlistService.list(user._id),
+  });
+
   const entries = query.data?.data || [];
   const videos =
-    mode === "history" ? entries : entries.map((item) => item.video);
+    currentMode === "history" || currentMode === "watchlist"
+      ? entries
+      : entries.map((item) => item.video);
+  const playlists = playlistQuery.data?.data || [];
 
   const collections = [
     {
       title: "Watchlist",
       description: "Saved for later",
-      count: 8,
+      count: currentMode === "watchlist" ? videos.length : 0,
       tone: "from-primary/20 via-primary/5 to-transparent",
-      href: "/library",
+      href: "/watchlist",
     },
     {
       title: "Playlists",
       description: "Curated collections",
-      count: 4,
+      count: playlists.length,
       tone: "from-blue-500/20 via-blue-500/5 to-transparent",
       href: "/library",
     },
     {
       title: "Liked videos",
       description: "Videos you loved",
+      count: currentMode === "library" ? videos.length : 0,
       tone: "from-pink-500/20 via-pink-500/5 to-transparent",
       href: "/library",
     },
@@ -38,7 +59,11 @@ export default function Library({ mode }) {
     <section className="space-y-6">
       <div>
         <h1 className="mb-2 text-2xl font-bold">
-          {mode === "history" ? "Watch history" : "Your library"}
+          {currentMode === "history"
+            ? "Watch history"
+            : currentMode === "watchlist"
+              ? "Watchlist"
+              : "Your library"}
         </h1>
       </div>
 
@@ -54,7 +79,7 @@ export default function Library({ mode }) {
                 {title}
               </span>
               <span className="rounded-full bg-black/5 px-2 py-1 text-xs font-semibold dark:bg-white/10">
-                {count}
+                {count ?? 0}
               </span>
             </div>
             <p className="text-xl font-bold">{title}</p>
@@ -66,8 +91,34 @@ export default function Library({ mode }) {
       </div>
 
       <div>
+        {currentMode !== "history" &&
+          currentMode !== "watchlist" &&
+          playlists.length > 0 && (
+            <div className="mb-6">
+              <h2 className="mb-3 text-xl font-bold">Your playlists</h2>
+              <div className="flex flex-wrap gap-3">
+                {playlists.map((playlist) => (
+                  <div
+                    key={playlist._id}
+                    className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-slate-900/80"
+                  >
+                    <p className="font-semibold">{playlist.name}</p>
+                    <p className="text-xs text-black/60 dark:text-white/60">
+                      {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
+                      videos
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         <h2 className="mb-3 text-xl font-bold">
-          {mode === "history" ? "Watch history" : "Liked videos"}
+          {currentMode === "history"
+            ? "Watch history"
+            : currentMode === "watchlist"
+              ? "Watchlist videos"
+              : "Liked videos"}
         </h2>
 
         {query.isLoading ? (

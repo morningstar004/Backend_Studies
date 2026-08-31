@@ -66,6 +66,9 @@ export const userService = {
   current: () => api.get("/users/current-user"),
   channel: (username: string) => api.get(`/users/c/${username}`),
   history: () => api.get("/users/history"),
+  watchlist: () => api.get("/users/watchlist"),
+  toggleWatchlist: (videoId: string) =>
+    api.patch(`/users/watchlist/${videoId}`),
   forgotPassword: (email: string) =>
     api.post("/users/forgot-password", { email }),
   changePassword: (body: unknown) => api.post("/users/change-password", body),
