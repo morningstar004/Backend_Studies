@@ -222,12 +222,12 @@ const Home = () => {
                     {video.owner?.fullName || "Creator"}
                   </Link>
                   <span>•</span>
-                  <span>{formatRelativeTime(video.createdAt)}</span>
-                  <span>•</span>
                   <span className="inline-flex items-center gap-1">
                     <Eye size={12} />
                     {video.views || 0}
                   </span>
+                  <span>•</span>
+                  <span>{formatRelativeTime(video.createdAt)}</span>
                 </div>
               </div>
             </Link>

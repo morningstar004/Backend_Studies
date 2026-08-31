@@ -1,11 +1,33 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AuthrizationCard from "../components/authrizationCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const getLoginErrorMessage = (message = "") => {
+  const normalized = String(message).toLowerCase();
+
+  if (normalized.includes("credential missing") || normalized.includes("username is required") || normalized.includes("email is required")) {
+    return "Username or email is required.";
+  }
+
+  if (normalized.includes("user does not exist") || normalized.includes("user not found") || normalized.includes("no user")) {
+    return "User does not exist.";
+  }
+
+  if (normalized.includes("invalid password") || normalized.includes("password wrong") || normalized.includes("wrong password")) {
+    return "Password is wrong.";
+  }
+
+  if (normalized.includes("username") && (normalized.includes("incorrect") || normalized.includes("invalid"))) {
+    return "Username is incorrect.";
+  }
+
+  return message || "Login failed.";
+};
+
 const Login = () => {
   const [form, setForm] = useState({ email: "", username: "", password: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,17 +39,18 @@ const Login = () => {
 
   const handleSubmit = async (values) => {
     if (!values.email.trim() && !values.username.trim()) {
-      setError("Enter either your email address or username.");
+      toast.error("Username or email is required.");
       return;
     }
+
     setLoading(true);
-    setError("");
 
     try {
       await login(values);
       navigate(location.state?.from?.pathname || "/", { replace: true });
     } catch (err) {
-      setError(err.message);
+      const message = getLoginErrorMessage(err?.message || "Login failed.");
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -35,11 +58,6 @@ const Login = () => {
 
   return (
     <div className="mx-auto flex-col max-w-xl py-6">
-      {error && (
-        <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">
-          {error}
-        </div>
-      )}
       <AuthrizationCard
         fields={["email", "username", "password"]}
         optionalFields={["email", "username"]}
