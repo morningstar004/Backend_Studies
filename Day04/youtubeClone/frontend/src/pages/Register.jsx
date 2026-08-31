@@ -1,7 +1,42 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AuthrizationCard from "../components/authrizationCard.jsx";
 import { authApi } from "../api/authApi.js";
+
+const getRegisterErrorMessage = (message = "") => {
+  const normalized = String(message).toLowerCase();
+
+  if (normalized.includes("full name") && normalized.includes("required")) {
+    return "Full name is required.";
+  }
+
+  if (normalized.includes("email") && normalized.includes("required")) {
+    return "Email is required.";
+  }
+
+  if (normalized.includes("username") && normalized.includes("required")) {
+    return "Username is required.";
+  }
+
+  if (normalized.includes("password") && normalized.includes("required")) {
+    return "Password is required.";
+  }
+
+  if (normalized.includes("email") && (normalized.includes("already") || normalized.includes("exists"))) {
+    return "This email is already in use.";
+  }
+
+  if (normalized.includes("username") && (normalized.includes("already") || normalized.includes("exists"))) {
+    return "This username is already taken.";
+  }
+
+  if (normalized.includes("invalid email") || normalized.includes("email is invalid")) {
+    return "Please enter a valid email address.";
+  }
+
+  return message || "Registration failed.";
+};
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -10,7 +45,6 @@ const Register = () => {
     username: "",
     password: "",
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,7 +54,6 @@ const Register = () => {
 
   const handleSubmit = async (values) => {
     setLoading(true);
-    setError("");
 
     try {
       const formData = new FormData();
@@ -35,7 +68,7 @@ const Register = () => {
 
       navigate("/login");
     } catch (err) {
-      setError(err.message);
+      toast.error(getRegisterErrorMessage(err?.message || "Registration failed."));
     } finally {
       setLoading(false);
     }
@@ -43,12 +76,6 @@ const Register = () => {
 
   return (
     <div className="mx-auto max-w-xl max-h-screen py-6">
-      {error && (
-        <div className="mb-4 rounded-xl bg-primary/10 p-4 text-primary">
-          {error}
-        </div>
-      )}
-
       <AuthrizationCard
         fields={[
           "fullName",
