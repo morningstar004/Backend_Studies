@@ -6,15 +6,10 @@ import {
   MoreVertical,
   Share2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { playlistService, userService } from "../api/services.ts";
 
-const menuOptions = [
-  { label: "Save watchlist", icon: Bookmark },
-  { label: "Add Playlist", icon: ListPlus },
-  { label: "Download", icon: Download },
-  { label: "Share", icon: Share2 },
-];
-
-const VideoOptionsMenu = ({ videoFile, title = "video" }) => {
+const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -58,6 +53,79 @@ const VideoOptionsMenu = ({ videoFile, title = "video" }) => {
     }
   };
 
+  const handleSaveWatchlist = async () => {
+    if (!videoId) {
+      toast.error("Video is missing.");
+      return;
+    }
+
+    try {
+      const response = await userService.toggleWatchlist(videoId);
+      toast.success(response?.data?.message || "Watchlist updated.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to update watchlist.");
+    }
+  };
+
+  const handleAddPlaylist = async () => {
+    if (!videoId) {
+      toast.error("Video is missing.");
+      return;
+    }
+
+    try {
+      const safeTitle = (title || "My playlist").trim();
+      const playlistName =
+        safeTitle.length > 25 ? `${safeTitle.slice(0, 25)}...` : safeTitle;
+      const createResponse = await playlistService.create({
+        name: `${playlistName} playlist`,
+        description: `Videos related to ${safeTitle}.`,
+      });
+
+      const playlistId = createResponse?.data?._id || createResponse?.data?.id;
+      if (!playlistId) {
+        throw new Error("Playlist was not created.");
+      }
+
+      await playlistService.add(playlistId, videoId);
+      toast.success("Video added to playlist.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to add the video to a playlist.");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/video/${videoId}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: title || "Watch this video",
+          text: `Check out this video: ${title || "video"}`,
+          url: shareUrl,
+        });
+        return;
+      }
+
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Video link copied to clipboard.");
+        return;
+      }
+
+      window.prompt("Copy this video link:", shareUrl);
+    } catch {
+      toast.error("Unable to share this video.");
+    }
+  };
+
+  const menuOptions = [
+    { label: "Save watchlist", icon: Bookmark, action: handleSaveWatchlist },
+    { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
+    { label: "Download", icon: Download, action: handleDownload },
+    { label: "Share", icon: Share2, action: handleShare },
+  ];
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -75,18 +143,14 @@ const VideoOptionsMenu = ({ videoFile, title = "video" }) => {
 
       {isOpen && (
         <div className="absolute bottom-10 right-0 z-20 w-48 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]">
-          {menuOptions.map(({ label, icon: Icon }) => (
+          {menuOptions.map(({ label, icon: Icon, action }) => (
             <button
               key={label}
               type="button"
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-
-                if (label === "Download") {
-                  handleDownload();
-                }
-
+                action?.();
                 setIsOpen(false);
               }}
               className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
