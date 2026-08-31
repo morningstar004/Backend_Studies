@@ -217,9 +217,15 @@ const Home = () => {
                 </div>
               </div>
               <div className="relative z-10 flex-col px-4 pb-2">
-                <h2 className="line-clamp-2 font-bold text-white">{video.title}</h2>
-                <div className="absolute bottom-3 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
-                  <VideoOptionsMenu videoFile={video.videoFile} title={video.title} />
+                <h2 className="line-clamp-2 font-bold text-white">
+                  {video.title}
+                </h2>
+                <div className="absolute bottom-2 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
+                  <VideoOptionsMenu
+                    videoId={video._id}
+                    videoFile={video.videoFile}
+                    title={video.title}
+                  />
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   {video.owner?.avatar && (
