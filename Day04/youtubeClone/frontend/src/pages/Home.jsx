@@ -91,6 +91,35 @@ const formatDuration = (seconds = 0) => {
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 };
 
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return "recently";
+
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  if (diffMinutes < 60) {
+    return diffMinutes <= 1 ? "1 min ago" : `${diffMinutes} min ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return diffHours === 1 ? "1 hour ago" : `${diffHours} hours ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) {
+    return diffDays === 1 ? "1 day ago" : `${diffDays} days ago`;
+  }
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return diffMonths === 1 ? "1 month ago" : `${diffMonths} months ago`;
+  }
+
+  const diffYears = Math.floor(diffMonths / 12);
+  return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
+};
+
 const Home = () => {
   const [searchParams] = useSearchParams();
   const [dominantColors, setDominantColors] = useState({});
@@ -151,29 +180,29 @@ const Home = () => {
         />
       ) : (
         // Displaying the list of videos if they are available.
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
           {videos.map((video) => (
             <Link
               key={video._id}
               to={`/video/${video._id}`}
-              className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-300 ease-out"
+              className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out"
             >
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -inset-px z-0 scale-95 rounded-2xl opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:opacity-50"
+                className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-2xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
                 style={{ backgroundColor: dominantColors[video._id] }}
               />
-              <div className="relative z-10 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-black/10 dark:bg-white/10">
+              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
                 <img
                   src={video.thumbnail}
                   alt={video.title}
                   className="h-[95%] w-[97%] rounded-2xl object-cover transition duration-300"
                 />
-                <div className="absolute bottom-3 right-3 rounded-md bg-black/80 px-1.5 py-0.25 text-[10px] font-medium text-white backdrop-blur-sm">
+                <div className="absolute bottom-3 right-3 rounded-md bg-black/80 px-1.5 py-0.25 text-[10px] font-medium text-white backdrop-blur-md opacity-80">
                   {formatDuration(video.duration)}
                 </div>
               </div>
-              <div className="relative z-10 mt-4">
+              <div className="relative z-10 flex-col px-4 pb-2">
                 <h2 className="line-clamp-2 font-semibold">{video.title}</h2>
                 <div className="mt-2 flex items-center gap-2 text-xs text-black/55 dark:text-white/55">
                   {video.owner?.avatar && (
@@ -183,7 +212,17 @@ const Home = () => {
                       className="h-5 w-5 rounded-full object-cover"
                     />
                   )}
-                  <span>{video.owner?.fullName || "Creator"}</span>
+                  <Link
+                    to={video.owner?.username ? `/channel/${video.owner.username}` : "#"}
+                    className="transition-colors hover:text-primary"
+                    onClick={(event) => {
+                      if (!video.owner?.username) event.preventDefault();
+                    }}
+                  >
+                    {video.owner?.fullName || "Creator"}
+                  </Link>
+                  <span>•</span>
+                  <span>{formatRelativeTime(video.createdAt)}</span>
                   <span>•</span>
                   <span className="inline-flex items-center gap-1">
                     <Eye size={12} />

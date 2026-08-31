@@ -1,7 +1,55 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { userService } from "../api/services.ts";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const Profile = () => {
-  const { user, loading, error } = useAuth();
+  const { username } = useParams();
+  const { user: currentUser, loading: authLoading, error: authError } = useAuth();
+  const [channelUser, setChannelUser] = useState(null);
+  const [channelLoading, setChannelLoading] = useState(Boolean(username));
+  const [channelError, setChannelError] = useState(null);
+
+  useEffect(() => {
+    if (!username) {
+      setChannelUser(null);
+      setChannelLoading(false);
+      setChannelError(null);
+      return;
+    }
+
+    let ignore = false;
+
+    const loadChannel = async () => {
+      setChannelLoading(true);
+      setChannelError(null);
+
+      try {
+        const response = await userService.channel(username);
+        if (!ignore) {
+          setChannelUser(response?.data || null);
+        }
+      } catch (error) {
+        if (!ignore) {
+          setChannelError(error.message || "Failed to load channel profile.");
+        }
+      } finally {
+        if (!ignore) {
+          setChannelLoading(false);
+        }
+      }
+    };
+
+    loadChannel();
+
+    return () => {
+      ignore = true;
+    };
+  }, [username]);
+
+  const user = username ? channelUser : currentUser;
+  const loading = username ? channelLoading : authLoading;
+  const error = username ? channelError : authError;
 
   if (error) return <div className="surface p-8 text-primary">{error}</div>;
 

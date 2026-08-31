@@ -28,6 +28,7 @@ function App() {
           <Route path="/library" element={<Library />} />
           <Route path="/history" element={<Library mode="history" />} />
         </Route>
+        <Route path="/channel/:username" element={<Profile />} />
         <Route path="/video/:videoId" element={<VideoDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
