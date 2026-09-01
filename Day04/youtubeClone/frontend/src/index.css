@@ -19,7 +19,8 @@
   body,
   #root {
     min-height: 100%;
-    overflow: hidden;
+    height: 100%;
+    overflow-x: hidden;
   }
 
   body {
@@ -27,7 +28,7 @@
     min-height: 100vh;
     background-color: #ffffff;
     color: #1a1a1b;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   html.dark body {
