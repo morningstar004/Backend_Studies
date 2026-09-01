@@ -71,8 +71,9 @@ const Profile = () => {
               />
               <div className="-mt-8">
                 <h1 className="text-3xl font-semibold text-ellipsis leading-wide font-mono">{user.fullName}</h1>
-                <p className="text-sm text-black/55 dark:text-white/55">
+                <p className="text-sm text-black/55 dark:text-white/55 gap-2 flex">
                   <span>@_{user.username}</span>
+                  <span className="px-[0.580rem] py- text-mono text-[10px] rounded-full text-white bg-white/20 dark:text-white">!</span>
                 </p>
                 <div className="flex items-baseline gap-4 text-sm font-mono text-black/70 dark:text-white/70"> 
                   <p>

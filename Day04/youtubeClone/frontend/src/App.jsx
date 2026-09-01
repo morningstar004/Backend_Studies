@@ -26,6 +26,7 @@ function App() {
           <Route path="/upload" element={<UploadVideo />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/liked-videos" element={<Library mode="library" />} />
           <Route path="/watchlist" element={<Library mode="watchlist" />} />
           <Route path="/history" element={<Library mode="history" />} />
         </Route>
