@@ -101,94 +101,69 @@ export default function Library({ mode }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-1">
-        {collections.map(({ title, description, count, tone, href, preview }) => (
-          <div
-            key={title}
-            className={`overflow-hidden rounded-2xl max-h-[380px] h-[500px] border border-black/10 bg-gradient-to-br ${tone} p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
-          >
-            <Link to={href} className="mb-4 block">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xl font-bold text-black/65 dark:text-white/70">
-                    {title}
-                  </span>
-                  <p className="text-xs text-black/60 dark:text-white/60">
-                    {description}
-                  </p>
-                </div>
-                <span className="rounded-full bg-black/5 px-2 py-1 text-xs font-semibold dark:bg-white/10">
-                  {count ?? 0}
-                </span>
-              </div>
-            </Link>
+        {collections.map(({ title, description, count, tone, href, preview }) => {
+          const hasItems = (count ?? 0) > 0 && (preview?.length ?? 0) > 0;
 
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {title === "Playlists"
-                ? preview.map((playlist) => (
-                    <Link
-                      key={playlist._id}
-                      to={"/library"}
-                      className="rounded-2xl border border-black/10 bg-white/70 p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
-                    >
-                      <p className="font-semibold">{playlist.name}</p>
+          return (
+            <div
+              key={title}
+              className={`overflow-hidden rounded-2xl max-h-[380px] h-[500px] border border-black/10 bg-gradient-to-br ${tone} p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+            >
+              {hasItems ? (
+                <Link to={href} className="mb-4 block">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xl font-bold text-black/65 dark:text-white/70">
+                        {title}
+                      </span>
                       <p className="text-xs text-black/60 dark:text-white/60">
-                        {playlist.totalVideos ?? playlist.videos?.length ?? 0} videos
+                        {description}
                       </p>
-                    </Link>
-                  ))
-                : preview.map((video) => renderVideoCard(video))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        {currentMode !== "history" &&
-          currentMode !== "watchlist" &&
-          playlists.length > 0 && (
-            <div className="mb-6">
-              <h2 className="mb-3 text-xl font-bold">Your playlists</h2>
-              <div className="flex flex-wrap gap-3">
-                {playlists.map((playlist) => (
-                  <div
-                    key={playlist._id}
-                    className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-slate-900/80"
-                  >
-                    <p className="font-semibold">{playlist.name}</p>
-                    <p className="text-xs text-black/60 dark:text-white/60">
-                      {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
-                      videos
-                    </p>
+                    </div>
+                    <span className="rounded-full bg-black/5 px-2 py-1 text-xs font-semibold dark:bg-white/10">
+                      {count ?? 0}
+                    </span>
                   </div>
-                ))}
+                </Link>
+              ) : (
+                <div className="mb-4 block">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xl font-bold text-black/65 dark:text-white/70">
+                        {title}
+                      </span>
+                      <p className="text-xs text-black/60 dark:text-white/60">
+                        {description}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-black/5 px-2 py-1 text-xs font-semibold dark:bg-white/10">
+                      {count ?? 0}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {hasItems
+                  ? title === "Playlists"
+                    ? preview.map((playlist) => (
+                        <Link
+                          key={playlist._id}
+                          to={"/library"}
+                          className="rounded-2xl border border-black/10 bg-white/70 p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+                        >
+                          <p className="font-semibold">{playlist.name}</p>
+                          <p className="text-xs text-black/60 dark:text-white/60">
+                            {playlist.totalVideos ?? playlist.videos?.length ?? 0} videos
+                          </p>
+                        </Link>
+                      ))
+                    : preview.map((video) => renderVideoCard(video))
+                  : null}
               </div>
             </div>
-          )}
-
-        <h2 className="mb-3 text-xl font-bold">
-          {currentMode === "history"
-            ? "Watch history"
-            : currentMode === "watchlist"
-              ? "Watchlist videos"
-              : "Liked videos"}
-        </h2>
-
-        {watchlistQuery.isLoading || historyQuery.isLoading || likedQuery.isLoading ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3].map((x) => (
-              <SkeletonCard key={x} />
-            ))}
-          </div>
-        ) : visibleVideos.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleVideos.map((video) => renderVideoCard(normalizeVideo(video)))}
-          </div>
-        ) : (
-          <EmptyState
-            title="Your library is empty"
-            detail="Videos you like or watch will appear here."
-          />
-        )}
+          );
+        })}
       </div>
     </section>
   );
