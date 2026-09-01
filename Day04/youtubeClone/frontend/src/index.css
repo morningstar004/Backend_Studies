@@ -13,6 +13,8 @@
 
   * {
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(230, 57, 70, 0.8) transparent;
   }
 
   html,
@@ -34,6 +36,38 @@
   html.dark body {
     background-color: #000000;
     color: #f8f9fa;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(230, 57, 70, 0.8);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(230, 57, 70, 1);
+  }
+
+  html.dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  }
+
+  html.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
   }
 
   button,
