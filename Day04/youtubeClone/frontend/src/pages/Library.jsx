@@ -100,8 +100,13 @@ export default function Library({ mode }) {
         </h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-1">
-        {collections.map(({ title, description, count, tone, href, preview }) => {
+      {currentMode !== "library" ? (
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {visibleVideos.map((video) => renderVideoCard(video))}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-1">
+          {collections.map(({ title, description, count, tone, href, preview }) => {
           const hasItems = (count ?? 0) > 0 && (preview?.length ?? 0) > 0;
 
           return (
@@ -163,8 +168,9 @@ export default function Library({ mode }) {
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </section>
   );
 }
