@@ -88,7 +88,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-      <div className="surface grid gap-4 p-6 sm:grid-cols-2">
+      {/* <div className="surface grid gap-4 p-6 sm:grid-cols-2">
         <div>
           <h2 className="text-sm font-semibold">Email</h2>
           <p className="text-sm text-black/55 dark:text-white/55">
@@ -101,7 +101,7 @@ const Profile = () => {
             {new Date(user.createdAt).toLocaleDateString()}
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
