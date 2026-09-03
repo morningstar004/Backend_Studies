@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Eye } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { likeService, playlistService, userService } from "../api/services.ts";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
@@ -49,6 +50,7 @@ const formatRelativeTime = (dateString) => {
 export default function Library({ mode }) {
   const { user } = useAuth();
   const currentMode = mode || "library";
+  const [historySearch, setHistorySearch] = useState("");
 
   const watchlistQuery = useQuery({
     queryKey: ["watchlist"],
@@ -88,6 +90,14 @@ export default function Library({ mode }) {
   };
 
   const visibleVideos = collectionData[currentMode] || [];
+  const filteredVideos =
+    currentMode === "history"
+      ? visibleVideos.filter((video) =>
+          String(video.title || "")
+            .toLowerCase()
+            .includes(historySearch.trim().toLowerCase()),
+        )
+      : visibleVideos;
 
   const collections = [
     {
@@ -182,18 +192,36 @@ export default function Library({ mode }) {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="mb-2 text-2xl font-bold">
-          {currentMode === "history"
-            ? "Watch history"
-            : currentMode === "watchlist"
-              ? "Watchlist"
-              : "Library"}
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold">
+            {currentMode === "history"
+              ? "Watch history"
+              : currentMode === "watchlist"
+                ? "Watchlist"
+                : "Library"}
+          </h1>
+          {currentMode === "history" && (
+            <label className="relative w-full sm:w-72">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40"
+                size={17}
+              />
+              <input
+                type="search"
+                aria-label="Search watch history"
+                value={historySearch}
+                onChange={(event) => setHistorySearch(event.target.value)}
+                placeholder="Search watch history"
+                className="input w-full rounded-3xl pl-9"
+              />
+            </label>
+          )}
+        </div>
       </div>
 
       {currentMode !== "library" ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {visibleVideos.map((video) => renderVideoCard(video))}
+          {filteredVideos.map((video) => renderVideoCard(video))}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-1">
