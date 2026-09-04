@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Eye, Search } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eye, Search, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { likeService, playlistService, userService } from "../api/services.ts";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
 import VideoOptionsMenu from "../components/VideoOptionsMenu.jsx";
@@ -50,6 +51,7 @@ const formatRelativeTime = (dateString) => {
 
 export default function Library({ mode }) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const currentMode = mode || "library";
   const [historySearch, setHistorySearch] = useState("");
 
@@ -83,6 +85,20 @@ export default function Library({ mode }) {
     .map(normalizeVideo)
     .filter(Boolean);
   const playlists = playlistQuery.data?.data || [];
+
+  const handleClearHistory = async () => {
+    if (!historyVideos.length) return;
+
+    if (!window.confirm("Clear your entire watch history?")) return;
+
+    try {
+      await userService.clearHistory();
+      await queryClient.invalidateQueries({ queryKey: ["history"] });
+      toast.success("Watch history cleared.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to clear watch history.");
+    }
+  };
 
   const collectionData = {
     history: historyVideos,
@@ -210,20 +226,31 @@ export default function Library({ mode }) {
                 : "Library"}
           </h1>
           {currentMode === "history" && (
-            <label className="relative w-full sm:w-72">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40"
-                size={17}
-              />
-              <input
-                type="search"
-                aria-label="Search watch history"
-                value={historySearch}
-                onChange={(event) => setHistorySearch(event.target.value)}
-                placeholder="Search watch history"
-                className="input w-full rounded-3xl pl-9"
-              />
-            </label>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <label className="relative w-full sm:w-72">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40"
+                  size={17}
+                />
+                <input
+                  type="search"
+                  aria-label="Search watch history"
+                  value={historySearch}
+                  onChange={(event) => setHistorySearch(event.target.value)}
+                  placeholder="Search watch history"
+                  className="input w-full rounded-3xl pl-9"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                disabled={!historyVideos.length}
+                className="inline-flex items-center justify-center gap-2 rounded-3xl border border-red-500/40 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 size={16} />
+                Clear history
+              </button>
+            </div>
           )}
         </div>
       </div>
