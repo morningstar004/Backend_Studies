@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Bookmark,
+  BookMarked,
   Download,
   ListPlus,
   MoreVertical,
   Share2,
+  History,
 } from "lucide-react";
 import { toast } from "sonner";
 import { playlistService, userService } from "../api/services.ts";
@@ -53,7 +55,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
     }
   };
 
-  const handleSaveWatchlist = async () => {
+  const handleToggleWatchlist = async () => {
     if (!videoId) {
       toast.error("Video is missing.");
       return;
@@ -119,11 +121,25 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
     }
   };
 
+  const handleRemoveFromHistory = async () => {
+    toast.info("History removal is not implemented yet.");
+  };
+
   const menuOptions = [
-    { label: "Save watchlist", icon: Bookmark, action: handleSaveWatchlist },
+    { label: "Save watchlist", icon: Bookmark, action: handleToggleWatchlist },
+    {
+      label: "Remove from watchlist",
+      icon: BookMarked,
+      action: handleToggleWatchlist,
+    },
     { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
     { label: "Download", icon: Download, action: handleDownload },
     { label: "Share", icon: Share2, action: handleShare },
+    {
+      label: "Remove from History",
+      icon: History,
+      action: handleRemoveFromHistory,
+    },
   ];
 
   return (
@@ -142,7 +158,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-10 right-0 z-20 w-48 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]">
+        <div className="absolute bottom-10 right-0 z-20 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]">
           {menuOptions.map(({ label, icon: Icon, action }) => (
             <button
               key={label}
