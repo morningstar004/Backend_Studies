@@ -809,6 +809,36 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   .json(new ResponseHandler(200,"Users WatchHistory",user[0].watchHistory))
 });
 
+const removeFromhistory = asyncHandler( async (req, res) => {
+  const _ = await req.user._id;
+  const {videoId} = req.params;
+  if(!mongoose.isValidObjectId(videoId)){
+    throw new apiError(400, "Invalid VideoID.");
+  }
+
+  const user = await User.findById(req.user._id);
+  if(!user){
+    throw new apiError(404, "User not found.");
+  } 
+  const wipeFromHistory = user.watchHistory.filter((id) => id.toString() !== videoId);
+  user.watchHistory = wipeFromHistory;
+  await user.save();
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Video removed from watch history.", user.watchHistory));
+});
+
+const clearWatchHistory = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new apiError(404, "User not found.");
+  }
+  user.watchHistory = [];
+  await user.save();
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Watch history cleared.", user.watchHistory));
+});
 const getWatchlist = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
@@ -873,5 +903,7 @@ export {
   getUserChannelProfile,
   toggleWatchlist,
   getWatchHistory,
+  removeFromhistory,
+  clearWatchHistory,
   getWatchlist,
 };

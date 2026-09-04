@@ -15,6 +15,8 @@ import {
   getUserChannelProfile,
   toggleWatchlist,
   getWatchHistory,
+  removeFromhistory,
+  clearWatchHistory,
   getWatchlist,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -59,6 +61,8 @@ router
 router.route("/delete-user").delete(verifyJWT, deleteUser);
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
 router.route("/history").get(verifyJWT, getWatchHistory);
+router.route("/history/:videoId").patch(verifyJWT, removeFromhistory);
+router.route("/clear-history").delete(verifyJWT, clearWatchHistory);
 router.route("/watchlist").get(verifyJWT, getWatchlist);
 router.route("/watchlist/:videoId").patch(verifyJWT, toggleWatchlist);
 

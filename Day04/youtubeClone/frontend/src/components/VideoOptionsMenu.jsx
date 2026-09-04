@@ -125,7 +125,18 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
   };
 
   const handleRemoveFromHistory = async () => {
-    toast.info("History removal is not implemented yet.");
+    if (!videoId) {
+      toast.error("Video is missing.");
+      return;
+    }
+
+    try {
+      await userService.removeFromHistory(videoId);
+      queryClient.invalidateQueries({ queryKey: ["watchHistory"] });
+      toast.success("Video removed from history.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to remove video from history.");
+    }
   };
 
   const menuOptions = [
