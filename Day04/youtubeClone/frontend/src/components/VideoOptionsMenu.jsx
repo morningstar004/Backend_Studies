@@ -132,7 +132,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
 
     try {
       await userService.removeFromHistory(videoId);
-      queryClient.invalidateQueries({ queryKey: ["watchHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
       toast.success("Video removed from history.");
     } catch (error) {
       toast.error(error?.message || "Unable to remove video from history.");
