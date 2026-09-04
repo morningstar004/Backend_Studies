@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
   BookMarked,
@@ -14,6 +15,7 @@ import { playlistService, userService } from "../api/services.ts";
 const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -63,6 +65,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
 
     try {
       const response = await userService.toggleWatchlist(videoId);
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
       toast.success(response?.data?.message || "Watchlist updated.");
     } catch (error) {
       toast.error(error?.message || "Unable to update watchlist.");
