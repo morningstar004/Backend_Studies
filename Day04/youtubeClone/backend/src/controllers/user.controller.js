@@ -450,6 +450,9 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         videosCount: {
           $size: "$videos",
         },
+        viewsCount: {
+          $sum: "$videos.views",
+        },
       },
     },
     {
@@ -654,12 +657,26 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "videos",
+        localField: "_id",
+        foreignField: "owner",
+        as: "videos",
+      },
+    },
+    {
       $addFields: {
         subscribersCount: {
           $size: "$subscribers",
         },
         channelsSubscriberedToCount: {
           $size: "$subscribedTo",
+        },
+        videosCount: {
+          $size: "$videos",
+        },
+        viewsCount: {
+          $sum: "$videos.views",
         },
         isSubscribed: {
           $cond: {
@@ -680,6 +697,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         avatar: 1,
         coverImage: 1,
         email: 1,
+        createdAt: 1,
+        videosCount: 1,
+        viewsCount: 1,
       },
     },
   ]);

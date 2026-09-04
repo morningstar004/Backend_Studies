@@ -7,6 +7,8 @@ export interface User {
   coverImage?: string;
   createdAt?: string;
   subscribersCount?: number;
+  videosCount?: number;
+  viewsCount?: number;
   isSubscribed?: boolean;
 }
 export interface Video {
