@@ -89,6 +89,14 @@ export default function Library({ mode }) {
     library: likedVideos,
   };
 
+  const emptyHistorySearch = (
+    <div className="flex min-h-32 items-center justify-center rounded-xl border border-black/10 bg-gray-500/20 dark:border-white/10 dark:bg-black/20">
+      <p className="text-xl font-bold text-black/50 dark:text-white/50">
+        No such video exists
+      </p>
+    </div>
+  );
+
   const visibleVideos = collectionData[currentMode] || [];
   const filteredVideos =
     currentMode === "history"
@@ -220,9 +228,13 @@ export default function Library({ mode }) {
       </div>
 
       {currentMode !== "library" ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredVideos.map((video) => renderVideoCard(video))}
-        </div>
+        filteredVideos.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredVideos.map((video) => renderVideoCard(video))}
+          </div>
+        ) : currentMode === "history" && historySearch.trim() ? (
+          emptyHistorySearch
+        ) : null
       ) : (
         <div className="grid gap-4 md:grid-cols-1">
           {collections.map(
