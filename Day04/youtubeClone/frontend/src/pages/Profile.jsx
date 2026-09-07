@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { Link, NavLink, useParams } from "react-router-dom";
-import { playlistService, tweetService, userService, videoService } from "../api/services.ts";
+import {
+  playlistService,
+  tweetService,
+  userService,
+  videoService,
+} from "../api/services.ts";
 import { useAuth } from "../context/AuthContext.jsx";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
 
@@ -29,7 +34,9 @@ const VideoCard = ({ video, horizontal = false }) => (
       horizontal ? "items-center" : "flex-col"
     }`}
   >
-    <div className={`relative shrink-0 overflow-hidden rounded-xl ${horizontal ? "w-44 sm:w-60" : "w-full"}`}>
+    <div
+      className={`relative shrink-0 overflow-hidden rounded-xl ${horizontal ? "w-44 sm:w-60" : "w-full"}`}
+    >
       <img
         src={video.thumbnail}
         alt={video.title}
@@ -42,7 +49,8 @@ const VideoCard = ({ video, horizontal = false }) => (
     <div className="min-w-0 space-y-1">
       <h3 className="line-clamp-2 font-semibold">{video.title}</h3>
       <p className="flex items-center gap-1 text-xs text-black/55 dark:text-white/55">
-        <Eye size={12} /> {video.views || 0} views <span>·</span> {formatDate(video.createdAt)}
+        <Eye size={12} /> {video.views || 0} views <span>·</span>{" "}
+        {formatDate(video.createdAt)}
       </p>
     </div>
   </Link>
@@ -100,7 +108,9 @@ const Profile = () => {
   const loading = username ? channelLoading : authLoading;
   const error = username ? channelError : authError;
   const profileBase = username ? `/channel/${username}` : "/profile";
-  const activeSection = ["home", "videos", "playlists", "posts"].includes(section)
+  const activeSection = ["home", "videos", "playlists", "posts"].includes(
+    section,
+  )
     ? section
     : "home";
   const profileUserId = user?._id;
@@ -137,7 +147,9 @@ const Profile = () => {
   const recentVideos = [...videos].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
-  const popularVideos = [...videos].sort((a, b) => (b.views || 0) - (a.views || 0));
+  const popularVideos = [...videos].sort(
+    (a, b) => (b.views || 0) - (a.views || 0),
+  );
   const tweets = tweetsQuery.data?.data || [];
   const playlists = playlistsQuery.data?.data || [];
   const profileContents = [
@@ -152,17 +164,32 @@ const Profile = () => {
       <h2 className="text-lg font-semibold">{title}</h2>
       {videosQuery.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((item) => <SkeletonCard key={item} />)}
+          {[1, 2, 3].map((item) => (
+            <SkeletonCard key={item} />
+          ))}
         </div>
       ) : videosQuery.error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           {videosQuery.error.message || "Failed to load videos."}
         </div>
       ) : items.length ? (
-        <div className={horizontal ? "flex gap-3 overflow-x-auto pb-2" : "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"}>
-          {items.map((video) => <VideoCard key={video._id} video={video} horizontal={horizontal} />)}
+        <div
+          className={
+            horizontal
+              ? "flex gap-3 overflow-x-auto pb-2"
+              : "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          }
+        >
+          {items.map((video) => (
+            <VideoCard key={video._id} video={video} horizontal={horizontal} />
+          ))}
         </div>
-      ) : <EmptyState title="No videos yet" detail="Uploaded videos will appear here." />}
+      ) : (
+        <EmptyState
+          title="No videos yet"
+          detail="Uploaded videos will appear here."
+        />
+      )}
     </section>
   );
 
@@ -173,39 +200,76 @@ const Profile = () => {
       {renderVideoSection("Most viewed", popularVideos)}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Posts and tweets</h2>
-        {tweetsQuery.isLoading ? <div className="surface animate-pulse p-8">Loading posts...</div> : tweets.length ? (
+        {tweetsQuery.isLoading ? (
+          <div className="surface animate-pulse p-8">Loading posts...</div>
+        ) : tweets.length ? (
           <div className="space-y-3">
             {tweets.map((tweet) => (
               <article key={tweet._id} className="surface p-4">
                 <p className="whitespace-pre-wrap text-sm">{tweet.content}</p>
-                <p className="mt-2 text-xs text-black/50 dark:text-white/50">{formatDate(tweet.createdAt)}</p>
+                <p className="mt-2 text-xs text-black/50 dark:text-white/50">
+                  {formatDate(tweet.createdAt)}
+                </p>
               </article>
             ))}
           </div>
-        ) : <EmptyState title="No posts yet" detail="Posts and tweets will appear here." />}
+        ) : (
+          <EmptyState
+            title="No posts yet"
+            detail="Posts and tweets will appear here."
+          />
+        )}
       </section>
     </div>
   );
 
   const renderContent = () => {
     if (activeSection === "home") return renderHome();
-    if (activeSection === "videos") return renderVideoSection("Uploaded videos", recentVideos);
+    if (activeSection === "videos")
+      return renderVideoSection("Uploaded videos", recentVideos);
     if (activeSection === "playlists") {
-      return playlistsQuery.isLoading ? <div className="surface animate-pulse p-8">Loading playlists...</div> : playlists.length ? (
+      return playlistsQuery.isLoading ? (
+        <div className="surface animate-pulse p-8">Loading playlists...</div>
+      ) : playlists.length ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {playlists.map((playlist) => (
             <div key={playlist._id} className="surface p-4">
               <h2 className="font-semibold">{playlist.name}</h2>
-              <p className="mt-1 text-sm text-black/55 dark:text-white/55">{playlist.description || "No description"}</p>
-              <p className="mt-3 text-xs text-black/50 dark:text-white/50">{playlist.totalVideos ?? playlist.videos?.length ?? 0} videos</p>
+              <p className="mt-1 text-sm text-black/55 dark:text-white/55">
+                {playlist.description || "No description"}
+              </p>
+              <p className="mt-3 text-xs text-black/50 dark:text-white/50">
+                {playlist.totalVideos ?? playlist.videos?.length ?? 0} videos
+              </p>
             </div>
           ))}
         </div>
-      ) : <EmptyState title="No playlists yet" detail="Created playlists will appear here." />;
+      ) : (
+        <EmptyState
+          title="No playlists yet"
+          detail="Created playlists will appear here."
+        />
+      );
     }
-    return tweetsQuery.isLoading ? <div className="surface animate-pulse p-8">Loading posts...</div> : tweets.length ? (
-      <div className="space-y-3">{tweets.map((tweet) => <article key={tweet._id} className="surface p-4"><p className="whitespace-pre-wrap text-sm">{tweet.content}</p><p className="mt-2 text-xs text-black/50 dark:text-white/50">{formatDate(tweet.createdAt)}</p></article>)}</div>
-    ) : <EmptyState title="No posts yet" detail="Posts and tweets will appear here." />;
+    return tweetsQuery.isLoading ? (
+      <div className="surface animate-pulse p-8">Loading posts...</div>
+    ) : tweets.length ? (
+      <div className="space-y-3">
+        {tweets.map((tweet) => (
+          <article key={tweet._id} className="surface p-4">
+            <p className="whitespace-pre-wrap text-sm">{tweet.content}</p>
+            <p className="mt-2 text-xs text-black/50 dark:text-white/50">
+              {formatDate(tweet.createdAt)}
+            </p>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <EmptyState
+        title="No posts yet"
+        detail="Posts and tweets will appear here."
+      />
+    );
   };
 
   return (
@@ -303,20 +367,22 @@ const Profile = () => {
       </div>
       <div className="mx-auto mt-5 space-y-5">
         <div className="surface">
-          <div className="flex flex-col justify-start items-start rounded-lg gap-2 md:flex-row">
-            {profileContents.map(({ to, label, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className="block px-4 py-2 text-sm rounded-lg transition hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                {label}
-              </NavLink>
-            ))}
+          <div>
+            <div className="flex flex-col justify-start items-start rounded-lg gap-2 md:flex-row sticky top-0 z-10 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-black/10 dark:border-white/10">
+              {profileContents.map(({ to, label, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className="block px-4 py-2 text-sm rounded-lg transition hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+            <div className="surface p-5 sm:p-7">{renderContent()}</div>
           </div>
         </div>
-        <div className="surface p-5 sm:p-7">{renderContent()}</div>
       </div>
     </div>
   );
