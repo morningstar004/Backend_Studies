@@ -196,30 +196,36 @@ const Profile = () => {
   const renderHome = () => (
     <div className="space-y-8">
       {renderVideoSection("Recently uploaded", recentVideos.slice(0, 6), true)}
-      {renderVideoSection("All uploaded videos", recentVideos)}
-      {renderVideoSection("Most viewed", popularVideos)}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Posts and tweets</h2>
-        {tweetsQuery.isLoading ? (
-          <div className="surface animate-pulse p-8">Loading posts...</div>
-        ) : tweets.length ? (
-          <div className="space-y-3">
-            {tweets.map((tweet) => (
-              <article key={tweet._id} className="surface p-4">
-                <p className="whitespace-pre-wrap text-sm">{tweet.content}</p>
-                <p className="mt-2 text-xs text-black/50 dark:text-white/50">
-                  {formatDate(tweet.createdAt)}
-                </p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title="No posts yet"
-            detail="Posts and tweets will appear here."
-          />
-        )}
-      </section>
+      <div className="border-t border-black/10 pt-8 dark:border-white/10">
+        {renderVideoSection("All uploaded videos", recentVideos)}
+      </div>
+      <div className="border-t border-black/10 pt-8 dark:border-white/10">
+        {renderVideoSection("Most viewed", popularVideos)}
+      </div>
+      <div className="border-t border-black/10 pt-8 dark:border-white/10">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Posts and tweets</h2>
+          {tweetsQuery.isLoading ? (
+            <div className="surface animate-pulse p-8">Loading posts...</div>
+          ) : tweets.length ? (
+            <div className="space-y-3">
+              {tweets.map((tweet) => (
+                <article key={tweet._id} className="surface p-4">
+                  <p className="whitespace-pre-wrap text-sm">{tweet.content}</p>
+                  <p className="mt-2 text-xs text-black/50 dark:text-white/50">
+                    {formatDate(tweet.createdAt)}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No posts yet"
+              detail="Posts and tweets will appear here."
+            />
+          )}
+        </section>
+      </div>
     </div>
   );
 
@@ -368,7 +374,7 @@ const Profile = () => {
       <div className="mx-auto mt-5 space-y-5">
         <div className="surface">
           <div>
-            <div className="sticky top-16 z-20 flex gap-2 overflow-x-auto rounded-lg border-b border-black/10 bg-white/90 px-2 py-2 backdrop-blur-sm dark:border-white/10 dark:bg-black/90">
+            <div className="sticky top-16 z-20 flex gap-2 overflow-x-auto border-b border-black/10 bg-white/90 px-2 py-2 backdrop-blur-sm dark:border-white/10 dark:bg-black/90">
               {profileContents.map(({ to, label, end }) => (
                 <NavLink
                   key={to}
@@ -386,7 +392,7 @@ const Profile = () => {
                 </NavLink>
               ))}
             </div>
-            <div className="surface p-5 sm:p-7">{renderContent()}</div>
+            <div className="surface p-5 sm:p-7 rounded-t-none">{renderContent()}</div>
           </div>
         </div>
       </div>
