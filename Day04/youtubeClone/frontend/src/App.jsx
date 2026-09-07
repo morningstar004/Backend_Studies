@@ -23,6 +23,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route element={<RequireAuth />}>
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:section" element={<Profile />} />
           <Route path="/upload" element={<UploadVideo />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
@@ -31,6 +32,7 @@ function App() {
           <Route path="/history" element={<Library mode="history" />} />
         </Route>
         <Route path="/channel/:username" element={<Profile />} />
+        <Route path="/channel/:username/:section" element={<Profile />} />
         <Route path="/video/:videoId" element={<VideoDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
