@@ -368,13 +368,19 @@ const Profile = () => {
       <div className="mx-auto mt-5 space-y-5">
         <div className="surface">
           <div>
-            <div className="flex flex-col justify-start items-start rounded-lg gap-2 md:flex-row sticky top-0 z-10 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-black/10 dark:border-white/10">
+            <div className="sticky top-16 z-20 flex gap-2 overflow-x-auto rounded-lg border-b border-black/10 bg-white/90 px-2 py-2 backdrop-blur-sm dark:border-white/10 dark:bg-black/90">
               {profileContents.map(({ to, label, end }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={end}
-                  className="block px-4 py-2 text-sm rounded-lg transition hover:bg-black/5 dark:hover:bg-white/10"
+                  className={({ isActive }) =>
+                    `shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-black/65 hover:bg-black/5 hover:text-black dark:text-white/65 dark:hover:bg-white/10 dark:hover:text-white"
+                    }`
+                  }
                 >
                   {label}
                 </NavLink>
