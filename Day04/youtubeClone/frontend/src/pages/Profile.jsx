@@ -392,7 +392,9 @@ const Profile = () => {
                 </NavLink>
               ))}
             </div>
-            <div className="surface p-5 sm:p-7 rounded-t-none">{renderContent()}</div>
+            <div className="surface p-5 sm:p-7 rounded-t-none">
+              {renderContent()}
+            </div>
           </div>
         </div>
       </div>

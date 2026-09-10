@@ -23,15 +23,24 @@ const getRegisterErrorMessage = (message = "") => {
     return "Password is required.";
   }
 
-  if (normalized.includes("email") && (normalized.includes("already") || normalized.includes("exists"))) {
+  if (
+    normalized.includes("email") &&
+    (normalized.includes("already") || normalized.includes("exists"))
+  ) {
     return "This email is already in use.";
   }
 
-  if (normalized.includes("username") && (normalized.includes("already") || normalized.includes("exists"))) {
+  if (
+    normalized.includes("username") &&
+    (normalized.includes("already") || normalized.includes("exists"))
+  ) {
     return "This username is already taken.";
   }
 
-  if (normalized.includes("invalid email") || normalized.includes("email is invalid")) {
+  if (
+    normalized.includes("invalid email") ||
+    normalized.includes("email is invalid")
+  ) {
     return "Please enter a valid email address.";
   }
 
@@ -68,7 +77,9 @@ const Register = () => {
 
       navigate("/login");
     } catch (err) {
-      toast.error(getRegisterErrorMessage(err?.message || "Registration failed."));
+      toast.error(
+        getRegisterErrorMessage(err?.message || "Registration failed."),
+      );
     } finally {
       setLoading(false);
     }
