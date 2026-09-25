@@ -15,6 +15,10 @@ const likeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    isDislike: {
+      type: Boolean,
+      default: false,
+    },
     tweet: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tweet",

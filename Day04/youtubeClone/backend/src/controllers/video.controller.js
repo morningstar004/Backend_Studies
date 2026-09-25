@@ -205,6 +205,73 @@ const getVideoById = asyncHandler(async (req, res) => {
         },
       },
     },
+    {
+      $lookup: {
+        from: "likes",
+        localField: "_id",
+        foreignField: "video",
+        as: "reactions",
+      },
+    },
+    {
+      $addFields: {
+        likeCount: {
+          $size: {
+            $filter: {
+              input: "$reactions",
+              as: "reaction",
+              cond: { $ne: ["$$reaction.isDislike", true] },
+            },
+          },
+        },
+        dislikeCount: {
+          $size: {
+            $filter: {
+              input: "$reactions",
+              as: "reaction",
+              cond: { $eq: ["$$reaction.isDislike", true] },
+            },
+          },
+        },
+        isLiked: {
+          $in: [
+            new mongoose.Types.ObjectId(req.user._id),
+            {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$reactions",
+                    as: "reaction",
+                    cond: { $ne: ["$$reaction.isDislike", true] },
+                  },
+                },
+                as: "reaction",
+                in: "$$reaction.likedBy",
+              },
+            },
+          ],
+        },
+        isDisliked: {
+          $in: [
+            new mongoose.Types.ObjectId(req.user._id),
+            {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$reactions",
+                    as: "reaction",
+                    cond: { $eq: ["$$reaction.isDislike", true] },
+                  },
+                },
+                as: "reaction",
+                in: "$$reaction.likedBy",
+              },
+            },
+          ],
+        },
+      },
+    },
+    { $project: { reactions: 0 } },
   ]);
 
   if (!video) {

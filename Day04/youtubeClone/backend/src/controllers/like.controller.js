@@ -20,25 +20,65 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     throw new apiError(404, "Video not found");
   }
 
-  const alreadyLiked = await Like.findOne({
+  const existingReaction = await Like.findOne({
     video: videoId,
     likedBy: req.user?._id,
   });
-  if (alreadyLiked) {
-    await Like.findByIdAndDelete(alreadyLiked._id);
+  if (existingReaction && !existingReaction.isDislike) {
+    await Like.findByIdAndDelete(existingReaction._id);
     return res
       .status(200)
       .json(new ResponseHandler(200, "Video Unliked successfully.", null));
   }
 
-  const like = await Like.create({
-    video: videoId,
-    likedBy: req.user._id,
-  });
+  const like = existingReaction
+    ? await Like.findByIdAndUpdate(
+        existingReaction._id,
+        { $set: { isDislike: false } },
+        { new: true },
+      )
+    : await Like.create({ video: videoId, likedBy: req.user._id });
 
   return res
     .status(201)
     .json(new ResponseHandler(201, "Video liked successfully", like));
+});
+
+const toggleVideoDislike = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!isValidObjectId(videoId)) {
+    throw new apiError(400, "Invalid VideoID.");
+  }
+
+  const video = await Video.findById(videoId);
+  if (!video) {
+    throw new apiError(404, "Video not found");
+  }
+
+  const existingReaction = await Like.findOne({
+    video: videoId,
+    likedBy: req.user?._id,
+  });
+
+  if (existingReaction?.isDislike) {
+    await Like.findByIdAndDelete(existingReaction._id);
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "Video dislike removed successfully.", null));
+  }
+
+  const dislike = existingReaction
+    ? await Like.findByIdAndUpdate(
+        existingReaction._id,
+        { $set: { isDislike: true } },
+        { new: true },
+      )
+    : await Like.create({ video: videoId, likedBy: req.user._id, isDislike: true });
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Video disliked successfully", dislike));
 });
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
@@ -121,6 +161,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
       $match: {
         likedBy: userObjectId,
         video: { $exists: true },
+        isDislike: { $ne: true },
       },
     },
     {
@@ -191,4 +232,10 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Liked Video Fetched.", likedVideos));
 });
 
-export { toggleVideoLike, toggleCommentLike, toggleTweetLike, getLikedVideos };
+export {
+  toggleVideoLike,
+  toggleVideoDislike,
+  toggleCommentLike,
+  toggleTweetLike,
+  getLikedVideos,
+};
