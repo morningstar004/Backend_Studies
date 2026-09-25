@@ -99,4 +99,44 @@
   .icon-button {
     @apply inline-flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-black/5 active:scale-95 dark:hover:bg-white/10;
   }
+
+  .player-control {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none;
+  }
+
+  .player-range {
+    --progress: 0%;
+    appearance: none;
+    height: 4px;
+    cursor: pointer;
+    border-radius: 9999px;
+    background: linear-gradient(to right, #e63946 var(--progress), rgba(255, 255, 255, 0.9) var(--progress));
+  }
+
+  .player-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    background: #e63946;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  }
+
+  .player-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: 0;
+    border-radius: 9999px;
+    background: #e63946;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  }
+
+  .player-timeline {
+    transition: height 150ms ease;
+  }
+
+  .player-timeline:hover,
+  .player-timeline:focus-visible {
+    height: 8px;
+  }
 }

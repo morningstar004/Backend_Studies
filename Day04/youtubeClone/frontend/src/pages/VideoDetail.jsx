@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
   Bookmark,
   Download,
+  Maximize,
+  Minimize,
   MessageCircle,
+  Pause,
+  Play,
   Send,
+  Settings,
   Share2,
   ThumbsDown,
   ThumbsUp,
   UserPlus,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import {
   commentService,
@@ -25,6 +32,15 @@ import { toast } from "sonner";
 const VideoDetail = () => {
   const { videoId } = useParams();
   const [content, setContent] = useState("");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef(null);
+  const playerRef = useRef(null);
   const { user } = useAuth();
   const client = useQueryClient();
   const { data, error, isLoading } = useQuery({
@@ -33,6 +49,63 @@ const VideoDetail = () => {
     enabled: !!user,
   });
   const video = data?.data;
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === playerRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const formatTime = (time) => {
+    if (!Number.isFinite(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  };
+
+  const togglePlayback = () => {
+    const player = videoRef.current;
+    if (!player) return;
+    if (player.paused) player.play();
+    else player.pause();
+  };
+
+  const seekVideo = (event) => {
+    const nextTime = Number(event.target.value);
+    if (videoRef.current) videoRef.current.currentTime = nextTime;
+    setCurrentTime(nextTime);
+  };
+
+  const changeVolume = (event) => {
+    const nextVolume = Number(event.target.value);
+    const player = videoRef.current;
+    if (player) {
+      player.volume = nextVolume;
+      player.muted = nextVolume === 0;
+    }
+    setVolume(nextVolume);
+    setIsMuted(nextVolume === 0);
+  };
+
+  const toggleMute = () => {
+    const player = videoRef.current;
+    if (!player) return;
+    player.muted = !player.muted;
+    setIsMuted(player.muted);
+  };
+
+  const changePlaybackRate = (rate) => {
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setSettingsOpen(false);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) playerRef.current?.requestFullscreen();
+    else document.exitFullscreen();
+  };
   const comments = useQuery({
     queryKey: ["comments", videoId],
     queryFn: () => commentService.list(videoId),
@@ -122,16 +195,112 @@ const VideoDetail = () => {
 
   return (
     <article className="mx-auto max-w-5xl space-y-6">
-      <div className="overflow-hidden rounded-2xl bg-black">
+      <div
+        ref={playerRef}
+        className="group relative overflow-hidden rounded-2xl bg-black shadow-2xl shadow-black/25"
+      >
         <video
+          ref={videoRef}
           autoPlay
           playsInline
-          controls
           className="aspect-video w-full"
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+          onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+          onDurationChange={(event) => setDuration(event.currentTarget.duration)}
+          onVolumeChange={(event) => {
+            setVolume(event.currentTarget.volume);
+            setIsMuted(event.currentTarget.muted);
+          }}
+          onClick={togglePlayback}
         >
           <source src={video.videoFile} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-14 text-white sm:px-5 sm:pb-4">
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            step="0.1"
+            value={Math.min(currentTime, duration || 0)}
+            onChange={seekVideo}
+            aria-label="Video timeline"
+            className="player-range player-timeline mb-3 w-full"
+            style={{ "--progress": `${duration ? (currentTime / duration) * 100 : 0}%` }}
+          />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={togglePlayback}
+              aria-label={isPlaying ? "Pause video" : "Play video"}
+              className="player-control"
+            >
+              {isPlaying ? <Pause size={21} fill="currentColor" /> : <Play size={21} fill="currentColor" />}
+            </button>
+            <div className="group/volume flex items-center">
+              <button
+                type="button"
+                onClick={toggleMute}
+                aria-label={isMuted || volume === 0 ? "Unmute video" : "Mute video"}
+                className="player-control"
+              >
+                {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={isMuted ? 0 : volume}
+                onChange={changeVolume}
+                aria-label="Volume"
+                className="player-range ml-1 w-0 opacity-0 transition-all duration-200 group-hover/volume:w-20 group-hover/volume:opacity-100 focus:w-20 focus:opacity-100"
+                style={{ "--progress": `${(isMuted ? 0 : volume) * 100}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium tabular-nums text-white/90 sm:text-sm">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+            <div className="ml-auto flex items-center gap-1 sm:gap-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen((open) => !open)}
+                  aria-label="Video settings"
+                  aria-expanded={settingsOpen}
+                  className="player-control"
+                >
+                  <Settings size={20} />
+                </button>
+                {settingsOpen && (
+                  <div className="absolute bottom-11 right-0 w-40 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 shadow-xl backdrop-blur">
+                    <p className="px-2 py-1.5 text-xs font-semibold text-white/60">Playback speed</p>
+                    {[0.5, 1, 1.5, 2].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => changePlaybackRate(rate)}
+                        className="w-full rounded-lg px-2 py-1.5 text-left text-sm hover:bg-white/15"
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                className="player-control"
+              >
+                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
