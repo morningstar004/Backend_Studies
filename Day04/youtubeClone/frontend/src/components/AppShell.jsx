@@ -35,6 +35,7 @@ export default function AppShell() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const isVideoPage = location.pathname.startsWith("/video/");
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -59,6 +60,12 @@ export default function AppShell() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [profileMenuOpen]);
+
+  useEffect(() => {
+    if (isVideoPage) {
+      setDesktopSidebarExpanded(false);
+    }
+  }, [isVideoPage]);
 
   const toggleMenu = () => {
     if (window.matchMedia("(min-width: 1024px)").matches) {
@@ -102,13 +109,13 @@ export default function AppShell() {
     </nav>
   );
   const desktopActive = ({ isActive }) =>
-    `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
-      isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"
-    }`;
+    `flex items-center rounded-xl px-3 py-3 font-medium transition ${
+      desktopSidebarExpanded ? "gap-3 text-sm" : "flex-col gap-2 text-[10px]"
+    } ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
   const lapMenu = (
     <nav
       className="space-y-1 -m-1.5"
-      onClick={() => setDesktopSidebarExpanded(false)}
+      onClick={() => isVideoPage && setDesktopSidebarExpanded(false)}
     >
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
@@ -130,7 +137,7 @@ export default function AppShell() {
               src={user.avatar}
               alt="Your profile"
             />
-            <span>Your channel</span>
+            <span>{desktopSidebarExpanded ? "Your channel" : "You"}</span>
           </NavLink>
         </>
       )}
@@ -250,20 +257,29 @@ export default function AppShell() {
         </div>
       </header>
       <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
-        {/* Desktop navigation is available from the menu button in the header. */}
-        <AnimatePresence>
-          {desktopSidebarExpanded && (
-            <motion.aside
-              className="fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] w-64 overflow-y-auto border-r border-black/10 bg-white py-4 px-2.5 shadow-xl dark:border-white/10 dark:bg-black lg:block"
-              initial={{ x: -256, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -256, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-            >
-              {lapMenu}
-            </motion.aside>
-          )}
-        </AnimatePresence>
+        {isVideoPage ? (
+          <AnimatePresence>
+            {desktopSidebarExpanded && (
+              <motion.aside
+                className="fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] w-64 overflow-y-auto border-r border-black/10 bg-white py-4 px-2.5 shadow-xl dark:border-white/10 dark:bg-black lg:block"
+                initial={{ x: -256, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -256, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+              >
+                {lapMenu}
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        ) : (
+          <motion.aside
+            className="sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 overflow-hidden border-r border-black/10 py-4 px-2.5 dark:border-white/10 lg:block"
+            animate={{ width: desktopSidebarExpanded ? 256 : 92 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            {lapMenu}
+          </motion.aside>
+        )}
         <main className="min-w-0 flex-1 p-4 sm:p-6">
           <AnimatePresence mode="wait">
             {/* Animates page transitions by fading and sliding each route's content in and out. */}

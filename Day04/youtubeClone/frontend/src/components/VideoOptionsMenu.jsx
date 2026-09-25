@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
-  BookMarked,
   Download,
   ListPlus,
   MoreVertical,
@@ -57,7 +56,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
     }
   };
 
-  const handleToggleWatchlist = async () => {
+  const handleSaveWatchlist = async () => {
     if (!videoId) {
       toast.error("Video is missing.");
       return;
@@ -140,12 +139,7 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
   };
 
   const menuOptions = [
-    { label: "Save watchlist", icon: Bookmark, action: handleToggleWatchlist },
-    {
-      label: "Remove from watchlist",
-      icon: BookMarked,
-      action: handleToggleWatchlist,
-    },
+    { label: "Save watchlist", icon: Bookmark, action: handleSaveWatchlist },
     { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
     { label: "Download", icon: Download, action: handleDownload },
     { label: "Share", icon: Share2, action: handleShare },
