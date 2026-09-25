@@ -33,6 +33,8 @@ export const likeService = {
   videoDislike: (id: string) =>
     api.patch(`/likes/toggleVideoDislike/${id}`, {}),
   comment: (id: string) => api.patch(`/likes/toggleCommentLike/${id}`, {}),
+  commentDislike: (id: string) =>
+    api.patch(`/likes/toggleCommentDislike/${id}`, {}),
   tweet: (id: string) => api.patch(`/likes/toggleTweetLike/${id}`, {}),
   videos: () => api.get("/likes/getLikedVideos"),
 };

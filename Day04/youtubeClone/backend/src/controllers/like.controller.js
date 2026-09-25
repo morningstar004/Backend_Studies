@@ -92,26 +92,69 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     throw new apiError(404, "Comment not found.");
   }
 
-  const alreadyLiked = await Like.findOne({
+  const existingReaction = await Like.findOne({
     comment: commentId,
     likedBy: req.user?._id,
   });
 
-  if (alreadyLiked) {
-    await Like.findByIdAndDelete(alreadyLiked._id);
+  if (existingReaction && !existingReaction.isDislike) {
+    await Like.findByIdAndDelete(existingReaction._id);
     return res
       .status(200)
       .json(new ResponseHandler(200, "Comment Unliked successfully.", null));
   }
 
-  const like = await Like.create({
-    comment: commentId,
-    likedBy: req.user?._id,
-  });
+  const like = existingReaction
+    ? await Like.findByIdAndUpdate(
+        existingReaction._id,
+        { $set: { isDislike: false } },
+        { new: true },
+      )
+    : await Like.create({ comment: commentId, likedBy: req.user._id });
 
   return res
     .status(201)
     .json(new ResponseHandler(201, "Comment Liked successfully.", like));
+});
+
+const toggleCommentDislike = asyncHandler(async (req, res) => {
+  const { commentId } = req.params;
+  if (!isValidObjectId(commentId)) {
+    throw new apiError(400, "Invalid CommentID.");
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new apiError(404, "Comment not found.");
+  }
+
+  const existingReaction = await Like.findOne({
+    comment: commentId,
+    likedBy: req.user?._id,
+  });
+
+  if (existingReaction?.isDislike) {
+    await Like.findByIdAndDelete(existingReaction._id);
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "Comment dislike removed successfully.", null));
+  }
+
+  const dislike = existingReaction
+    ? await Like.findByIdAndUpdate(
+        existingReaction._id,
+        { $set: { isDislike: true } },
+        { new: true },
+      )
+    : await Like.create({
+        comment: commentId,
+        likedBy: req.user._id,
+        isDislike: true,
+      });
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Comment disliked successfully.", dislike));
 });
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
@@ -236,6 +279,7 @@ export {
   toggleVideoLike,
   toggleVideoDislike,
   toggleCommentLike,
+  toggleCommentDislike,
   toggleTweetLike,
   getLikedVideos,
 };

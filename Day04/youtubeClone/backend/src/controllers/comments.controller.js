@@ -42,6 +42,77 @@ const getVideoComments = asyncHandler(async (req, res) => {
       },
     },
     { $set: { owner: { $first: "$owner" } } },
+    {
+      $lookup: {
+        from: "likes",
+        let: {
+          commentId: "$_id",
+          userId: new mongoose.Types.ObjectId(req.user._id),
+        },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$comment", "$$commentId"] } } },
+          {
+            $group: {
+              _id: null,
+              likeCount: {
+                $sum: { $cond: [{ $ne: ["$isDislike", true] }, 1, 0] },
+              },
+              dislikeCount: {
+                $sum: { $cond: [{ $eq: ["$isDislike", true] }, 1, 0] },
+              },
+              isLiked: {
+                $max: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$likedBy", "$$userId"] },
+                        { $ne: ["$isDislike", true] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              isDisliked: {
+                $max: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$likedBy", "$$userId"] },
+                        { $eq: ["$isDislike", true] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        as: "reactionStats",
+      },
+    },
+    {
+      $set: {
+        reactionStats: {
+          $ifNull: [
+            { $first: "$reactionStats" },
+            { likeCount: 0, dislikeCount: 0, isLiked: 0, isDisliked: 0 },
+          ],
+        },
+      },
+    },
+    {
+      $set: {
+        likeCount: "$reactionStats.likeCount",
+        dislikeCount: "$reactionStats.dislikeCount",
+        isLiked: { $eq: ["$reactionStats.isLiked", 1] },
+        isDisliked: { $eq: ["$reactionStats.isDisliked", 1] },
+      },
+    },
+    { $project: { reactionStats: 0 } },
   ]);
 
   const comments = await Comment.aggregatePaginate(commentsAggregate, {

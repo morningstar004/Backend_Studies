@@ -120,6 +120,16 @@ const VideoDetail = () => {
     },
     onError: (e) => toast.error(e.message),
   });
+  const likeComment = useMutation({
+    mutationFn: (commentId) => likeService.comment(commentId),
+    onSuccess: () => client.invalidateQueries({ queryKey: ["comments", videoId] }),
+    onError: (e) => toast.error(e.message),
+  });
+  const dislikeComment = useMutation({
+    mutationFn: (commentId) => likeService.commentDislike(commentId),
+    onSuccess: () => client.invalidateQueries({ queryKey: ["comments", videoId] }),
+    onError: (e) => toast.error(e.message),
+  });
   const like = useMutation({
     mutationFn: () => likeService.video(videoId),
     onSuccess: (r) => {
@@ -420,6 +430,9 @@ const VideoDetail = () => {
         <h2 className="flex items-center gap-2 text-lg font-bold">
           <MessageCircle size={19} />
           Comments
+          <span className="text-sm font-medium text-black/55 dark:text-white/55">
+            ({comments.data?.data?.totalDocs ?? comments.data?.data?.docs?.length ?? 0})
+          </span>
         </h2>
         <form
           className="flex gap-2"
@@ -455,8 +468,46 @@ const VideoDetail = () => {
                 <span className="font-normal text-black/45 dark:text-white/45">
                   @{comment.owner?.username}
                 </span>
+                <span className="ml-2 text-xs font-normal text-black/45 dark:text-white/45">
+                  {new Date(comment.createdAt).toLocaleString(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </span>
               </p>
               <p className="text-sm">{comment.content}</p>
+              <div className="mt-1 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => likeComment.mutate(comment._id)}
+                  disabled={likeComment.isPending}
+                  aria-label="Like comment"
+                  aria-pressed={comment.isLiked}
+                  title="Like"
+                  className="inline-flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
+                >
+                  <ThumbsUp
+                    size={14}
+                    className={comment.isLiked ? "fill-primary text-primary" : ""}
+                  />
+                  {comment.likeCount ?? 0}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => dislikeComment.mutate(comment._id)}
+                  disabled={dislikeComment.isPending}
+                  aria-label="Dislike comment"
+                  aria-pressed={comment.isDisliked}
+                  title="Dislike"
+                  className="inline-flex items-center gap-1 rounded-lg border border-black/10 px-2 py-1 text-xs transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
+                >
+                  <ThumbsDown
+                    size={14}
+                    className={comment.isDisliked ? "fill-primary text-primary" : ""}
+                  />
+                  {comment.dislikeCount ?? 0}
+                </button>
+              </div>
             </div>
           </div>
         ))}
