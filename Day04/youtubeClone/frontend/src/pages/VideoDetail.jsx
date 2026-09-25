@@ -272,7 +272,12 @@ const VideoDetail = () => {
                   aria-expanded={settingsOpen}
                   className="player-control"
                 >
-                  <Settings size={20} />
+                  <Settings
+                    size={20}
+                    className={`transition-transform duration-300 ease-out ${
+                      settingsOpen ? "rotate-[30deg]" : "rotate-0"
+                    }`}
+                  />
                 </button>
                 {settingsOpen && (
                   <div className="absolute bottom-11 right-0 w-40 overflow-hidden rounded-xl border border-white/15 bg-black/90 p-1.5 shadow-xl backdrop-blur">

@@ -97,11 +97,19 @@
   }
 
   .icon-button {
-    @apply inline-flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-black/5 active:scale-95 dark:hover:bg-white/10;
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-black/5 dark:hover:bg-white/10;
   }
 
   .player-control {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none;
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-white transition duration-200 ease-out hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none;
+  }
+
+  .player-control > svg {
+    transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .player-control:hover:not([aria-label="Video settings"]) > svg {
+    transform: scale(1.08);
   }
 
   .player-range {
