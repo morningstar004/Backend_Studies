@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Bell,
   Bookmark,
   Download,
   MessageCircle,
@@ -9,10 +10,12 @@ import {
   Share2,
   ThumbsDown,
   ThumbsUp,
+  UserPlus,
 } from "lucide-react";
 import {
   commentService,
   likeService,
+  subscriptionService,
   userService,
   videoService,
 } from "../api/services.ts";
@@ -66,6 +69,14 @@ const VideoDetail = () => {
     mutationFn: () => userService.toggleWatchlist(videoId),
     onSuccess: (r) => {
       client.invalidateQueries({ queryKey: ["watchlist"] });
+      toast.success(r.message);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const subscription = useMutation({
+    mutationFn: () => subscriptionService.toggle(video.owner._id),
+    onSuccess: (r) => {
+      client.invalidateQueries({ queryKey: ["video", videoId] });
       toast.success(r.message);
     },
     onError: (e) => toast.error(e.message),
@@ -138,6 +149,30 @@ const VideoDetail = () => {
                 @{video.owner?.username}
               </p>
             </div>
+            {video.owner?._id !== user?._id && (
+              <button
+                type="button"
+                onClick={() => subscription.mutate()}
+                disabled={subscription.isPending}
+                className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-50 ${
+                  video.owner?.isSubscribed
+                    ? "border border-black/10 hover:border-primary hover:text-primary dark:border-white/10"
+                    : "bg-primary text-white hover:brightness-110"
+                }`}
+              >
+                {video.owner?.isSubscribed ? (
+                  <>
+                    <Bell size={16} className="fill-current" />
+                    Subscribed
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={16} />
+                    Subscribe
+                  </>
+                )}
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
