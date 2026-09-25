@@ -55,7 +55,13 @@ const VideoDetail = () => {
   return (
     <article className="mx-auto max-w-5xl space-y-6">
       <div className="overflow-hidden rounded-2xl bg-black">
-        <video controls className="aspect-video w-full">
+        <video
+          autoPlay
+          muted
+          playsInline
+          controls
+          className="aspect-video w-full"
+        >
           <source src={video.videoFile} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
