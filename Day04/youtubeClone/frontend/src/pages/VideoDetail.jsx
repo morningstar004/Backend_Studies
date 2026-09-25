@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
@@ -29,6 +29,36 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import { toast } from "sonner";
 
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return "Unknown time";
+
+  const timestamp = new Date(dateString).getTime();
+  if (!Number.isFinite(timestamp)) return "Unknown time";
+
+  const diffMinutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
+  if (diffMinutes < 60) {
+    return diffMinutes <= 1 ? "1 min ago" : `${diffMinutes} min ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return diffHours === 1 ? "1 hour ago" : `${diffHours} hours ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) {
+    return diffDays === 1 ? "1 day ago" : `${diffDays} days ago`;
+  }
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return diffMonths === 1 ? "1 month ago" : `${diffMonths} months ago`;
+  }
+
+  const diffYears = Math.floor(diffMonths / 12);
+  return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
+};
+
 const VideoDetail = () => {
   const { videoId } = useParams();
   const [content, setContent] = useState("");
@@ -39,8 +69,10 @@ const VideoDetail = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const videoRef = useRef(null);
   const playerRef = useRef(null);
+  const controlsTimeoutRef = useRef(null);
   const { user } = useAuth();
   const client = useQueryClient();
   const { data, error, isLoading } = useQuery({
@@ -49,6 +81,14 @@ const VideoDetail = () => {
     enabled: !!user,
   });
   const video = data?.data;
+  const suggestionsQuery = useQuery({
+    queryKey: ["video-suggestions", videoId],
+    queryFn: () => videoService.list({ limit: 12 }),
+    enabled: !!video,
+  });
+  const suggestions = (suggestionsQuery.data?.data?.videos ?? [])
+    .filter((suggestion) => suggestion._id !== videoId)
+    .slice(0, 8);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -58,6 +98,22 @@ const VideoDetail = () => {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
+
+  useEffect(() => {
+    controlsTimeoutRef.current = window.setTimeout(() => {
+      setControlsVisible(false);
+    }, 2000);
+
+    return () => window.clearTimeout(controlsTimeoutRef.current);
+  }, []);
+
+  const revealControls = () => {
+    setControlsVisible(true);
+    window.clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = window.setTimeout(() => {
+      setControlsVisible(false);
+    }, 3000);
+  };
 
   const formatTime = (time) => {
     if (!Number.isFinite(time)) return "0:00";
@@ -204,10 +260,14 @@ const VideoDetail = () => {
   }
 
   return (
-    <article className="mx-auto max-w-5xl space-y-6">
+    <div className="grid w-full gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <article className="min-w-0 space-y-6">
       <div
         ref={playerRef}
         className="group relative overflow-hidden rounded-2xl bg-black shadow-2xl shadow-black/25"
+        onPointerEnter={revealControls}
+        onPointerMove={revealControls}
+        onTouchStart={revealControls}
       >
         <video
           ref={videoRef}
@@ -228,7 +288,13 @@ const VideoDetail = () => {
           <source src={video.videoFile} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-14 text-white sm:px-5 sm:pb-4">
+        <div
+          className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-14 text-white transition-opacity duration-300 sm:px-5 sm:pb-4 ${
+            controlsVisible
+              ? "opacity-100"
+              : "pointer-events-none opacity-0"
+          }`}
+        >
           <input
             type="range"
             min="0"
@@ -419,7 +485,7 @@ const VideoDetail = () => {
         </div>
         <section className="surface space-y-3 bg-black/[0.06] p-4 dark:bg-white/[0.08]">
           <p className="text-sm font-medium text-black/65 dark:text-white/65">
-            {video.views ?? 0} views · {new Date(video.createdAt).toLocaleDateString()}
+            {video.views ?? 0} views · Uploaded {formatRelativeTime(video.createdAt)}
           </p>
           <p className="whitespace-pre-wrap text-sm leading-6 text-black/70 dark:text-white/70">
             {video.description}
@@ -469,10 +535,7 @@ const VideoDetail = () => {
                   @{comment.owner?.username}
                 </span>
                 <span className="ml-2 text-xs font-normal text-black/45 dark:text-white/45">
-                  {new Date(comment.createdAt).toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
+                  {formatRelativeTime(comment.createdAt)}
                 </span>
               </p>
               <p className="text-sm">{comment.content}</p>
@@ -512,7 +575,65 @@ const VideoDetail = () => {
           </div>
         ))}
       </section>
-    </article>
+      </article>
+      <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+      <h2 className="text-lg font-bold">Recommended videos</h2>
+      {suggestionsQuery.isLoading ? (
+        <div className="space-y-4" aria-label="Loading recommended videos">
+          {[0, 1, 2, 3].map((item) => (
+            <div className="flex gap-3" key={item}>
+              <div className="aspect-video w-36 shrink-0 animate-pulse rounded-lg bg-black/10 dark:bg-white/10" />
+              <div className="min-w-0 flex-1 space-y-2 py-1">
+                <div className="h-4 animate-pulse rounded bg-black/10 dark:bg-white/10" />
+                <div className="h-3 w-2/3 animate-pulse rounded bg-black/10 dark:bg-white/10" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : suggestionsQuery.isError ? (
+        <p className="text-sm text-black/55 dark:text-white/55">
+          Recommended videos are unavailable.
+        </p>
+      ) : suggestions.length ? (
+        <div className="space-y-3">
+          {suggestions.map((suggestion) => (
+            <Link
+              key={suggestion._id}
+              to={`/video/${suggestion._id}`}
+              className="group flex gap-3 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              <div className="relative aspect-video w-36 shrink-0 overflow-hidden rounded-lg bg-black/10">
+                <img
+                  src={suggestion.thumbnail}
+                  alt={suggestion.title}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium text-white">
+                  {formatTime(suggestion.duration)}
+                </span>
+              </div>
+              <div className="min-w-0 py-0.5">
+                <h3 className="line-clamp-2 text-sm font-semibold leading-5">
+                  {suggestion.title}
+                </h3>
+                <p className="mt-1 truncate text-xs text-black/55 dark:text-white/55">
+                  {suggestion.owner?.fullName || `@${suggestion.owner?.username || "Unknown creator"}`}
+                </p>
+                <p className="text-xs text-black/55 dark:text-white/55">
+                  {suggestion.views ?? 0} views
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-black/55 dark:text-white/55">
+          No other videos to recommend yet.
+        </p>
+      )}
+      </aside>
+    </div>
   );
 };
 

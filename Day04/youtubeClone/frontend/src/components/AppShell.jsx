@@ -256,7 +256,7 @@ export default function AppShell() {
           </div>
         </div>
       </header>
-      <div className="mx-auto flex max-w-[1600px] bg-white dark:bg-darkBg">
+      <div className="mx-auto flex w-full bg-white dark:bg-darkBg">
         {isVideoPage ? (
           <AnimatePresence>
             {desktopSidebarExpanded && (
