@@ -112,7 +112,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, isPublished = "true" } = req.body;
   const videoLocalPath = req.files?.videoFile?.[0]?.path;
   const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
@@ -124,6 +124,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
   ) {
     await removeTemporaryFiles([videoLocalPath, thumbnailLocalPath]);
     throw new apiError(400, "Title and description are required");
+  }
+
+  if (![true, false, "true", "false"].includes(isPublished)) {
+    await removeTemporaryFiles([videoLocalPath, thumbnailLocalPath]);
+    throw new apiError(400, "isPublished must be true or false");
   }
 
   if (!videoLocalPath) {
@@ -151,7 +156,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     title: title.trim(),
     description: description.trim(),
     duration: videoData.duration || 0,
-    isPublished: true,
+    isPublished: isPublished === true || isPublished === "true",
   });
 
   const uploadedVideo = await Video.findById(video._id);
@@ -297,6 +302,13 @@ const getVideoById = asyncHandler(async (req, res) => {
 
   if (!video) {
     throw new apiError(404, "Video not found");
+  }
+
+  if (
+    !video.isPublished &&
+    video.owner?._id.toString() !== req.user?._id.toString()
+  ) {
+    throw new apiError(403, "This video is private.");
   }
 
   const [updatedVideo] = await Promise.all([
