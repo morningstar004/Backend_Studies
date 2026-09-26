@@ -1,19 +1,35 @@
 import mongoose, { isValidObjectId } from "mongoose";
+import { unlink } from "node:fs/promises";
 import { Tweet } from "../models/tweets.model.js";
 import { User } from "../models/user.model.js";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
+
+const removeTemporaryFile = async (filePath) => {
+  if (filePath) {
+    await unlink(filePath).catch(() => {});
+  }
+};
 
 const createTweet = asyncHandler(async (req, res) => {
-  //TODO: create tweet
-  const { content } = req.body;
-  if (!content || content.trim() === "") {
-    throw new apiError(400, "Content is required to Tweet.");
+  const { caption } = req.body;
+  if (typeof caption !== "string" || caption.trim() === "") {
+    await removeTemporaryFile(req.file?.path);
+    throw new apiError(400, "Caption is required to Tweet.");
   }
 
+  const image = req.file?.path
+    ? await uploadOnCloudinary(req.file.path)
+    : null;
+
   const tweet = await Tweet.create({
-    content,
+    caption: caption.trim(),
+    imageContent: image?.url ?? null,
     owner: req.user?._id,
   });
 
@@ -178,31 +194,40 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 const updateTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
-  const { content } = req.body ?? {};
+  const { caption } = req.body ?? {};
 
   if (!isValidObjectId(tweetId)) {
+    await removeTemporaryFile(req.file?.path);
     throw new apiError(400, "Invalid TweetId.");
   }
 
   const tweet = await Tweet.findById(tweetId);
 
   if (!tweet) {
+    await removeTemporaryFile(req.file?.path);
     throw new apiError(404, "Tweet not found.");
   }
 
-  if (!content || content.trim() === "") {
-    throw new apiError(400, "Content is required.");
+  if (typeof caption !== "string" || caption.trim() === "") {
+    await removeTemporaryFile(req.file?.path);
+    throw new apiError(400, "Caption is required.");
   }
 
   if (tweet.owner.toString() !== req.user?._id.toString()) {
+    await removeTemporaryFile(req.file?.path);
     throw new apiError(403, "Not authorized to make changes.");
   }
+
+  const image = req.file?.path
+    ? await uploadOnCloudinary(req.file.path)
+    : null;
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,
     {
       $set: {
-        content: content.trim(),
+        caption: caption.trim(),
+        ...(image && { imageContent: image.url }),
       },
     },
     {
@@ -210,6 +235,10 @@ const updateTweet = asyncHandler(async (req, res) => {
       runValidators: true,
     },
   );
+
+  if (image && tweet.imageContent) {
+    await deleteFromCloudinary(tweet.imageContent);
+  }
 
   return res
     .status(200)

@@ -7,11 +7,15 @@ const tweetSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    content: {
+    caption: {
       type: String,
       required: true,
       trim: true,
       maxlength: 280,
+    },
+    imageContent: {
+      type: String,
+      default: null,
     },
   },
   {
