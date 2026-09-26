@@ -5,10 +5,11 @@ import {
   History,
   Library,
   Menu,
-  Moon,
+  MessageSquareText,
   Plus,
-  Sun,
   Search,
+  Upload,
+  Video,
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -29,8 +30,10 @@ export default function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopSidebarExpanded, setDesktopSidebarExpanded] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const profileMenuRef = useRef(null);
+  const createMenuRef = useRef(null);
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -60,6 +63,28 @@ export default function AppShell() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [profileMenuOpen]);
+
+  useEffect(() => {
+    if (!createMenuOpen) return;
+
+    const handlePointerDown = (event) => {
+      if (createMenuRef.current && !createMenuRef.current.contains(event.target)) {
+        setCreateMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setCreateMenuOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [createMenuOpen]);
 
   useEffect(() => {
     if (isVideoPage) {
@@ -202,13 +227,55 @@ export default function AppShell() {
             {/* // user authentication buttons, shows different buttons based on whether the user is logged in or not */}
             {user ? (
               <>
-                <button
-                  className="hidden items-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95 sm:flex"
-                  onClick={() => navigate("/upload")}
-                >
-                  <Plus size={17} />
-                  Create
-                </button>
+                <div ref={createMenuRef} className="relative hidden sm:block">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
+                    onClick={() => setCreateMenuOpen((open) => !open)}
+                    aria-expanded={createMenuOpen}
+                    aria-haspopup="menu"
+                  >
+                    <Plus size={17} />
+                    Create
+                  </button>
+                  <AnimatePresence>
+                    {createMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.14 }}
+                        className="absolute right-0 top-full z-40 mt-2 w-52 overflow-hidden rounded-xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
+                        role="menu"
+                      >
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setCreateMenuOpen(false);
+                            navigate("/upload");
+                          }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
+                        >
+                          <Video size={17} />
+                          Upload video
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setCreateMenuOpen(false);
+                            navigate("/create-tweet");
+                          }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
+                        >
+                          <MessageSquareText size={17} />
+                          Create tweet
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
                 <div ref={profileMenuRef} className="relative">
                   <button
                     className="ml-1 flex items-center gap-2 rounded-full duration-500 p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
