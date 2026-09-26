@@ -57,9 +57,14 @@ export const subscriptionService = {
 };
 export const tweetService = {
   list: (id: string) => api.get(`/tweets/getUserTweets/${id}`),
-  create: (content: string) => api.post("/tweets/createTweet", { content }),
-  update: (id: string, content: string) =>
-    api.patch(`/tweets/updateTweet/${id}`, { content }),
+  create: (caption: string, imageContent?: File) => {
+    const body = new FormData();
+    body.append("caption", caption);
+    if (imageContent) body.append("imageContent", imageContent);
+    return api.postForm("/tweets/createTweet", body);
+  },
+  update: (id: string, caption: string) =>
+    api.patch(`/tweets/updateTweet/${id}`, { caption }),
   delete: (id: string) => api.delete(`/tweets/deleteTweet/${id}`),
 };
 export const dashboardService = {

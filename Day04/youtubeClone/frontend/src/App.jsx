@@ -9,6 +9,7 @@ import VideoDetail from "./pages/VideoDetail.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import UploadVideo from "./pages/UploadVideo.jsx";
+import CreateTweet from "./pages/CreateTweet.jsx";
 import AppShell from "./components/AppShell.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Library from "./pages/Library.jsx";
@@ -25,6 +26,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:section" element={<Profile />} />
           <Route path="/upload" element={<UploadVideo />} />
+          <Route path="/create-tweet" element={<CreateTweet />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
           <Route path="/liked-videos" element={<Library mode="library" />} />
