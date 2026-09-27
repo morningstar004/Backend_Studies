@@ -86,5 +86,6 @@ export const userService = {
   cover: (body: FormData) => api.patchForm("/users/change-cover-image", body),
   remove: () => api.delete("/users/delete-user"),
   clearHistory: () => api.delete("/users/clear-history"),
-  removeFromHistory: (videoId: string) => api.patch(`/users/history/${videoId}`)
+  removeFromHistory: (videoId: string) =>
+    api.patch(`/users/history/${videoId}`),
 };

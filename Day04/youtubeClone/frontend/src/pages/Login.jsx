@@ -7,19 +7,34 @@ import { useAuth } from "../context/AuthContext.jsx";
 const getLoginErrorMessage = (message = "") => {
   const normalized = String(message).toLowerCase();
 
-  if (normalized.includes("credential missing") || normalized.includes("username is required") || normalized.includes("email is required")) {
+  if (
+    normalized.includes("credential missing") ||
+    normalized.includes("username is required") ||
+    normalized.includes("email is required")
+  ) {
     return "Username or email is required.";
   }
 
-  if (normalized.includes("user does not exist") || normalized.includes("user not found") || normalized.includes("no user")) {
+  if (
+    normalized.includes("user does not exist") ||
+    normalized.includes("user not found") ||
+    normalized.includes("no user")
+  ) {
     return "User does not exist.";
   }
 
-  if (normalized.includes("invalid password") || normalized.includes("password wrong") || normalized.includes("wrong password")) {
+  if (
+    normalized.includes("invalid password") ||
+    normalized.includes("password wrong") ||
+    normalized.includes("wrong password")
+  ) {
     return "Password is wrong.";
   }
 
-  if (normalized.includes("username") && (normalized.includes("incorrect") || normalized.includes("invalid"))) {
+  if (
+    normalized.includes("username") &&
+    (normalized.includes("incorrect") || normalized.includes("invalid"))
+  ) {
     return "Username is incorrect.";
   }
 

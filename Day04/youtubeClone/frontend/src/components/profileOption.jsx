@@ -24,7 +24,9 @@ const ProfileOption = ({ onClose }) => {
         >
           @{user?.username || "Your account"}
         </NavLink>
-        <p className="text-xs text-black/60 dark:text-white/60">{user?.email || "Signed in"}</p>
+        <p className="text-xs text-black/60 dark:text-white/60">
+          {user?.email || "Signed in"}
+        </p>
       </div>
 
       {links.map(({ to, label }) => (
@@ -47,7 +49,11 @@ const ProfileOption = ({ onClose }) => {
         className="flex w-full items-center justify-between border-t border-black/10 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
       >
         <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        {theme === "dark" ? (
+          <Sun className="h-4 w-4" />
+        ) : (
+          <Moon className="h-4 w-4" />
+        )}
       </button>
 
       <button

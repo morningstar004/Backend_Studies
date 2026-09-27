@@ -15,8 +15,7 @@ import nodemailer from "nodemailer";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const sendPasswordResetOtp = async (email, otp) => {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } =
-    process.env;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !SMTP_FROM) {
     throw new apiError(
@@ -240,7 +239,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
     // Do not reveal whether an address is registered.
     return res
       .status(200)
-      .json(new ResponseHandler(200, "If this email is registered, an OTP has been sent.", {}));
+      .json(
+        new ResponseHandler(
+          200,
+          "If this email is registered, an OTP has been sent.",
+          {},
+        ),
+      );
   }
 
   const otp = crypto.randomInt(1000, 9999).toString();
@@ -262,7 +267,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Password reset OTP sent to your email.", {}));
+    .json(
+      new ResponseHandler(200, "Password reset OTP sent to your email.", {}),
+    );
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -272,7 +279,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   const confirmPassword = req.body?.confirmPassword;
 
   if (!email || !otp || !newPassword || !confirmPassword) {
-    throw new apiError(400, "Email, OTP, and both password fields are required.");
+    throw new apiError(
+      400,
+      "Email, OTP, and both password fields are required.",
+    );
   }
   if (!EMAIL_PATTERN.test(email)) {
     throw new apiError(400, "Please provide a valid email address");
@@ -292,7 +302,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   }).select("+passwordResetOtpHash +passwordResetOtpExpires");
 
   if (!user) {
-    throw new apiError(400, "The OTP is invalid or has expired. Request a new one.");
+    throw new apiError(
+      400,
+      "The OTP is invalid or has expired. Request a new one.",
+    );
   }
 
   user.password = newPassword;
@@ -303,7 +316,13 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Password reset successfully. You can now sign in.", {}));
+    .json(
+      new ResponseHandler(
+        200,
+        "Password reset successfully. You can now sign in.",
+        {},
+      ),
+    );
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -736,19 +755,21 @@ const toggleWatchlist = asyncHandler(async (req, res) => {
     throw new apiError(404, "User not found.");
   }
 
-  const alreadySaved = user.watchlist.some(
-    (id) => id.toString() === videoId,
-  );
+  const alreadySaved = user.watchlist.some((id) => id.toString() === videoId);
 
   if (alreadySaved) {
-    user.watchlist = user.watchlist.filter(
-      (id) => id.toString() !== videoId,
-    );
+    user.watchlist = user.watchlist.filter((id) => id.toString() !== videoId);
     await user.save();
 
     return res
       .status(200)
-      .json(new ResponseHandler(200, "Video removed from watchlist.", user.watchlist));
+      .json(
+        new ResponseHandler(
+          200,
+          "Video removed from watchlist.",
+          user.watchlist,
+        ),
+      );
   }
 
   user.watchlist.push(videoId);
@@ -756,7 +777,9 @@ const toggleWatchlist = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Video added to watchlist.", user.watchlist));
+    .json(
+      new ResponseHandler(200, "Video added to watchlist.", user.watchlist),
+    );
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
@@ -771,47 +794,46 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       $lookup: {
         from: "videos",
         localField: "watchHistory",
-        foreignField:"_id",
+        foreignField: "_id",
         as: "watchHistory",
         pipeline: [
           {
-            $lookup:{
-              from:"users",
+            $lookup: {
+              from: "users",
               localField: "owner",
               foreignField: "_id",
               as: "owner",
               pipeline: [
                 {
                   $project: {
-                    fullName:1,
-                    username:1,
-                    avatar:1,
-                  }
-                }
-              ]
-            }
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
           },
           {
             $addFields: {
-              owner:{
-                $first:"$owner",
-              }
-            }
-          }
-        ]
-      }
-
-    }
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
   ]);
 
   return res
-  .status(200)
-  .json(new ResponseHandler(200,"Users WatchHistory",user[0].watchHistory))
+    .status(200)
+    .json(new ResponseHandler(200, "Users WatchHistory", user[0].watchHistory));
 });
 
 const removeFromHistory = asyncHandler(async (req, res) => {
-  const {videoId} = req.params;
-  if(!mongoose.isValidObjectId(videoId)){
+  const { videoId } = req.params;
+  if (!mongoose.isValidObjectId(videoId)) {
     throw new apiError(400, "Invalid VideoID.");
   }
 
@@ -820,13 +842,19 @@ const removeFromHistory = asyncHandler(async (req, res) => {
     { $pull: { watchHistory: new mongoose.Types.ObjectId(videoId) } },
     { new: true },
   );
-  if(!user){
+  if (!user) {
     throw new apiError(404, "User not found.");
   }
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Video removed from watch history.", user.watchHistory));
+    .json(
+      new ResponseHandler(
+        200,
+        "Video removed from watch history.",
+        user.watchHistory,
+      ),
+    );
 });
 
 const clearHistory = asyncHandler(async (req, res) => {
@@ -841,7 +869,9 @@ const clearHistory = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Watch history cleared.", user.watchHistory));
+    .json(
+      new ResponseHandler(200, "Watch history cleared.", user.watchHistory),
+    );
 });
 const getWatchlist = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
@@ -888,7 +918,9 @@ const getWatchlist = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Users Watchlist", user[0]?.watchlist || []));
+    .json(
+      new ResponseHandler(200, "Users Watchlist", user[0]?.watchlist || []),
+    );
 });
 
 export {

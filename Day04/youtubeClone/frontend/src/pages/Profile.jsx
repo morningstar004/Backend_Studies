@@ -270,14 +270,14 @@ const Profile = () => {
       <div className="space-y-3">
         {tweets.map((tweet) => (
           <article key={tweet._id} className="surface p-4">
-                <p className="whitespace-pre-wrap text-sm">{tweet.caption}</p>
-                {tweet.imageContent && (
-                  <img
-                    src={tweet.imageContent}
-                    alt="Tweet attachment"
-                    className="mt-3 max-h-[32rem] w-full rounded-lg object-contain"
-                  />
-                )}
+            <p className="whitespace-pre-wrap text-sm">{tweet.caption}</p>
+            {tweet.imageContent && (
+              <img
+                src={tweet.imageContent}
+                alt="Tweet attachment"
+                className="mt-3 max-h-[32rem] w-full rounded-lg object-contain"
+              />
+            )}
             <p className="mt-2 text-xs text-black/50 dark:text-white/50">
               {formatDate(tweet.createdAt)}
             </p>

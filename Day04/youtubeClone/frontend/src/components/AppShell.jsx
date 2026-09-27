@@ -44,7 +44,10 @@ export default function AppShell() {
     if (!profileMenuOpen) return;
 
     const handlePointerDown = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
         setProfileMenuOpen(false);
       }
     };
@@ -68,7 +71,10 @@ export default function AppShell() {
     if (!createMenuOpen) return;
 
     const handlePointerDown = (event) => {
-      if (createMenuRef.current && !createMenuRef.current.contains(event.target)) {
+      if (
+        createMenuRef.current &&
+        !createMenuRef.current.contains(event.target)
+      ) {
         setCreateMenuOpen(false);
       }
     };
@@ -179,7 +185,7 @@ export default function AppShell() {
             aria-label={desktopSidebarExpanded ? "Close menu" : "Open menu"}
             aria-expanded={desktopSidebarExpanded}
           >
-            <Menu size={21}/>
+            <Menu size={21} />
           </button>
           <NavLink
             to="/"
@@ -298,7 +304,9 @@ export default function AppShell() {
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className="absolute right-0 top-full z-40 mt-2"
                       >
-                        <ProfileOption onClose={() => setProfileMenuOpen(false)} />
+                        <ProfileOption
+                          onClose={() => setProfileMenuOpen(false)}
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>

@@ -312,7 +312,11 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const [updatedVideo] = await Promise.all([
-    Video.findByIdAndUpdate(videoId, { $inc: { views: 1 } }, { returnDocument: "after" }),
+    Video.findByIdAndUpdate(
+      videoId,
+      { $inc: { views: 1 } },
+      { returnDocument: "after" },
+    ),
     User.findByIdAndUpdate(req.user._id, {
       $addToSet: { watchHistory: video._id },
     }),
@@ -425,14 +429,12 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
   await Video.findByIdAndDelete(videoId);
 
-  return res
-    .status(200)
-    .json(
-      new ResponseHandler(200, "Video and thumbnail have been deleted.", {
-        videoDelete,
-        thumbnailDelete,
-      }),
-    );
+  return res.status(200).json(
+    new ResponseHandler(200, "Video and thumbnail have been deleted.", {
+      videoDelete,
+      thumbnailDelete,
+    }),
+  );
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {

@@ -113,7 +113,13 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "User playlists fetched successfully.", playlists));
+    .json(
+      new ResponseHandler(
+        200,
+        "User playlists fetched successfully.",
+        playlists,
+      ),
+    );
 });
 
 const getPlaylistById = asyncHandler(async (req, res) => {

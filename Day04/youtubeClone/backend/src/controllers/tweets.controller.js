@@ -23,9 +23,7 @@ const createTweet = asyncHandler(async (req, res) => {
     throw new apiError(400, "Caption is required to Tweet.");
   }
 
-  const image = req.file?.path
-    ? await uploadOnCloudinary(req.file.path)
-    : null;
+  const image = req.file?.path ? await uploadOnCloudinary(req.file.path) : null;
 
   const tweet = await Tweet.create({
     caption: caption.trim(),
@@ -218,9 +216,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     throw new apiError(403, "Not authorized to make changes.");
   }
 
-  const image = req.file?.path
-    ? await uploadOnCloudinary(req.file.path)
-    : null;
+  const image = req.file?.path ? await uploadOnCloudinary(req.file.path) : null;
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,

@@ -65,7 +65,9 @@ const toggleVideoDislike = asyncHandler(async (req, res) => {
     await Like.findByIdAndDelete(existingReaction._id);
     return res
       .status(200)
-      .json(new ResponseHandler(200, "Video dislike removed successfully.", null));
+      .json(
+        new ResponseHandler(200, "Video dislike removed successfully.", null),
+      );
   }
 
   const dislike = existingReaction
@@ -74,7 +76,11 @@ const toggleVideoDislike = asyncHandler(async (req, res) => {
         { $set: { isDislike: true } },
         { new: true },
       )
-    : await Like.create({ video: videoId, likedBy: req.user._id, isDislike: true });
+    : await Like.create({
+        video: videoId,
+        likedBy: req.user._id,
+        isDislike: true,
+      });
 
   return res
     .status(201)
@@ -137,7 +143,9 @@ const toggleCommentDislike = asyncHandler(async (req, res) => {
     await Like.findByIdAndDelete(existingReaction._id);
     return res
       .status(200)
-      .json(new ResponseHandler(200, "Comment dislike removed successfully.", null));
+      .json(
+        new ResponseHandler(200, "Comment dislike removed successfully.", null),
+      );
   }
 
   const dislike = existingReaction

@@ -47,8 +47,8 @@ export default function Dashboard() {
               <SkeletonCard key={x} />
             ))}
           </div>
-          // Displaying the videos if they are available, otherwise showing an empty state message.
-        ) : videos.data?.data?.length ? (
+        ) : // Displaying the videos if they are available, otherwise showing an empty state message.
+        videos.data?.data?.length ? (
           <div className="space-y-2">
             {videos.data.data.map((v) => (
               <div key={v._id} className="surface flex items-center gap-3 p-3">

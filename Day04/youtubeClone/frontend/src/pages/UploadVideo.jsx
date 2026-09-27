@@ -39,7 +39,9 @@ const UploadVideo = () => {
       body.append("videoFile", form.videoFile);
       body.append("thumbnail", form.thumbnail);
       const result = await videoService.publish(body);
-      toast.success(form.isPublished ? "Video published" : "Video saved as private");
+      toast.success(
+        form.isPublished ? "Video published" : "Video saved as private",
+      );
       navigate(`/video/${result?.data?._id || ""}`);
     } catch (err) {
       toast.error(err.message);
