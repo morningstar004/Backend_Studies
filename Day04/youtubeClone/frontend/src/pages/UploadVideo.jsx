@@ -49,9 +49,9 @@ const UploadVideo = () => {
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className="-m-4 grid min-h-[calc(100vh-4rem)] sm:-m-6 lg:grid-cols-[minmax(320px,0.88fr)_minmax(0,1.12fr)]"
+      className="-m-4 grid min-h-[calc(100vh-4rem)] sm:-m-6 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:grid-cols-[minmax(320px,0.88fr)_minmax(0,1.12fr)] lg:grid-rows-[minmax(0,1fr)]"
     >
-      <section className="flex flex-col px-5 py-8 sm:px-10 lg:px-14 lg:py-12">
+      <section className="flex flex-col px-5 py-8 sm:px-10 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:px-14 lg:py-12">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             Video studio
@@ -183,7 +183,7 @@ const UploadVideo = () => {
         </button>
       </section>
 
-      <section className="flex min-h-[360px] items-center justify-center bg-[#eceeef] p-5 dark:bg-[#17191b] sm:p-10 lg:min-h-0">
+      <section className="flex min-h-[360px] items-center justify-center bg-[#eceeef] p-5 dark:bg-[#17191b] sm:p-10 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:self-start">
         <label
           htmlFor="video-upload"
           className="group flex aspect-video w-full max-w-4xl cursor-pointer flex-col items-center justify-center border-2 border-dashed border-black/20 bg-[#dfe2e4] px-5 text-center transition hover:border-primary hover:bg-[#d8dcdf] focus-within:border-primary dark:border-white/20 dark:bg-[#222527] dark:hover:bg-[#292d2f]"
