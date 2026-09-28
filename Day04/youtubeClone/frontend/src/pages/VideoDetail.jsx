@@ -179,6 +179,12 @@ const VideoDetail = () => {
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         seekBy(7);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        changeVolumeBy(0.05);
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        changeVolumeBy(-0.05);
       }
     };
 
@@ -204,6 +210,23 @@ const VideoDetail = () => {
     }
     setVolume(nextVolume);
     setIsMuted(nextVolume === 0);
+  };
+
+  const changeVolumeBy = (amount) => {
+    const player = videoRef.current;
+    if (!player) return;
+    const currentVolume = player.muted ? 0 : player.volume;
+    const nextVolume = Math.min(1, Math.max(0, currentVolume + amount));
+    player.volume = nextVolume;
+    player.muted = nextVolume === 0;
+    setVolume(nextVolume);
+    setIsMuted(nextVolume === 0);
+    setPlayerFeedback(amount > 0 ? "volume-up" : "volume-down");
+    window.clearTimeout(feedbackTimeoutRef.current);
+    feedbackTimeoutRef.current = window.setTimeout(
+      () => setPlayerFeedback(null),
+      700,
+    );
   };
 
   const toggleMute = () => {
@@ -367,6 +390,18 @@ const VideoDetail = () => {
                 <div className="absolute right-6 flex items-center gap-2 rounded-full bg-black/65 px-4 py-3 text-white sm:right-12">
                   <span className="text-lg font-semibold">+7s</span>
                   <ArrowRight size={22} />
+                </div>
+              ) : playerFeedback === "volume-up" ||
+                playerFeedback === "volume-down" ? (
+                <div className="flex items-center gap-3 rounded-full bg-black/65 px-5 py-4 text-white">
+                  {isMuted || volume === 0 ? (
+                    <VolumeX size={28} />
+                  ) : (
+                    <Volume2 size={28} />
+                  )}
+                  <span className="text-lg font-semibold">
+                    {Math.round(volume * 100)}%
+                  </span>
                 </div>
               ) : (
                 <div className="rounded-full bg-black/55 p-5 text-white">
