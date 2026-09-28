@@ -5,6 +5,8 @@ import {
   Bell,
   Bookmark,
   Download,
+  ArrowLeft,
+  ArrowRight,
   Maximize,
   Minimize,
   MessageCircle,
@@ -70,9 +72,11 @@ const VideoDetail = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [playerFeedback, setPlayerFeedback] = useState(null);
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const feedbackTimeoutRef = useRef(null);
   const { user } = useAuth();
   const client = useQueryClient();
   const { data, error, isLoading } = useQuery({
@@ -128,9 +132,62 @@ const VideoDetail = () => {
   const togglePlayback = () => {
     const player = videoRef.current;
     if (!player) return;
+    setPlayerFeedback(player.paused ? "play" : "pause");
+    window.clearTimeout(feedbackTimeoutRef.current);
+    feedbackTimeoutRef.current = window.setTimeout(
+      () => setPlayerFeedback(null),
+      700,
+    );
     if (player.paused) player.play();
     else player.pause();
   };
+
+  const seekBy = (seconds) => {
+    const player = videoRef.current;
+    if (!player) return;
+    const nextTime = Math.max(
+      0,
+      Math.min(player.currentTime + seconds, player.duration || Infinity),
+    );
+    player.currentTime = nextTime;
+    setCurrentTime(nextTime);
+    setPlayerFeedback(seconds < 0 ? "backward" : "forward");
+    window.clearTimeout(feedbackTimeoutRef.current);
+    feedbackTimeoutRef.current = window.setTimeout(
+      () => setPlayerFeedback(null),
+      700,
+    );
+  };
+
+  useEffect(() => {
+    const handlePlayerKeys = (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest(
+          "input, textarea, select, button, [contenteditable='true']",
+        )
+      ) {
+        return;
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        togglePlayback();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        seekBy(-7);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        seekBy(7);
+      }
+    };
+
+    window.addEventListener("keydown", handlePlayerKeys);
+    return () => {
+      window.removeEventListener("keydown", handlePlayerKeys);
+      window.clearTimeout(feedbackTimeoutRef.current);
+    };
+  }, []);
 
   const seekVideo = (event) => {
     const nextTime = Number(event.target.value);
@@ -299,6 +356,29 @@ const VideoDetail = () => {
             <source src={video.videoFile} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+          {playerFeedback && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              {playerFeedback === "backward" ? (
+                <div className="absolute left-6 flex items-center gap-2 rounded-full bg-black/65 px-4 py-3 text-white sm:left-12">
+                  <ArrowLeft size={22} />
+                  <span className="text-lg font-semibold">-7s</span>
+                </div>
+              ) : playerFeedback === "forward" ? (
+                <div className="absolute right-6 flex items-center gap-2 rounded-full bg-black/65 px-4 py-3 text-white sm:right-12">
+                  <span className="text-lg font-semibold">+7s</span>
+                  <ArrowRight size={22} />
+                </div>
+              ) : (
+                <div className="rounded-full bg-black/55 p-5 text-white">
+                  {playerFeedback === "play" ? (
+                    <Play size={38} fill="currentColor" />
+                  ) : (
+                    <Pause size={38} fill="currentColor" />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <div
             className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-14 text-white transition-opacity duration-300 sm:px-5 sm:pb-4 ${
               controlsVisible ? "opacity-100" : "pointer-events-none opacity-0"
