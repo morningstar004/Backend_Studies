@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
@@ -30,8 +30,26 @@ function App() {
           <Route path="/create-tweet" element={<CreateTweet />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
-          <Route path="/liked-videos" element={<Library mode="library" />} />
-          <Route path="/watchlist" element={<Library mode="watchlist" />} />
+          <Route
+            path="/library/watchlist"
+            element={<Library mode="watchlist" />}
+          />
+          <Route
+            path="/library/playlists"
+            element={<Library mode="playlists" />}
+          />
+          <Route
+            path="/library/liked-videos"
+            element={<Library mode="liked-videos" />}
+          />
+          <Route
+            path="/watchlist"
+            element={<Navigate to="/library/watchlist" replace />}
+          />
+          <Route
+            path="/liked-videos"
+            element={<Navigate to="/library/liked-videos" replace />}
+          />
           <Route path="/history" element={<History />} />
         </Route>
         <Route path="/channel/:username" element={<Profile />} />
