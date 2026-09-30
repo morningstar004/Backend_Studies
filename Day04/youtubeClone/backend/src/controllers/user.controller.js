@@ -826,9 +826,15 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     },
   ]);
 
+  const historyDates = user[0].watchHistoryDates || {};
+  const watchHistory = user[0].watchHistory.map((video) => ({
+    ...video,
+    historyDate: historyDates[video._id] || null,
+  }));
+
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Users WatchHistory", user[0].watchHistory));
+    .json(new ResponseHandler(200, "Users WatchHistory", watchHistory));
 });
 
 const removeFromHistory = asyncHandler(async (req, res) => {
@@ -839,7 +845,10 @@ const removeFromHistory = asyncHandler(async (req, res) => {
 
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    { $pull: { watchHistory: new mongoose.Types.ObjectId(videoId) } },
+    {
+      $pull: { watchHistory: new mongoose.Types.ObjectId(videoId) },
+      $unset: { [`watchHistoryDates.${videoId}`]: 1 },
+    },
     { new: true },
   );
   if (!user) {
@@ -860,7 +869,7 @@ const removeFromHistory = asyncHandler(async (req, res) => {
 const clearHistory = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    { $set: { watchHistory: [] } },
+    { $set: { watchHistory: [], watchHistoryDates: {} } },
     { new: true },
   );
   if (!user) {

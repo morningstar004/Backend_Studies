@@ -319,6 +319,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     ),
     User.findByIdAndUpdate(req.user._id, {
       $addToSet: { watchHistory: video._id },
+      $set: { [`watchHistoryDates.${video._id}`]: new Date() },
     }),
   ]);
 

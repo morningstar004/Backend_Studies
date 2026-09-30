@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    watchHistoryDates: {
+      type: Map,
+      of: Date,
+      default: {},
+    },
     watchlist: [
       {
         type: mongoose.Schema.Types.ObjectId,
