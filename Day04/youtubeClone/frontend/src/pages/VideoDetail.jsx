@@ -66,6 +66,7 @@ const VideoDetail = () => {
     .filter((suggestion) => suggestion._id !== videoId)
     .slice(0, 8);
 
+  //check if the user is in fullscreen mode and update the state accordingly
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement === playerRef.current);
@@ -76,31 +77,42 @@ const VideoDetail = () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  // Automatically hide the video controls after 2.5 seconds of inactivity
   useEffect(() => {
     controlsTimeoutRef.current = window.setTimeout(() => {
       setControlsVisible(false);
-    }, 2000);
+    }, 2500);
 
     return () => window.clearTimeout(controlsTimeoutRef.current);
   }, []);
 
+  // Show the video controls when the user interacts with the player
   const revealControls = () => {
     setControlsVisible(true);
     window.clearTimeout(controlsTimeoutRef.current);
     controlsTimeoutRef.current = window.setTimeout(() => {
       setControlsVisible(false);
-    }, 3000);
+    }, 2500);
   };
 
+  // Include hours only when the video is at least one hour long.
   const formatTime = (time) => {
     if (!Number.isFinite(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60)
-      .toString()
-      .padStart(2, "0");
+    const totalSeconds = Math.floor(time);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds / 60) % 60;
+    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds}`;
+    }
+
     return `${minutes}:${seconds}`;
   };
 
+  //play and pause toggle.
   const togglePlayback = () => {
     const player = videoRef.current;
     if (!player) return;
@@ -108,17 +120,17 @@ const VideoDetail = () => {
     window.clearTimeout(feedbackTimeoutRef.current);
     feedbackTimeoutRef.current = window.setTimeout(
       () => setPlayerFeedback(null),
-      700,
+      1500,
     );
     if (player.paused) player.play();
     else player.pause();
   };
 
+  // Seek the video by a specified number of seconds, ensuring that the new time is within the video's duration.
   const seekBy = (seconds) => {
     const player = videoRef.current;
     if (!player) return;
     const nextTime = Math.max(
-      0,
       Math.min(player.currentTime + seconds, player.duration || Infinity),
     );
     player.currentTime = nextTime;
@@ -127,10 +139,11 @@ const VideoDetail = () => {
     window.clearTimeout(feedbackTimeoutRef.current);
     feedbackTimeoutRef.current = window.setTimeout(
       () => setPlayerFeedback(null),
-      700,
+      1500,
     );
   };
 
+  // handles events from the key presses and select specific functions to run.
   useEffect(() => {
     const handlePlayerKeys = (event) => {
       if (
@@ -167,12 +180,14 @@ const VideoDetail = () => {
     };
   }, []);
 
+  // Seek the video to a specific time based on the value of the range input !via the video slider output.
   const seekVideo = (event) => {
     const nextTime = Number(event.target.value);
     if (videoRef.current) videoRef.current.currentTime = nextTime;
     setCurrentTime(nextTime);
   };
 
+  // Change the volume based on event.target.value !using the output from volume slider.
   const changeVolume = (event) => {
     const nextVolume = Number(event.target.value);
     const player = videoRef.current;
@@ -184,6 +199,7 @@ const VideoDetail = () => {
     setIsMuted(nextVolume === 0);
   };
 
+  // Change the volume by a specified amount(+-0.05), ensuring that the new volume is within the range of 0 to 1.
   const changeVolumeBy = (amount) => {
     const player = videoRef.current;
     if (!player) return;
@@ -197,7 +213,7 @@ const VideoDetail = () => {
     window.clearTimeout(feedbackTimeoutRef.current);
     feedbackTimeoutRef.current = window.setTimeout(
       () => setPlayerFeedback(null),
-      700,
+      1500,
     );
   };
 
@@ -217,11 +233,14 @@ const VideoDetail = () => {
     if (!document.fullscreenElement) playerRef.current?.requestFullscreen();
     else document.exitFullscreen();
   };
+
+  // get comments from the videoId.
   const comments = useQuery({
     queryKey: ["comments", videoId],
     queryFn: () => commentService.list(videoId),
     enabled: !!video,
   });
+
   const addComment = useMutation({
     mutationFn: () => commentService.create(videoId, content),
     onSuccess: () => {
@@ -243,6 +262,7 @@ const VideoDetail = () => {
       client.invalidateQueries({ queryKey: ["comments", videoId] }),
     onError: (e) => toast.error(e.message),
   });
+
   const like = useMutation({
     mutationFn: () => likeService.video(videoId),
     onSuccess: (r) => {
@@ -269,15 +289,6 @@ const VideoDetail = () => {
     },
     onError: (e) => toast.error(e.message),
   });
-  const subscription = useMutation({
-    mutationFn: () => subscriptionService.toggle(video.owner._id),
-    onSuccess: (r) => {
-      client.invalidateQueries({ queryKey: ["video", videoId] });
-      toast.success(r.message);
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
   const shareVideo = async () => {
     const shareUrl = window.location.href;
     try {
@@ -291,7 +302,6 @@ const VideoDetail = () => {
       if (error?.name !== "AbortError") toast.error("Unable to share video.");
     }
   };
-
   const downloadVideo = () => {
     const link = document.createElement("a");
     link.href = video.videoFile;
@@ -300,6 +310,16 @@ const VideoDetail = () => {
     link.click();
   };
 
+  const subscription = useMutation({
+    mutationFn: () => subscriptionService.toggle(video.owner._id),
+    onSuccess: (r) => {
+      client.invalidateQueries({ queryKey: ["video", videoId] });
+      toast.success(r.message);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  //!check the error frontend design afterwards
   if (error) {
     return (
       <div className="rounded-3xl bg-danger/20 p-8 text-mist">{error}</div>
