@@ -28,6 +28,7 @@ import {
   userService,
   videoService,
 } from "../api/services.ts";
+import VideoDetailSkeleton from "../components/VideoDetailSkeleton.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { toast } from "sonner";
 
@@ -64,7 +65,7 @@ const formatRelativeTime = (dateString) => {
 const VideoDetail = () => {
   const { videoId } = useParams();
   const [content, setContent] = useState("");
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -341,7 +342,7 @@ const VideoDetail = () => {
       </div>
     );
   if (isLoading || !video) {
-    return <div className="surface animate-pulse p-8">Loading video…</div>;
+    return <VideoDetailSkeleton />;
   }
 
   return (
