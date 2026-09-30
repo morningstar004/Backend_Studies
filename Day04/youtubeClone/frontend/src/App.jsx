@@ -13,6 +13,7 @@ import CreateTweet from "./pages/CreateTweet.jsx";
 import AppShell from "./components/AppShell.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Library from "./pages/Library.jsx";
+import History from "./pages/History.jsx";
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
           <Route path="/library" element={<Library />} />
           <Route path="/liked-videos" element={<Library mode="library" />} />
           <Route path="/watchlist" element={<Library mode="watchlist" />} />
-          <Route path="/history" element={<Library mode="history" />} />
+          <Route path="/history" element={<History />} />
         </Route>
         <Route path="/channel/:username" element={<Profile />} />
         <Route path="/channel/:username/:section" element={<Profile />} />
