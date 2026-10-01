@@ -14,6 +14,7 @@ import AppShell from "./components/AppShell.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Library from "./pages/Library.jsx";
 import History from "./pages/History.jsx";
+import Subscriptions from "./pages/Subscriptions.jsx";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
             element={<Navigate to="/library/liked-videos" replace />}
           />
           <Route path="/history" element={<History />} />
+          <Route path="/subscriptions" element={<Subscriptions />} />
         </Route>
         <Route path="/channel/:username" element={<Profile />} />
         <Route path="/channel/:username/:section" element={<Profile />} />

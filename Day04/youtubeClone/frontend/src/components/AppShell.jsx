@@ -11,6 +11,7 @@ import {
   Plus,
   Search,
   ThumbsUp,
+  UsersRound,
   Upload,
   Video,
   X,
@@ -23,6 +24,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 const links = [
   { to: "/", label: "Home", icon: Compass },
+  { to: "/subscriptions", label: "Subscriptions", icon: UsersRound },
 ];
 const active = ({ isActive }) =>
   `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
