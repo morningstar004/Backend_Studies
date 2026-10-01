@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
   Clapperboard,
   Compass,
@@ -22,6 +23,7 @@ import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { subscriptionService } from "../api/services.ts";
 const links = [
   { to: "/", label: "Home", icon: Compass },
   { to: "/subscriptions", label: "Subscriptions", icon: UsersRound },
@@ -35,6 +37,7 @@ export default function AppShell() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
   const profileMenuRef = useRef(null);
   const createMenuRef = useRef(null);
   const { user } = useAuth();
@@ -42,6 +45,53 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const isVideoPage = location.pathname.startsWith("/video/");
+  const subscriptionsQuery = useQuery({
+    queryKey: ["subscriptions", user?._id],
+    queryFn: () => subscriptionService.subscribed(user._id),
+    enabled: Boolean(user?._id),
+  });
+  const subscribedChannels = (subscriptionsQuery.data?.data || [])
+    .map((entry) => entry.channel)
+    .filter(Boolean);
+  const visibleSubscribedChannels = showAllSubscriptions
+    ? subscribedChannels
+    : subscribedChannels.slice(0, 5);
+
+  const renderSubscribedChannels = (closeMenu = false) => (
+    <div className="ml-5 space-y-1 border-l border-black/15 py-1 pl-3 dark:border-white/15">
+      <div className="max-h-64 space-y-1 overflow-y-auto">
+        {visibleSubscribedChannels.map((channel) => (
+          <NavLink
+            key={channel._id || channel.username}
+            onClick={closeMenu ? () => setMobileMenuOpen(false) : undefined}
+            className={({ isActive }) =>
+              `flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            }
+            to={`/channel/${channel.username}`}
+          >
+            <img
+              src={channel.avatar}
+              alt=""
+              className="h-6 w-6 shrink-0 rounded-full object-cover"
+            />
+            <span className="truncate">
+              {channel.fullName || channel.username}
+            </span>
+          </NavLink>
+        ))}
+      </div>
+      {subscribedChannels.length > 5 && (
+        <button
+          type="button"
+          onClick={() => setShowAllSubscriptions((isShowingAll) => !isShowingAll)}
+          aria-expanded={showAllSubscriptions}
+          className="w-full rounded-xl px-2 py-2 text-left text-xs font-semibold text-primary hover:bg-black/5 dark:hover:bg-white/10"
+        >
+          {showAllSubscriptions ? "Show less" : "Show all"}
+        </button>
+      )}
+    </div>
+  );
 
   useEffect(() => {
     if (!profileMenuOpen) return;
@@ -123,6 +173,7 @@ export default function AppShell() {
           {label}
         </NavLink>
       ))}
+      {user && renderSubscribedChannels(true)}
       <NavLink
         onClick={() => setMobileMenuOpen(false)}
         className={active}
@@ -217,6 +268,7 @@ export default function AppShell() {
           <span>{label}</span>
         </NavLink>
       ))}
+      {user && desktopSidebarExpanded && renderSubscribedChannels()}
       <NavLink className={desktopActive} to="/library" end>
         <Library size={18} />
         <span>Library</span>
