@@ -2,12 +2,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Clapperboard,
   Compass,
+  Bookmark,
   History,
   Library,
+  ListVideo,
   Menu,
   MessageSquareText,
   Plus,
   Search,
+  ThumbsUp,
   Upload,
   Video,
   X,
@@ -20,8 +23,6 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 const links = [
   { to: "/", label: "Home", icon: Compass },
-  { to: "/library", label: "Library", icon: Library },
-  { to: "/history", label: "History", icon: History },
 ];
 const active = ({ isActive }) =>
   `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
@@ -120,14 +121,51 @@ export default function AppShell() {
           {label}
         </NavLink>
       ))}
+      <NavLink
+        onClick={() => setMobileMenuOpen(false)}
+        className={active}
+        to="/library"
+        end
+      >
+        <Library size={18} />
+        Library
+      </NavLink>
+      <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
+        <NavLink
+          onClick={() => setMobileMenuOpen(false)}
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+          }
+          to="/library/watchlist"
+        >
+          <Bookmark size={16} />
+          Watchlist
+        </NavLink>
+        <NavLink
+          onClick={() => setMobileMenuOpen(false)}
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+          }
+          to="/library/playlists"
+        >
+          <ListVideo size={16} />
+          Playlists
+        </NavLink>
+        <NavLink
+          onClick={() => setMobileMenuOpen(false)}
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+          }
+          to="/library/liked-videos"
+        >
+          <ThumbsUp size={16} />
+          Liked videos
+        </NavLink>
+      </div>
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <NavLink className={active} to="/dashboard">
-            <Clapperboard size={18} />
-            Studio
-          </NavLink>
-          <NavLink className={active} to="/profile">
+          <NavLink className={active} to="/profile" end>
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
@@ -135,6 +173,28 @@ export default function AppShell() {
             />
             Your channel
           </NavLink>
+          <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
+            <NavLink
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              }
+              to="/dashboard"
+            >
+              <Clapperboard size={16} />
+              Studio
+            </NavLink>
+            <NavLink
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              }
+              to="/history"
+            >
+              <History size={16} />
+              History
+            </NavLink>
+          </div>
         </>
       )}
     </nav>
@@ -155,13 +215,44 @@ export default function AppShell() {
           <span>{label}</span>
         </NavLink>
       ))}
+      <NavLink className={desktopActive} to="/library" end>
+        <Library size={18} />
+        <span>Library</span>
+      </NavLink>
+      {desktopSidebarExpanded && (
+        <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            }
+            to="/library/watchlist"
+          >
+            <Bookmark size={16} />
+            <span>Watchlist</span>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            }
+            to="/library/playlists"
+          >
+            <ListVideo size={16} />
+            <span>Playlists</span>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            }
+            to="/library/liked-videos"
+          >
+            <ThumbsUp size={16} />
+            <span>Liked videos</span>
+          </NavLink>
+        </div>
+      )}
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <NavLink className={desktopActive} to="/dashboard">
-            <Clapperboard size={18} />
-            <span>Studio</span>
-          </NavLink>
           <NavLink className={desktopActive} to="/profile">
             <img
               className="h-5 w-5 rounded-full object-cover"
@@ -170,6 +261,28 @@ export default function AppShell() {
             />
             <span>{desktopSidebarExpanded ? "Your channel" : "You"}</span>
           </NavLink>
+          {desktopSidebarExpanded && (
+            <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
+              <NavLink
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                }
+                to="/dashboard"
+              >
+                <Clapperboard size={16} />
+                <span>Studio</span>
+              </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                }
+                to="/history"
+              >
+                <History size={16} />
+                <span>History</span>
+              </NavLink>
+            </div>
+          )}
         </>
       )}
     </nav>
