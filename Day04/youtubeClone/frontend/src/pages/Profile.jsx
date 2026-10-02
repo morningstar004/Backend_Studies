@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { Link, NavLink, useParams } from "react-router-dom";
@@ -10,6 +10,9 @@ import {
 } from "../api/services.ts";
 import { useAuth } from "../context/AuthContext.jsx";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
+import ProfileSkeleton, {
+  ProfileContentSkeleton,
+} from "../components/ProfileSkeleton.jsx";
 
 const formatDuration = (seconds = 0) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -113,6 +116,19 @@ const Profile = () => {
   )
     ? section
     : "home";
+  const previousSection = useRef(activeSection);
+  const [sectionTransitioning, setSectionTransitioning] = useState(false);
+
+  useLayoutEffect(() => {
+    if (previousSection.current === activeSection) return;
+
+    previousSection.current = activeSection;
+    setSectionTransitioning(true);
+    const timeout = window.setTimeout(() => setSectionTransitioning(false), 180);
+
+    return () => window.clearTimeout(timeout);
+  }, [activeSection]);
+
   const profileUserId = user?._id;
   const joinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, {
@@ -136,11 +152,19 @@ const Profile = () => {
     queryFn: () => playlistService.list(profileUserId),
     enabled: Boolean(profileUserId),
   });
+  const sectionDataLoading =
+    activeSection === "home"
+      ? videosQuery.isLoading || tweetsQuery.isLoading
+      : activeSection === "videos"
+        ? videosQuery.isLoading
+        : activeSection === "playlists"
+          ? playlistsQuery.isLoading
+          : tweetsQuery.isLoading;
 
   if (error) return <div className="surface p-8 text-primary">{error}</div>;
 
   if (loading || !user) {
-    return <div className="surface animate-pulse p-8">Loading profile…</div>;
+    return <ProfileSkeleton section={activeSection} />;
   }
 
   const videos = videosQuery.data?.data?.videos || [];
@@ -407,7 +431,11 @@ const Profile = () => {
               ))}
             </div>
             <div className="surface p-5 sm:p-7 rounded-t-none">
-              {renderContent()}
+              {sectionTransitioning || sectionDataLoading ? (
+                <ProfileContentSkeleton section={activeSection} />
+              ) : (
+                renderContent()
+              )}
             </div>
           </div>
         </div>
