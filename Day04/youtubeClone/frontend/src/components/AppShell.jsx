@@ -45,6 +45,11 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const isVideoPage = location.pathname.startsWith("/video/");
+  //trangitional rendering while navigation inside the app, when user clicks on a link, the page will fade out and the new page will fade in
+  const profileRoute = location.pathname.match(
+    /^(\/profile|\/channel\/[^/]+)(?:\/(?:home|videos|playlists|posts))?\/?$/,
+  );
+  const pageTransitionKey = profileRoute?.[1] || location.pathname;
   const subscriptionsQuery = useQuery({
     queryKey: ["subscriptions", user?._id],
     queryFn: () => subscriptionService.subscribed(user._id),
@@ -526,7 +531,7 @@ export default function AppShell() {
           <AnimatePresence mode="wait">
             {/* Animates page transitions by fading and sliding each route's content in and out. */}
             <motion.div
-              key={location.pathname}
+              key={pageTransitionKey}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
