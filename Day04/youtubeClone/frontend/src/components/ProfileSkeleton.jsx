@@ -75,32 +75,3 @@ export const ProfileContentSkeleton = ({ section = "home" }) => {
   );
 };
 
-const ProfileSkeleton = ({ section = "home" }) => (
-  <div className="space-y-5" role="status" aria-label="Loading profile">
-    <div className="surface animate-pulse overflow-hidden">
-      <Placeholder className="h-64 rounded-none" />
-      <div className="flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:p-7">
-        <Placeholder className="-mt-16 h-36 w-36 shrink-0 rounded-2xl border-4 border-white dark:border-black sm:h-44 sm:w-44" />
-        <div className="w-full space-y-3 sm:-mt-10">
-          <Placeholder className="h-8 w-56 max-w-full" />
-          <Placeholder className="h-4 w-36" />
-          <Placeholder className="h-4 w-52 max-w-full" />
-        </div>
-      </div>
-    </div>
-
-    <div className="surface overflow-hidden">
-      <div className="flex gap-2 border-b border-black/10 px-2 py-2 dark:border-white/10">
-        {Array.from({ length: 4 }, (_, index) => (
-          <Placeholder key={index} className="h-9 w-20 shrink-0 rounded-lg" />
-        ))}
-      </div>
-      <div className="p-5 sm:p-7">
-        <ProfileContentSkeleton section={section} />
-      </div>
-    </div>
-    <span className="sr-only">Loading profile content</span>
-  </div>
-);
-
-export default ProfileSkeleton;
