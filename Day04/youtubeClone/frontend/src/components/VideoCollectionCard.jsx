@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import VideoOptionsMenu from "./VideoOptionsMenu.jsx";
 import formatRelativeTime from "./formatRelativeTime.js";
+import getDominantColor from "../context/dominantColor.js";
 
 const formatDuration = (seconds = 0) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -13,12 +15,34 @@ const formatDuration = (seconds = 0) => {
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 };
 
-const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => (
-  <Link
-    to={`/video/${video._id}`}
-    className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold"
-  >
-    <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
+const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => {
+  const [dominantColor, setDominantColor] = useState("hsl(210 80% 60%)");
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    getDominantColor(video.thumbnail).then((color) => {
+      if (!isCancelled) setDominantColor(color);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [video.thumbnail]);
+
+  return (
+    <Link
+      to={`/video/${video._id}`}
+      className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-2xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
+        style={{
+          backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
+        }}
+      />
+      <div className="relative z-10 flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
       <img
         src={video.thumbnail}
         alt={video.title}
@@ -28,7 +52,7 @@ const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => (
         {formatDuration(video.duration)}
       </div>
     </div>
-    <div className="relative z-10 flex-col px-4 pb-2">
+      <div className="relative z-10 flex-col px-4 pb-2">
       <h2 className="line-clamp-2 font-bold text-white">{video.title}</h2>
       <div className="absolute bottom-2 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
         <VideoOptionsMenu
@@ -66,7 +90,8 @@ const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => (
         </div>
       </div>
     </div>
-  </Link>
-);
+    </Link>
+  );
+};
 
 export default VideoCollectionCard;
