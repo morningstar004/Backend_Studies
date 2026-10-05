@@ -12,7 +12,7 @@ In development, Vite receives that `/api` request and forwards it to `VITE_API_P
 
 `Login.jsx` → `AuthContext.jsx` → `authApi.js` → `apiClient.js` → `backend/src/routes/user.route.js` → controller → MongoDB.
 
-The backend returns an object shaped like `{ success, statusCode, message, data }`. Use `response.data` for the actual resource; `response.message` is suitable for user feedback.
+The backend returns successful responses shaped like `{ success, statusCode, message, data }` and errors shaped like `{ success: false, statusCode, message, errors }`. Use `response.data` for the actual resource; `response.message` is suitable for user feedback. The shared client throws the backend message so pages can show a useful error instead of a generic request failure.
 
 ## Authentication
 

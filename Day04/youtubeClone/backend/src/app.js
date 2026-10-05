@@ -54,7 +54,32 @@ app.use("/api/v1/dashboard", dashboardRouter);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
+    statusCode: 404,
     message: "Route not found",
+  });
+});
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const knownApiError = Number.isInteger(error.statusCode);
+  const statusCode = knownApiError
+    ? error.statusCode
+    : Number.isInteger(error.status) && error.status >= 400 && error.status < 600
+      ? error.status
+      : 500;
+  const message =
+    knownApiError || statusCode < 500
+      ? error.message
+      : "Internal Server Error";
+
+  return res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message: message || "Internal Server Error",
+    errors: Array.isArray(error.errors) ? error.errors : [],
   });
 });
 
