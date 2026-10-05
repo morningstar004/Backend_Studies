@@ -3,6 +3,10 @@ import cors from "cors";
 import cookieParse from "cookie-parser";
 
 const app = express();
+const allowedOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
 // Middleware
 app.use(
@@ -20,7 +24,9 @@ app.use(express.static("public", {}));
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      callback(null, !origin || allowedOrigins.includes(origin));
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }),

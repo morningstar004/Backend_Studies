@@ -13,6 +13,13 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isProduction =
+  process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+const authCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+};
 
 const sendPasswordResetOtp = async (email, otp) => {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
@@ -202,15 +209,10 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken",
   ); //finding user by ID on DB expensive step try to update if DB get slow
 
-  const options = {
-    httpOnly: true, // Cookie can't be modified by frontend, only by server
-    secure: process.env.NODE_ENV === "production",
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, authCookieOptions)
+    .cookie("refreshToken", refreshToken, authCookieOptions)
     .json(
       new ResponseHandler(200, "User LoggedIn Successfully", {
         user: loggedIn,
@@ -338,15 +340,10 @@ const logoutUser = asyncHandler(async (req, res) => {
       returnDocument: "after",
     },
   );
-  const options = {
-    httpOnly: true, // Cookie can't be modified by frontend, only by server
-    secure: process.env.NODE_ENV === "production",
-  };
-
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", authCookieOptions)
+    .clearCookie("refreshToken", authCookieOptions)
     .json(new ResponseHandler(200, "User Logged Out", {}));
 });
 
@@ -374,19 +371,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new apiError(401, "Refreshtoken expired.");
     }
 
-    const options = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-    };
-
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       user._id,
     );
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, authCookieOptions)
+      .cookie("refreshToken", refreshToken, authCookieOptions)
       .json(
         new ResponseHandler(200, "Access token refreshed", {
           accessToken,
