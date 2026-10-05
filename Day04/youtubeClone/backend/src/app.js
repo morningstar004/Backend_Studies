@@ -1,14 +1,30 @@
 import express from "express";
 import cors from "cors";
 import cookieParse from "cookie-parser";
+import { apiError } from "./utils/apiError.js";
+import {
+  createCsrfToken,
+  csrfCookieName,
+  csrfCookieOptions,
+  createCsrfProtection,
+} from "./middlewares/csrf.middleware.js";
 
 const app = express();
 const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
+const isTrustedOrigin = (origin) =>
+  typeof origin === "string" && allowedOrigins.includes(origin);
 
 // Middleware
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "DENY");
+  res.set("Referrer-Policy", "no-referrer");
+  next();
+});
 app.use(
   express.json({
     limit: "10kb",
@@ -25,13 +41,35 @@ app.use(express.static("public", {}));
 app.use(
   cors({
     origin: (origin, callback) => {
-      callback(null, !origin || allowedOrigins.includes(origin));
+      callback(null, isTrustedOrigin(origin));
     },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-CSRF-Token"],
     credentials: true,
+    optionsSuccessStatus: 204,
   }),
 );
 app.use(cookieParse());
+
+app.get("/api/v1/csrf-token", (req, res, next) => {
+  if (!isTrustedOrigin(req.get("Origin"))) {
+    return next(new apiError(403, "Untrusted or missing Origin."));
+  }
+
+  const csrfToken = createCsrfToken();
+  return res
+    .set("Cache-Control", "no-store")
+    .cookie(csrfCookieName, csrfToken, csrfCookieOptions)
+    .status(200)
+    .json({
+      success: true,
+      statusCode: 200,
+      message: "CSRF token issued.",
+      data: { csrfToken },
+    });
+});
+
+app.use("/api/v1", createCsrfProtection(isTrustedOrigin));
 
 //Importing routers
 import { userRouter } from "./routes/user.route.js";

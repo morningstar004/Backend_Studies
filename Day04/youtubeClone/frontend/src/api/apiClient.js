@@ -3,29 +3,10 @@ const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(
   "",
 );
 
-const request = async (path, options = {}) => {
-  const isFormData = options.body instanceof FormData;
-  let response;
-  try {
-    response = await fetch(`${BASE_URL}${path}`, {
-      credentials: "include",
-      // Tells the browser to send cookies (e.g., session/auth cookies) even for cross-origin requests, which is needed for cookie-based authentication.
-      headers: {
-        ...(isFormData ? {} : { "Content-Type": "application/json" }),
-        ...options.headers,
-      },
-      ...options,
-    });
-  } catch (error) {
-    if (error instanceof TypeError) {
-      throw new Error(
-        "Unable to connect to the server. Please check your connection and try again.",
-        { cause: error },
-      );
-    }
-    throw error;
-  }
+let csrfToken;
+let csrfTokenRequest;
 
+const readResponse = async (response) => {
   const responseText = await response.text();
   let responseData = null;
   try {
@@ -45,6 +26,65 @@ const request = async (path, options = {}) => {
     throw new Error(message);
   }
   return responseData;
+};
+
+const fetchWithCredentials = async (url, options) => {
+  try {
+    return await fetch(url, { ...options, credentials: "include" });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Unable to connect to the server. Please check your connection and try again.",
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+};
+
+const getCsrfToken = async () => {
+  if (csrfToken) return csrfToken;
+
+  if (!csrfTokenRequest) {
+    csrfTokenRequest = fetchWithCredentials(`${BASE_URL}/csrf-token`, {
+      method: "GET",
+    })
+      .then(readResponse)
+      .then((responseData) => {
+        const issuedToken = responseData?.data?.csrfToken;
+        if (typeof issuedToken !== "string" || !issuedToken) {
+          throw new Error("The server did not issue a CSRF token.");
+        }
+        csrfToken = issuedToken;
+        return csrfToken;
+      })
+      .finally(() => {
+        csrfTokenRequest = null;
+      });
+  }
+
+  return csrfTokenRequest;
+};
+
+const request = async (path, options = {}) => {
+  const method = (options.method || "GET").toUpperCase();
+  const isFormData = options.body instanceof FormData;
+  const headers = {
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    ...options.headers,
+  };
+
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    headers["X-CSRF-Token"] = await getCsrfToken();
+  }
+
+  let response;
+  response = await fetchWithCredentials(`${BASE_URL}${path}`, {
+    ...options,
+    method,
+    headers,
+  });
+  return readResponse(response);
 };
 
 export const api = {

@@ -19,6 +19,7 @@ const authCookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
+  path: "/api/v1",
 };
 
 const sendPasswordResetOtp = async (email, otp) => {
@@ -216,8 +217,6 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ResponseHandler(200, "User LoggedIn Successfully", {
         user: loggedIn,
-        accessToken,
-        refreshToken,
       }),
     );
 });
@@ -381,9 +380,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie("refreshToken", refreshToken, authCookieOptions)
       .json(
         new ResponseHandler(200, "Access token refreshed", {
-          accessToken,
-          refreshToken,
-        }),
+            authenticated: true,
+          }),
       );
   } catch (error) {
     throw new apiError(401, error?.message || "Invalid refresh Token");

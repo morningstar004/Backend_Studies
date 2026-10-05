@@ -60,7 +60,15 @@ export const isValidCsrfToken = (cookieToken, headerToken) => {
   return tokenBuffersMatch && signatureMatches;
 };
 
-export const verifyCsrfToken = (req, res, next) => {
+export const createCsrfProtection = (isTrustedOrigin) => (req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    return next();
+  }
+
+  if (!isTrustedOrigin(req.get("Origin"))) {
+    return next(new apiError(403, "Untrusted or missing Origin."));
+  }
+
   if (
     !isValidCsrfToken(
       req.cookies?.[csrfCookieName],
