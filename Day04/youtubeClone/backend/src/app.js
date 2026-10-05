@@ -10,10 +10,20 @@ import {
 } from "./middlewares/csrf.middleware.js";
 
 const app = express();
-const allowedOrigins = (process.env.FRONTEND_URL || "")
+const isProduction =
+  process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+const configuredOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
+const allowedOrigins = [
+  ...new Set([
+    ...configuredOrigins,
+    ...(!isProduction
+      ? ["http://localhost:3000", "http://127.0.0.1:3000"]
+      : []),
+  ]),
+];
 const isTrustedOrigin = (origin) =>
   typeof origin === "string" && allowedOrigins.includes(origin);
 
