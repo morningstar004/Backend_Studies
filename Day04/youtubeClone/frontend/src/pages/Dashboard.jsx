@@ -1,6 +1,7 @@
 // Import useQuery hook for managing asynchronous data fetching and caching
 import { useQuery } from "@tanstack/react-query";
-import { Eye, Heart, Users, Video } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Eye, Heart, Pencil, Users, Video } from "lucide-react";
 import { dashboardService } from "../api/services.ts";
 import { SkeletonCard, EmptyState } from "../components/States.jsx";
 const stat = [
@@ -63,6 +64,14 @@ export default function Dashboard() {
                     {v.views} views · {v.isPublished ? "Published" : "Draft"}
                   </p>
                 </div>
+                <Link
+                  to={`/video/${v._id}/edit`}
+                  aria-label={`Edit ${v.title}`}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary/10"
+                >
+                  <Pencil size={15} />
+                  Edit
+                </Link>
               </div>
             ))}
           </div>

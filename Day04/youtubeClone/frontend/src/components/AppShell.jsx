@@ -431,7 +431,7 @@ export default function AppShell() {
                           role="menuitem"
                           onClick={() => {
                             setCreateMenuOpen(false);
-                            navigate("/upload");
+                            navigate("/upload-video");
                           }}
                           className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
                         >

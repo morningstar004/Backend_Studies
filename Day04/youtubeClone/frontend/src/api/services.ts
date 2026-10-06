@@ -12,7 +12,8 @@ const q = (params: Record<string, string | number | undefined>) => {
 export const videoService = {
   list: (params = {}) => api.get(`/video/getAllVideos${q(params)}`),
   byId: (id: string) => api.get(`/video/${id}/getVideoById`),
-  publish: (body: FormData) => api.postForm("/video/publishAVideo", body),
+  publish: (body: FormData, onUploadProgress: (progress: number) => void) =>
+    api.postFormWithProgress("/video/publishAVideo", body, onUploadProgress),
   update: (id: string, body: unknown) =>
     api.patchForm(`/video/${id}/updateVideo`, body),
   delete: (id: string) => api.delete(`/video/${id}/deleteVideo`),

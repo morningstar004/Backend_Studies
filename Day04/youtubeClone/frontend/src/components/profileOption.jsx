@@ -9,7 +9,7 @@ const ProfileOption = ({ onClose }) => {
 
   const links = [
     { to: "/profile", label: user?.username || "Your profile" },
-    { to: "/upload", label: "Add Content" },
+    { to: "/upload-video", label: "Add Content" },
     { to: "/dashboard", label: "Studio" },
   ];
 
