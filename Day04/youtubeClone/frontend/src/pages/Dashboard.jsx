@@ -1,9 +1,10 @@
-// Import useQuery hook for managing asynchronous data fetching and caching
-import { useQuery } from "@tanstack/react-query";
+// Import query hooks for managing asynchronous data fetching and caching.
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Eye, Heart, Pencil, Users, Video } from "lucide-react";
-import { dashboardService } from "../api/services.ts";
+import { Eye, Heart, Pencil, Trash2, Users, Video } from "lucide-react";
+import { dashboardService, videoService } from "../api/services.ts";
 import { SkeletonCard, EmptyState } from "../components/States.jsx";
+import { toast } from "sonner";
 const stat = [
   { key: "totalVideo", label: "Videos", icon: Video },
   { key: "totalViewCount", label: "Views", icon: Eye },
@@ -11,6 +12,7 @@ const stat = [
   { key: "totalLikes", label: "Likes", icon: Heart },
 ];
 export default function Dashboard() {
+  const queryClient = useQueryClient();
   const stats = useQuery({
     queryKey: ["dashboard", "stats"],
     // Fetch dashboard statistics using the dashboardService (dashboardController is has responsible for this)
@@ -19,6 +21,24 @@ export default function Dashboard() {
   const videos = useQuery({
     queryKey: ["dashboard", "videos"],
     queryFn: dashboardService.videos,
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (videoId) => videoService.delete(videoId),
+    onSuccess: async (_, videoId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["dashboard", "videos"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard", "stats"] }),
+        queryClient.invalidateQueries({ queryKey: ["videos"] }),
+        queryClient.invalidateQueries({ queryKey: ["profile-videos"] }),
+        queryClient.invalidateQueries({ queryKey: ["video", videoId] }),
+        queryClient.invalidateQueries({ queryKey: ["watchlist"] }),
+        queryClient.invalidateQueries({ queryKey: ["liked-videos"] }),
+        queryClient.invalidateQueries({ queryKey: ["history"] }),
+        queryClient.invalidateQueries({ queryKey: ["subscription-videos"] }),
+      ]);
+      toast.success("Video deleted");
+    },
+    onError: (error) => toast.error(error.message),
   });
   // Extract the data from the stats query result that is returned from the backend API as an response object.
   const data = stats.data?.data;
@@ -72,6 +92,23 @@ export default function Dashboard() {
                   <Pencil size={15} />
                   Edit
                 </Link>
+                <button
+                  type="button"
+                  aria-label={`Delete ${v.title}`}
+                  disabled={deleteMutation.isPending}
+                  onClick={() => {
+                    if (window.confirm(`Delete "${v.title}"? This cannot be undone.`)) {
+                      deleteMutation.mutate(v._id);
+                    }
+                  }}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Trash2 size={15} />
+                  {deleteMutation.isPending &&
+                  deleteMutation.variables === v._id
+                    ? "Deleting..."
+                    : "Delete"}
+                </button>
               </div>
             ))}
           </div>
