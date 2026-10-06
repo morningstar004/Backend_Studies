@@ -28,7 +28,7 @@ function App() {
         <Route element={<RequireAuth />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:section" element={<Profile />} />
-          <Route path="/upload" element={<UploadVideo />} />
+          <Route path="/upload-video" element={<UploadVideo />} />
           <Route path="/video/:videoId/edit" element={<UpdateVideo />} />
           <Route path="/create-tweet" element={<CreateTweet />} />
           <Route path="/dashboard" element={<Dashboard />} />
