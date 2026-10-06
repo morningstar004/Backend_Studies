@@ -14,7 +14,7 @@ export const videoService = {
   byId: (id: string) => api.get(`/video/${id}/getVideoById`),
   publish: (body: FormData) => api.postForm("/video/publishAVideo", body),
   update: (id: string, body: unknown) =>
-    api.patch(`/video/${id}/updateVideo`, body),
+    api.patchForm(`/video/${id}/updateVideo`, body),
   delete: (id: string) => api.delete(`/video/${id}/deleteVideo`),
   togglePublish: (id: string) =>
     api.patch(`/video/${id}/togglePublishStatus`, {}),

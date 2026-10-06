@@ -22,7 +22,9 @@ router.route("/publishAVideo").post(
   publishAVideo,
 );
 router.route("/:videoId/getVideoById").get(verifyJWT, getVideoById);
-router.route("/:videoId/updateVideo").patch(verifyJWT, updateVideo);
+router
+  .route("/:videoId/updateVideo")
+  .patch(verifyJWT, uploadVideo.single("thumbnail"), updateVideo);
 router.route("/:videoId/deleteVideo").delete(verifyJWT, deleteVideo);
 router
   .route("/:videoId/togglePublishStatus")
