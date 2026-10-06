@@ -420,8 +420,8 @@ const deleteVideo = asyncHandler(async (req, res) => {
   }
 
   const [videoDelete, thumbnailDelete] = await Promise.all([
-    deleteFromCloudinary(videoFile),
-    deleteFromCloudinary(thumbnailFile),
+    deleteFromCloudinary(videoFile, "video"),
+    deleteFromCloudinary(thumbnailFile, "image"),
   ]);
 
   if (!videoDelete || !thumbnailDelete) {

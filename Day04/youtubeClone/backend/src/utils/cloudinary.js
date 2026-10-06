@@ -39,16 +39,43 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-const deleteFromCloudinary = async (cloudinaryUrl) => {
+const deleteFromCloudinary = async (cloudinaryUrl, expectedResourceType) => {
   try {
     if (!cloudinaryUrl) return null;
 
-    // Extract public ID from Cloudinary URL
-    // URL format: https://res.cloudinary.com/[cloud_name]/image/upload/v[version]/[public_id].[extension]
-    const publicId = cloudinaryUrl.split("/").pop().split(".")[0];
+    const url = new URL(cloudinaryUrl);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const uploadIndex = pathSegments.lastIndexOf("upload");
+    const resourceType = pathSegments[uploadIndex - 1];
+
+    if (
+      uploadIndex < 1 ||
+      !["image", "video", "raw"].includes(resourceType) ||
+      (expectedResourceType && resourceType !== expectedResourceType)
+    ) {
+      throw new Error("Invalid Cloudinary asset URL or resource type.");
+    }
+
+    const versionIndex = pathSegments.findIndex(
+      (segment, index) => index > uploadIndex && /^v\d+$/.test(segment),
+    );
+    const publicIdSegments = pathSegments.slice(
+      versionIndex === -1 ? uploadIndex + 1 : versionIndex + 1,
+    );
+
+    if (!publicIdSegments.length) {
+      throw new Error("Cloudinary asset URL does not contain a public ID.");
+    }
+
+    const lastSegmentIndex = publicIdSegments.length - 1;
+    publicIdSegments[lastSegmentIndex] = publicIdSegments[lastSegmentIndex].replace(
+      /\.[^/.]+$/,
+      "",
+    );
+    const publicId = publicIdSegments.join("/");
 
     const response = await cloudinary.uploader.destroy(publicId, {
-      resource_type: "auto",
+      resource_type: resourceType,
     });
 
     console.log("File deleted from Cloudinary:", publicId);
