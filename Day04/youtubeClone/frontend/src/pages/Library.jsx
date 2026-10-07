@@ -138,6 +138,7 @@ export default function Library({ mode }) {
                             <VideoCollectionCard
                               key={video._id}
                               video={video}
+                              isInWatchlist={title === "Watchlist"}
                               compact
                               dominantColorHover
                             />
@@ -202,6 +203,7 @@ export default function Library({ mode }) {
                 key={video._id}
                 video={video}
                 timestamp={video.watchlistAddedAt}
+                isInWatchlist
                 horizontal
                 dominantColorHover
               />

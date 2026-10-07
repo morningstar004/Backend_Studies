@@ -19,6 +19,7 @@ const VideoCollectionCard = ({
   video,
   timestamp = video.createdAt,
   showHistoryRemoval = false,
+  isInWatchlist = false,
   compact = false,
   horizontal = false,
   dominantColorHover = false,
@@ -96,6 +97,7 @@ const VideoCollectionCard = ({
             videoId={video._id}
             videoFile={video.videoFile}
             title={video.title}
+            isInWatchlist={isInWatchlist}
             menuPlacement="below"
             buttonClassName="text-black dark:text-white"
           />
@@ -146,6 +148,7 @@ const VideoCollectionCard = ({
             videoFile={video.videoFile}
             title={video.title}
             showHistoryRemoval={showHistoryRemoval}
+            isInWatchlist={isInWatchlist}
             compact={compact}
           />
         </div>

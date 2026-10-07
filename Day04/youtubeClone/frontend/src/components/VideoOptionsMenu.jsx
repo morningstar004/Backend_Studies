@@ -16,6 +16,7 @@ const VideoOptionsMenu = ({
   videoFile,
   title = "video",
   showHistoryRemoval = false,
+  isInWatchlist = false,
   compact = false,
   menuPlacement = "above",
   buttonClassName = "text-white",
@@ -147,7 +148,11 @@ const VideoOptionsMenu = ({
   };
 
   const menuOptions = [
-    { label: "Save watchlist", icon: Bookmark, action: handleSaveWatchlist },
+    {
+      label: isInWatchlist ? "Remove from watchlist" : "Save to watchlist",
+      icon: Bookmark,
+      action: handleSaveWatchlist,
+    },
     { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
     { label: "Download", icon: Download, action: handleDownload },
     { label: "Share", icon: Share2, action: handleShare },
