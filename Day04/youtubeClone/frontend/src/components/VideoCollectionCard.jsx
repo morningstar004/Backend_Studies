@@ -15,7 +15,11 @@ const formatDuration = (seconds = 0) => {
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 };
 
-const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => {
+const VideoCollectionCard = ({
+  video,
+  timestamp = video.createdAt,
+  showHistoryRemoval = false,
+}) => {
   const [dominantColor, setDominantColor] = useState("hsl(210 80% 60%)");
 
   useEffect(() => {
@@ -59,6 +63,7 @@ const VideoCollectionCard = ({ video, timestamp = video.createdAt }) => {
           videoId={video._id}
           videoFile={video.videoFile}
           title={video.title}
+          showHistoryRemoval={showHistoryRemoval}
         />
       </div>
       <div className="flex items-center gap-2 text-xs">

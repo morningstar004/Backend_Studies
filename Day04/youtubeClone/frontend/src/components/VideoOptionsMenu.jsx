@@ -11,7 +11,12 @@ import {
 import { toast } from "sonner";
 import { playlistService, userService } from "../api/services.ts";
 
-const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
+const VideoOptionsMenu = ({
+  videoId,
+  videoFile,
+  title = "video",
+  showHistoryRemoval = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const queryClient = useQueryClient();
@@ -143,11 +148,15 @@ const VideoOptionsMenu = ({ videoId, videoFile, title = "video" }) => {
     { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
     { label: "Download", icon: Download, action: handleDownload },
     { label: "Share", icon: Share2, action: handleShare },
-    {
-      label: "Remove from History",
-      icon: History,
-      action: handleRemoveFromHistory,
-    },
+    ...(showHistoryRemoval
+      ? [
+          {
+            label: "Remove from History",
+            icon: History,
+            action: handleRemoveFromHistory,
+          },
+        ]
+      : []),
   ];
 
   return (

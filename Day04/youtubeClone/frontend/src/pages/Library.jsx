@@ -91,7 +91,7 @@ export default function Library({ mode }) {
               return (
                 <div
                   key={title}
-                  className={`overflow-hidden rounded-2xl max-h-[400px] h-[500px] border border-black/10 bg-gradient-to-br ${tone} p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                  className={`overflow-hidden rounded-2xl max-h-[300px] h-[375px] border border-black/10 bg-gradient-to-br ${tone} p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                 >
                   <Link to={href} className="mb-4 block">
                     <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export default function Library({ mode }) {
                     </div>
                   </Link>
 
-                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
                     {hasItems
                       ? title === "Playlists"
                         ? preview.map((playlist) => (
@@ -137,7 +137,7 @@ export default function Library({ mode }) {
         </div>
       ) : currentMode === "playlists" ? (
         playlists.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
             {playlists.map((playlist) => (
               <article
                 key={playlist._id}
@@ -181,7 +181,7 @@ export default function Library({ mode }) {
           <EmptyState title="No playlists yet" detail="Create a playlist to collect videos here." />
         )
       ) : visibleVideos.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
           {visibleVideos.map((video) => (
             <VideoCollectionCard key={video._id} video={video} />
           ))}

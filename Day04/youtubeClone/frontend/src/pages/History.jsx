@@ -138,6 +138,7 @@ export default function History() {
                     key={video._id}
                     video={video}
                     timestamp={video.historyDate}
+                    showHistoryRemoval
                   />
                 ))}
               </div>
