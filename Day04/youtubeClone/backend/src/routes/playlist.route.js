@@ -7,6 +7,7 @@ import {
   getPlaylistById,
   getUserPlaylists,
   removeVideoFromPlaylist,
+  togglePlaylistPublishStatus,
   updatePlaylist,
 } from "../controllers/playlist.controller.js";
 
@@ -23,5 +24,8 @@ router
   .delete(verifyJWT, removeVideoFromPlaylist);
 router.route("/:playlistId/deletePlaylist").delete(verifyJWT, deletePlaylist);
 router.route("/:playlistId/updatePlaylist").patch(verifyJWT, updatePlaylist);
+router
+  .route("/:playlistId/togglePublishStatus")
+  .patch(verifyJWT, togglePlaylistPublishStatus);
 
 export { router as playlistRouter };

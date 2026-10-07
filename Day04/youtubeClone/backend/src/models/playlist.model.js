@@ -25,6 +25,10 @@ const playlistSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

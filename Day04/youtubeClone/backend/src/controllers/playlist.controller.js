@@ -6,8 +6,18 @@ import { Playlist } from "../models/playlist.model.js";
 import { Video } from "../models/video.model.js";
 import { User } from "../models/user.model.js";
 
+const parseIsPublished = (value) => {
+  if (value === true || value === "true") {
+    return true;
+  }
+  if (value === false || value === "false") {
+    return false;
+  }
+  throw new apiError(400, "isPublished must be true or false.");
+};
+
 const createPlaylist = asyncHandler(async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, isPublished } = req.body;
 
   if (typeof name !== "string" || name.trim().length < 3) {
     throw new apiError(400, "Playlist name must be at least 3 characters.");
@@ -19,6 +29,9 @@ const createPlaylist = asyncHandler(async (req, res) => {
       throw new apiError(400, "Description must be at least 10 characters.");
     }
     playlistInfo.description = description.trim();
+  }
+  if (isPublished !== undefined) {
+    playlistInfo.isPublished = parseIsPublished(isPublished);
   }
 
   const playlist = await Playlist.create({
@@ -132,6 +145,10 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     {
       $match: {
         _id: new mongoose.Types.ObjectId(playlistId),
+        $or: [
+          { isPublished: true },
+          { owner: new mongoose.Types.ObjectId(req.user._id) },
+        ],
       },
     },
     {
@@ -316,7 +333,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params;
-  const { name, description } = req.body;
+  const { name, description, isPublished } = req.body;
   if (!isValidObjectId(playlistId)) {
     throw new apiError(400, "Invalid PlaylistID.");
   }
@@ -334,8 +351,14 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     }
     updates.description = description.trim();
   }
+  if (isPublished !== undefined) {
+    updates.isPublished = parseIsPublished(isPublished);
+  }
   if (Object.keys(updates).length === 0) {
-    throw new apiError(400, "Provide a name or description to update.");
+    throw new apiError(
+      400,
+      "Provide a name, description, or publish status to update.",
+    );
   }
 
   const playlist = await Playlist.findById(playlistId);
@@ -368,6 +391,39 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     );
 });
 
+const togglePlaylistPublishStatus = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+
+  if (!isValidObjectId(playlistId)) {
+    throw new apiError(400, "Invalid PlaylistID.");
+  }
+
+  const playlist = await Playlist.findById(playlistId);
+  if (!playlist) {
+    throw new apiError(404, "Playlist not found.");
+  }
+
+  if (playlist.owner.toString() !== req.user?._id.toString()) {
+    throw new apiError(403, "Not authorized to change publish status.");
+  }
+
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    { $set: { isPublished: !playlist.isPublished } },
+    { returnDocument: "after" },
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ResponseHandler(
+        200,
+        "Playlist publish status toggled.",
+        updatedPlaylist,
+      ),
+    );
+});
+
 export {
   createPlaylist,
   getUserPlaylists,
@@ -376,4 +432,5 @@ export {
   removeVideoFromPlaylist,
   deletePlaylist,
   updatePlaylist,
+  togglePlaylistPublishStatus,
 };
