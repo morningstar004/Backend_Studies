@@ -16,6 +16,7 @@ const VideoOptionsMenu = ({
   videoFile,
   title = "video",
   showHistoryRemoval = false,
+  compact = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -169,9 +170,11 @@ const VideoOptionsMenu = ({
           event.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="flex h-8 w-8 items-center justify-center rounded-none border-0 bg-transparent p-0 text-white transition hover:bg-transparent"
+        className={`flex items-center justify-center rounded-none border-0 bg-transparent p-0 text-white transition hover:bg-transparent ${
+          compact ? "h-6 w-6" : "h-8 w-8"
+        }`}
       >
-        <MoreVertical className="h-4 w-4" />
+        <MoreVertical className={compact ? "h-4 w-4" : "h-4 w-4"} />
       </button>
 
       {isOpen && (

@@ -96,14 +96,14 @@ export default function Library({ mode }) {
                   <Link to={href} className="mb-4 block">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xl font-bold text-black/65 dark:text-white/70">
+                        <span className="text-[15px] font-bold text-black/65 dark:text-white/70">
                           {title}
                         </span>
-                        <p className="text-xs text-black/60 dark:text-white/60">
+                        <p className="text-[9px] text-black/60 dark:text-white/60">
                           {description}
                         </p>
                       </div>
-                      <span className="rounded-full bg-black/5 px-2 py-1 text-xs font-semibold dark:bg-white/10">
+                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[9px] font-semibold dark:bg-white/10">
                         {count ?? 0}
                       </span>
                     </div>
@@ -115,10 +115,10 @@ export default function Library({ mode }) {
                         ? preview.map((playlist) => (
                             <div
                               key={playlist._id}
-                              className="rounded-2xl border border-black/10 bg-white/70 p-3 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+                              className="rounded-2xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
                             >
-                              <p className="font-semibold">{playlist.name}</p>
-                              <p className="text-xs text-black/60 dark:text-white/60">
+                              <p className="text-xs font-semibold">{playlist.name}</p>
+                              <p className="text-[9px] text-black/60 dark:text-white/60">
                                 {playlist.totalVideos ??
                                   playlist.videos?.length ??
                                   0} videos
@@ -126,7 +126,7 @@ export default function Library({ mode }) {
                             </div>
                           ))
                         : preview.map((video) => (
-                            <VideoCollectionCard key={video._id} video={video} />
+                            <VideoCollectionCard key={video._id} video={video} compact />
                           ))
                       : null}
                   </div>
@@ -145,14 +145,14 @@ export default function Library({ mode }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-semibold">{playlist.name}</h2>
+                    <h2 className="text-xs font-semibold">{playlist.name}</h2>
                     {playlist.description && (
-                      <p className="mt-1 line-clamp-2 text-sm text-black/60 dark:text-white/60">
+                      <p className="mt-1 line-clamp-2 text-[10.5px] text-black/60 dark:text-white/60">
                         {playlist.description}
                       </p>
                     )}
                   </div>
-                  <span className="shrink-0 text-xs text-black/55 dark:text-white/55">
+                  <span className="shrink-0 text-[9px] text-black/55 dark:text-white/55">
                     {playlist.totalVideos ?? playlist.videos?.length ?? 0} videos
                   </span>
                 </div>
@@ -163,12 +163,12 @@ export default function Library({ mode }) {
                         key={video._id}
                         to={`/video/${video._id}`}
                         title={video.title}
-                        className="aspect-video overflow-hidden rounded-lg bg-black/10 dark:bg-white/10"
+                        className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-black/10 dark:bg-white/10"
                       >
                         <img
                           src={video.thumbnail}
                           alt={video.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full scale-75 object-cover"
                         />
                       </Link>
                     ))}
@@ -183,7 +183,7 @@ export default function Library({ mode }) {
       ) : visibleVideos.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
           {visibleVideos.map((video) => (
-            <VideoCollectionCard key={video._id} video={video} />
+            <VideoCollectionCard key={video._id} video={video} compact />
           ))}
         </div>
       ) : (
