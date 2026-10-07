@@ -748,6 +748,7 @@ const toggleWatchlist = asyncHandler(async (req, res) => {
 
   if (alreadySaved) {
     user.watchlist = user.watchlist.filter((id) => id.toString() !== videoId);
+    user.watchlistDates.delete(videoId);
     await user.save();
 
     return res
@@ -762,6 +763,7 @@ const toggleWatchlist = asyncHandler(async (req, res) => {
   }
 
   user.watchlist.push(videoId);
+  user.watchlistDates.set(videoId, new Date());
   await user.save();
 
   return res
@@ -910,6 +912,51 @@ const getWatchlist = asyncHandler(async (req, res) => {
             },
           },
         ],
+      },
+    },
+    {
+      $addFields: {
+        watchlist: {
+          $map: {
+            input: "$watchlist",
+            as: "video",
+            in: {
+              $mergeObjects: [
+                "$$video",
+                {
+                  watchlistAddedAt: {
+                    $let: {
+                      vars: {
+                        watchlistDate: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: {
+                                  $objectToArray: {
+                                    $ifNull: ["$watchlistDates", {}],
+                                  },
+                                },
+                                as: "entry",
+                                cond: {
+                                  $eq: [
+                                    "$$entry.k",
+                                    { $toString: "$$video._id" },
+                                  ],
+                                },
+                              },
+                            },
+                            0,
+                          ],
+                        },
+                      },
+                      in: "$$watchlistDate.v",
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
       },
     },
   ]);

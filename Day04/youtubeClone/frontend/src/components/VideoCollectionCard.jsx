@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import VideoOptionsMenu from "./VideoOptionsMenu.jsx";
 import formatRelativeTime from "./formatRelativeTime.js";
+import getDominantColor from "../context/dominantColor.js";
 
 const formatDuration = (seconds = 0) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -19,13 +21,42 @@ const VideoCollectionCard = ({
   showHistoryRemoval = false,
   compact = false,
   horizontal = false,
+  dominantColorHover = false,
 }) => {
+  const [dominantColor, setDominantColor] = useState("hsl(210 80% 60%)");
+
+  useEffect(() => {
+    if (!dominantColorHover) return undefined;
+
+    let isCancelled = false;
+    getDominantColor(video.thumbnail).then((color) => {
+      if (!isCancelled) setDominantColor(color);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [dominantColorHover, video.thumbnail]);
+
   if (horizontal) {
     return (
-      <article className="relative overflow-visible rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/10 dark:bg-slate-900/60">
+      <article
+        className={`group relative isolate overflow-visible rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/10 dark:bg-slate-900/60 ${
+          dominantColorHover ? "transition-colors duration-[400ms]" : ""
+        }`}
+      >
+        {dominantColorHover && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 rounded-xl opacity-0 transition-opacity duration-[400ms] group-hover:opacity-60"
+            style={{
+              backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
+            }}
+          />
+        )}
         <Link
           to={`/video/${video._id}`}
-          className="flex gap-4 pr-8"
+          className="relative z-10 flex gap-4 pr-8"
         >
           <div className="relative aspect-video w-36 shrink-0 overflow-hidden rounded-lg sm:w-48">
             <img
@@ -76,8 +107,17 @@ const VideoCollectionCard = ({
   return (
     <Link
       to={`/video/${video._id}`}
-      className="relative overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold"
+      className={`group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold`}
     >
+      {dominantColorHover && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-2xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
+          style={{
+            backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
+          }}
+        />
+      )}
       <div className="relative z-10 flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
         <img
           src={video.thumbnail}

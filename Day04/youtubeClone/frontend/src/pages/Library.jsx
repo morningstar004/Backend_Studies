@@ -135,7 +135,12 @@ export default function Library({ mode }) {
                             </div>
                           ))
                         : preview.map((video) => (
-                            <VideoCollectionCard key={video._id} video={video} compact />
+                            <VideoCollectionCard
+                              key={video._id}
+                              video={video}
+                              compact
+                              dominantColorHover
+                            />
                           ))
                       : null}
                   </div>
@@ -198,6 +203,7 @@ export default function Library({ mode }) {
                 video={video}
                 timestamp={video.watchlistAddedAt}
                 horizontal
+                dominantColorHover
               />
             ))}
           </div>
