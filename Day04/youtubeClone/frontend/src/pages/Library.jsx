@@ -34,9 +34,18 @@ export default function Library({ mode }) {
     .map(normalizeVideo)
     .filter(Boolean);
   const playlists = playlistQuery.data?.data || [];
+  const sortedWatchlistVideos = [...watchlistVideos].sort((left, right) => {
+    const leftDate = left.watchlistAddedAt
+      ? new Date(left.watchlistAddedAt).getTime()
+      : Number.NEGATIVE_INFINITY;
+    const rightDate = right.watchlistAddedAt
+      ? new Date(right.watchlistAddedAt).getTime()
+      : Number.NEGATIVE_INFINITY;
+    return rightDate - leftDate;
+  });
 
   const collectionData = {
-    watchlist: watchlistVideos,
+    watchlist: sortedWatchlistVideos,
     "liked-videos": likedVideos,
   };
   const visibleVideos = collectionData[currentMode] || [];
@@ -91,7 +100,7 @@ export default function Library({ mode }) {
               return (
                 <div
                   key={title}
-                  className={`overflow-hidden rounded-2xl max-h-[300px] h-[375px] border border-black/10 bg-gradient-to-br ${tone} p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                  className={`overflow-hidden rounded-2xl max-h-[300px] h-[375px] border border-black/10 bg-gradient-to-br ${tone} p-3 shadow-sm`}
                 >
                   <Link to={href} className="mb-4 block">
                     <div className="flex items-center justify-between">
@@ -181,11 +190,24 @@ export default function Library({ mode }) {
           <EmptyState title="No playlists yet" detail="Create a playlist to collect videos here." />
         )
       ) : visibleVideos.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
-          {visibleVideos.map((video) => (
-            <VideoCollectionCard key={video._id} video={video} compact />
-          ))}
-        </div>
+        currentMode === "watchlist" ? (
+          <div className="space-y-3">
+            {visibleVideos.map((video) => (
+              <VideoCollectionCard
+                key={video._id}
+                video={video}
+                timestamp={video.watchlistAddedAt}
+                horizontal
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            {visibleVideos.map((video) => (
+              <VideoCollectionCard key={video._id} video={video} compact />
+            ))}
+          </div>
+        )
       ) : (
         <EmptyState
           title={currentMode === "watchlist" ? "Watchlist is empty" : "No liked videos yet"}

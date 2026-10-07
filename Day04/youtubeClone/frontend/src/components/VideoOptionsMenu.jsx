@@ -17,6 +17,8 @@ const VideoOptionsMenu = ({
   title = "video",
   showHistoryRemoval = false,
   compact = false,
+  menuPlacement = "above",
+  buttonClassName = "text-white",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -170,15 +172,19 @@ const VideoOptionsMenu = ({
           event.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className={`flex items-center justify-center rounded-none border-0 bg-transparent p-0 text-white transition hover:bg-transparent ${
+        className={`flex items-center justify-center rounded-none border-0 bg-transparent p-0 transition hover:bg-transparent ${
           compact ? "h-6 w-6" : "h-8 w-8"
-        }`}
+        } ${buttonClassName}`}
       >
         <MoreVertical className={compact ? "h-4 w-4" : "h-4 w-4"} />
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-10 right-0 z-20 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]">
+        <div
+          className={`absolute right-0 z-20 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111] ${
+            menuPlacement === "below" ? "top-full mt-1" : "bottom-10"
+          }`}
+        >
           {menuOptions.map(({ label, icon: Icon, action }) => (
             <button
               key={label}
