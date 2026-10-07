@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
   Download,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { playlistService, userService } from "../api/services.ts";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const VideoOptionsMenu = ({
   videoId,
@@ -24,6 +25,16 @@ const VideoOptionsMenu = ({
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const watchlistQuery = useQuery({
+    queryKey: ["watchlist"],
+    queryFn: userService.watchlist,
+    enabled: !!user?._id,
+  });
+  const watchlist = watchlistQuery.data?.data;
+  const videoIsInWatchlist = watchlist
+    ? watchlist.some((video) => String(video._id) === String(videoId))
+    : isInWatchlist;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -149,7 +160,9 @@ const VideoOptionsMenu = ({
 
   const menuOptions = [
     {
-      label: isInWatchlist ? "Remove from watchlist" : "Save to watchlist",
+      label: videoIsInWatchlist
+        ? "Remove from watchlist"
+        : "Save to watchlist",
       icon: Bookmark,
       action: handleSaveWatchlist,
     },
