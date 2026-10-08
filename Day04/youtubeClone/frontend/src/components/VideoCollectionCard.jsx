@@ -42,14 +42,14 @@ const VideoCollectionCard = ({
   if (horizontal) {
     return (
       <article
-        className={`group relative isolate overflow-visible rounded-xl border border-black/10 bg-white/60 p-3 dark:border-white/10 dark:bg-slate-900/60 ${
+        className={`group relative isolate overflow-visible rounded-xl bg-white/60 p-3 dark:bg-black/60 ${
           dominantColorHover ? "transition-colors duration-[400ms]" : ""
         }`}
       >
         {dominantColorHover && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 rounded-xl opacity-0 transition-opacity duration-[400ms] group-hover:opacity-60"
+            className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
             style={{
               backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
             }}

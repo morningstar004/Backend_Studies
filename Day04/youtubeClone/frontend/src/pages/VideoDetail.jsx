@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bell,
@@ -35,6 +35,11 @@ import { toast } from "sonner";
 
 const VideoDetail = () => {
   const { videoId } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const playbackQueue = (searchParams.get("queue") || "")
+    .split(",")
+    .filter(Boolean);
   const [content, setContent] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -57,6 +62,16 @@ const VideoDetail = () => {
     enabled: !!user,
   });
   const video = data?.data;
+  const handleVideoEnded = () => {
+    const currentIndex = playbackQueue.indexOf(videoId);
+    const nextVideoId = playbackQueue[currentIndex + 1];
+    if (!nextVideoId) return;
+
+    navigate(
+      `/video/${encodeURIComponent(nextVideoId)}?queue=${encodeURIComponent(playbackQueue.join(","))}`,
+      { replace: true },
+    );
+  };
   const suggestionsQuery = useQuery({
     queryKey: ["video-suggestions", videoId],
     queryFn: () => videoService.list({ limit: 12 }),
@@ -347,10 +362,12 @@ const VideoDetail = () => {
           onTouchStart={revealControls}
         >
           <video
+            key={videoId}
             ref={videoRef}
             autoPlay
             playsInline
             className="aspect-video w-full"
+            onEnded={handleVideoEnded}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             onTimeUpdate={(event) =>

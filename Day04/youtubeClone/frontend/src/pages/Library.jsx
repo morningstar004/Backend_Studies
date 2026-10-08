@@ -1,14 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Play, Shuffle } from "lucide-react";
 import { likeService, playlistService, userService } from "../api/services.ts";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
 import VideoCollectionCard from "../components/VideoCollectionCard.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import formatRelativeTime from "../components/formatRelativeTime.js";
 
 const normalizeVideo = (entry) => entry?.video ?? entry;
 
 export default function Library({ mode }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const currentMode = mode || "overview";
 
   const watchlistQuery = useQuery({
@@ -49,6 +52,30 @@ export default function Library({ mode }) {
     "liked-videos": likedVideos,
   };
   const visibleVideos = collectionData[currentMode] || [];
+  const firstWatchlistVideo = sortedWatchlistVideos[0];
+  const watchlistVideoIds = sortedWatchlistVideos
+    .map((video) => video._id)
+    .filter(Boolean);
+  const startWatchlistPlayback = (videoIds) => {
+    const [firstVideoId, ...remainingVideoIds] = videoIds;
+    if (!firstVideoId) return;
+
+    const queue = [firstVideoId, ...remainingVideoIds].join(",");
+    navigate(
+      `/video/${encodeURIComponent(firstVideoId)}?queue=${encodeURIComponent(queue)}`,
+    );
+  };
+  const shuffleWatchlist = () => {
+    const shuffledVideoIds = [...watchlistVideoIds];
+    for (let index = shuffledVideoIds.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffledVideoIds[index], shuffledVideoIds[swapIndex]] = [
+        shuffledVideoIds[swapIndex],
+        shuffledVideoIds[index],
+      ];
+    }
+    startWatchlistPlayback(shuffledVideoIds);
+  };
   const titles = {
     overview: "Library",
     watchlist: "Watchlist",
@@ -197,17 +224,65 @@ export default function Library({ mode }) {
         )
       ) : visibleVideos.length > 0 ? (
         currentMode === "watchlist" ? (
-          <div className="space-y-3">
-            {visibleVideos.map((video) => (
-              <VideoCollectionCard
-                key={video._id}
-                video={video}
-                timestamp={video.watchlistAddedAt}
-                isInWatchlist
-                horizontal
-                dominantColorHover
-              />
-            ))}
+          <div className="space-y-5">
+            <header className="grid overflow-hidden rounded-2xl border border-black/10 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent shadow-sm dark:border-white/10 sm:grid-cols-[minmax(12rem,0.8fr)_1.2fr]">
+              <div className="relative min-h-48 bg-black/10 sm:min-h-56">
+                <img
+                  src={firstWatchlistVideo.thumbnail}
+                  alt={firstWatchlistVideo.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent sm:bg-gradient-to-r" />
+              </div>
+              <div className="flex flex-col justify-center gap-4 p-5 sm:p-8">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/55 dark:text-white/55">
+                    Your collection
+                  </p>
+                  <h2 className="mt-1 text-3xl font-bold">Watchlist</h2>
+                </div>
+                <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/65 dark:text-white/65">
+                  <span>
+                    {sortedWatchlistVideos.length}{" "}
+                    {sortedWatchlistVideos.length === 1 ? "video" : "videos"} saved
+                  </span>
+                  <span>
+                    Last updated{" "}
+                    {formatRelativeTime(firstWatchlistVideo.watchlistAddedAt)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => startWatchlistPlayback(watchlistVideoIds)}
+                    className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    <Play size={16} fill="currentColor" />
+                    Play all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={shuffleWatchlist}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-black/15 bg-white/60 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-white/15 dark:bg-black/30 dark:hover:bg-black/50"
+                  >
+                    <Shuffle size={16} />
+                    Shuffle
+                  </button>
+                </div>
+              </div>
+            </header>
+            <div className="space-y-3">
+              {visibleVideos.map((video) => (
+                <VideoCollectionCard
+                  key={video._id}
+                  video={video}
+                  timestamp={video.watchlistAddedAt}
+                  isInWatchlist
+                  horizontal
+                  dominantColorHover
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
