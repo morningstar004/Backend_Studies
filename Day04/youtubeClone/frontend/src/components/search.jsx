@@ -1,6 +1,7 @@
 import { ArrowLeft, Search, X } from "lucide-react";
+import SpeechSearchButton from "./SpeechSearchButton.jsx";
 
-const SearchPage = ({ open, query, setQuery, onClose, onSubmit }) => {
+const SearchPage = ({ open, query, setQuery, onClose, onSubmit, onSearch }) => {
   if (!open) return null;
 
   return (
@@ -24,9 +25,10 @@ const SearchPage = ({ open, query, setQuery, onClose, onSubmit }) => {
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search videos"
-            className="input w-full rounded-full border border-black/10 bg-white pl-9 dark:border-white/10 dark:bg-[#111111]"
+            placeholder="Search"
+            className="input w-full rounded-full border border-black/10 bg-white pl-9 pr-12 dark:border-white/10 dark:bg-[#111111]"
           />
+          <SpeechSearchButton onSearch={onSearch} />
         </form>
 
         <button

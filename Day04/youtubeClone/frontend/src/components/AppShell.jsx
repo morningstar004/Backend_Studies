@@ -21,6 +21,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
+import SpeechSearchButton from "./SpeechSearchButton.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
@@ -61,6 +62,13 @@ export default function AppShell() {
   const visibleSubscribedChannels = showAllSubscriptions
     ? subscribedChannels
     : subscribedChannels.slice(0, 5);
+  const searchFor = (searchQuery) => {
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
+    setQuery(trimmedQuery);
+    setMobileSearchOpen(false);
+    navigate(`/?search=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   const renderSubscribedChannels = (closeMenu = false) => (
     <div className="ml-5 space-y-1 border-l border-black/15 py-1 pl-3 dark:border-white/15">
@@ -371,10 +379,7 @@ export default function AppShell() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const trimmedQuery = query.trim();
-              if (!trimmedQuery) return;
-              setMobileSearchOpen(false);
-              navigate(`/?search=${encodeURIComponent(trimmedQuery)}`);
+              searchFor(query);
             }}
             className="relative hidden flex-1 justify-center lg:flex"
           >
@@ -384,11 +389,12 @@ export default function AppShell() {
                 size={17}
               />
               <input
-                className="input w-full rounded-3xl pl-9"
+                className="input w-full rounded-3xl pl-9 pr-12"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search videos"
+                placeholder="Search videos or creators"
               />
+              <SpeechSearchButton onSearch={searchFor} />
             </div>
           </form>
           {/* // right side of the header, contains theme toggle and user authentication buttons */}
@@ -547,6 +553,7 @@ export default function AppShell() {
         query={query}
         setQuery={setQuery}
         onClose={() => setMobileSearchOpen(false)}
+        onSearch={searchFor}
         onSubmit={(e) => {
           e.preventDefault();
           const trimmedQuery = query.trim();
