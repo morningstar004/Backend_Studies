@@ -134,10 +134,10 @@ const VideoCollectionCard = ({
           {formatDuration(video.duration)}
         </div>
       </div>
-      <div className={`relative z-10 flex-col pb-2 ${compact ? "px-3" : "px-4"}`}>
-        <h2 className="line-clamp-2 font-bold text-white">
-          {video.title}
-        </h2>
+      <div
+        className={`relative z-10 flex-col pb-2 ${compact ? "px-3" : "px-4"}`}
+      >
+        <h2 className="line-clamp-2 font-bold text-white">{video.title}</h2>
         <div
           className={`absolute right-2 z-10 flex items-center justify-center rounded-full text-black transition-all duration-300 hover:bg-black/40 dark:text-white ${
             compact ? "bottom-1.5 h-7 w-7" : "bottom-2 h-10 w-10"
@@ -168,7 +168,9 @@ const VideoCollectionCard = ({
             }`}
           >
             <Link
-              to={video.owner?.username ? `/channel/${video.owner.username}` : "#"}
+              to={
+                video.owner?.username ? `/channel/${video.owner.username}` : "#"
+              }
               className={`transition-colors hover:text-primary ${
                 compact ? "text-[13px]" : "text-sm"
               }`}
@@ -179,7 +181,9 @@ const VideoCollectionCard = ({
               {video.owner?.fullName || "Creator"}
             </Link>
             {compact ? <span>•</span> : null}
-            <div className={`flex gap-1 ${compact ? "shrink-0 items-center" : ""}`}>
+            <div
+              className={`flex gap-1 ${compact ? "shrink-0 items-center" : ""}`}
+            >
               <span className="inline-flex items-center gap-1">
                 <Eye size={12} />
                 {video.views || 0}

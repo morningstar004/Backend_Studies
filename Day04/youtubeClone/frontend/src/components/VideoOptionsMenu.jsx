@@ -160,9 +160,7 @@ const VideoOptionsMenu = ({
 
   const menuOptions = [
     {
-      label: videoIsInWatchlist
-        ? "Remove from watchlist"
-        : "Save to watchlist",
+      label: videoIsInWatchlist ? "Remove from watchlist" : "Save to watchlist",
       icon: Bookmark,
       action: handleSaveWatchlist,
     },

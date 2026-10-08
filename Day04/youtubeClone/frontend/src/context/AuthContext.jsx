@@ -1,10 +1,10 @@
 import {
-  createContext,    // Hook to create a new React context
-  useCallback,      // Hook to memoize callback functions
-  useContext,       // Hook to consume context values
-  useEffect,        // Hook to run side effects
-  useMemo,          // Hook to memoize expensive computations
-  useState,         // Hook to manage component state
+  createContext, // Hook to create a new React context
+  useCallback, // Hook to memoize callback functions
+  useContext, // Hook to consume context values
+  useEffect, // Hook to run side effects
+  useMemo, // Hook to memoize expensive computations
+  useState, // Hook to manage component state
 } from "react";
 // Import the authentication API module for making auth-related requests
 import { authApi } from "../api/authApi.js";

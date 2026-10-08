@@ -96,7 +96,9 @@ export default function AppShell() {
       {subscribedChannels.length > 5 && (
         <button
           type="button"
-          onClick={() => setShowAllSubscriptions((isShowingAll) => !isShowingAll)}
+          onClick={() =>
+            setShowAllSubscriptions((isShowingAll) => !isShowingAll)
+          }
           aria-expanded={showAllSubscriptions}
           className="w-full rounded-xl px-2 py-2 text-left text-xs font-semibold text-primary hover:bg-black/5 dark:hover:bg-white/10"
         >

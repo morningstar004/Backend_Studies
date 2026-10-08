@@ -1,7 +1,9 @@
 import { SkeletonCard } from "./States.jsx";
 
 const Placeholder = ({ className }) => (
-  <div className={`animate-pulse rounded bg-black/10 dark:bg-white/10 ${className}`} />
+  <div
+    className={`animate-pulse rounded bg-black/10 dark:bg-white/10 ${className}`}
+  />
 );
 
 export const ProfileContentSkeleton = ({ section = "home" }) => {
@@ -74,4 +76,3 @@ export const ProfileContentSkeleton = ({ section = "home" }) => {
     </div>
   );
 };
-

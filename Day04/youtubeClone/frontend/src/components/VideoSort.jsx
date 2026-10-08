@@ -15,7 +15,9 @@ const getSortValue = (video, sortBy) => {
     return Number.isFinite(timestamp) ? timestamp : null;
   }
 
-  const value = Number(video[sortBy.startsWith("duration") ? "duration" : "views"]);
+  const value = Number(
+    video[sortBy.startsWith("duration") ? "duration" : "views"],
+  );
   return Number.isFinite(value) ? value : null;
 };
 
@@ -28,7 +30,8 @@ export const sortVideos = (videos, sortBy) => {
   }));
 
   sortedEntries.sort((left, right) => {
-    if (left.value === null) return right.value === null ? left.index - right.index : 1;
+    if (left.value === null)
+      return right.value === null ? left.index - right.index : 1;
     if (right.value === null) return -1;
     if (left.value === right.value) return left.index - right.index;
     return (left.value - right.value) * (descending ? -1 : 1);
@@ -65,9 +68,7 @@ export default function VideoSort({ value, onChange }) {
 
   return (
     <div className="flex items-center justify-end gap-2">
-      <span className="text-sm text-black/60 dark:text-white/60">
-        Sort by
-      </span>
+      <span className="text-sm text-black/60 dark:text-white/60">Sort by</span>
       <div className="relative" ref={menuRef}>
         <button
           type="button"
