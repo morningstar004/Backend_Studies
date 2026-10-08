@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { Play, Shuffle } from "lucide-react";
 import { likeService, playlistService, userService } from "../api/services.ts";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
 import VideoCollectionCard from "../components/VideoCollectionCard.jsx";
+import VideoSort, { sortVideos } from "../components/VideoSort.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import formatRelativeTime from "../components/formatRelativeTime.js";
 
@@ -13,6 +15,7 @@ export default function Library({ mode }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const currentMode = mode || "overview";
+  const [watchlistSort, setWatchlistSort] = useState("uploaded-desc");
 
   const watchlistQuery = useQuery({
     queryKey: ["watchlist"],
@@ -46,6 +49,7 @@ export default function Library({ mode }) {
       : Number.NEGATIVE_INFINITY;
     return rightDate - leftDate;
   });
+  const watchlistVideosBySort = sortVideos(sortedWatchlistVideos, watchlistSort);
 
   const collectionData = {
     watchlist: sortedWatchlistVideos,
@@ -53,7 +57,7 @@ export default function Library({ mode }) {
   };
   const visibleVideos = collectionData[currentMode] || [];
   const firstWatchlistVideo = sortedWatchlistVideos[0];
-  const watchlistVideoIds = sortedWatchlistVideos
+  const watchlistVideoIds = watchlistVideosBySort
     .map((video) => video._id)
     .filter(Boolean);
   const startWatchlistPlayback = (videoIds) => {
@@ -271,8 +275,9 @@ export default function Library({ mode }) {
                 </div>
               </div>
             </header>
+            <VideoSort value={watchlistSort} onChange={setWatchlistSort} />
             <div className="space-y-3">
-              {visibleVideos.map((video) => (
+              {watchlistVideosBySort.map((video) => (
                 <VideoCollectionCard
                   key={video._id}
                   video={video}
