@@ -1,11 +1,11 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Jokes API server",
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "Start": "node server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",

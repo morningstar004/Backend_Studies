@@ -1,6 +1,8 @@
 import express from "express"; // module js formate
 // const express = require("express"); // common js formate
 const PORT = 5000;
+
+// creating an instance of express
 const app = express();
 
 app.get("/", (req, res) => {
@@ -8,6 +10,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/jokes", (req, res) => {
+  //jokes array containing joke objects with id, title, and joke properties
   const jokes = [
     {
       id: 1,
@@ -35,7 +38,7 @@ app.get("/api/jokes", (req, res) => {
       joke: "Why do elephants never use computers? They're afraid of the mouse.",
     },
   ];
-  res.json(jokes);
+  res.json(jokes.at(Math.floor(Math.random() * jokes.length))); //sending a random joke from the jokes array as a JSON response
 });
 
 app.listen(PORT, () => {
