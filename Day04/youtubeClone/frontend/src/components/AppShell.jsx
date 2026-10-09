@@ -13,7 +13,6 @@ import {
   Search,
   ThumbsUp,
   UsersRound,
-  Upload,
   Video,
   X,
 } from "lucide-react";

@@ -26,7 +26,7 @@ function PlaylistCard({ playlist }) {
   }, [thumbnail]);
 
   return (
-    <article className="relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-sm transition hover:shadow-md dark:bg-white/3 sm:h-72 xl:h-75">
+    <article className="relative flex h-64 min-w-0 flex-col rounded-t-0 overflow-hidden rounded-2xl transition hover:shadow-md sm:h-72 xl:h-75">
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {thumbnail ? (
           <>
@@ -34,20 +34,22 @@ function PlaylistCard({ playlist }) {
               <div
                 key={layer}
                 aria-hidden="true"
-                className="absolute bottom-0 rounded-r-xl rounded-t-xl"
+                className="absolute bottom-0 rounded-xl transition"
                 style={{
-                  left: 5,
-                  right: `${layer * 3}%`,
-                  top: `${(layer + 1) * 5}px`,
+                  left: `${8-layer * 2}%`,
+                  width: `${86.5 - layer * 0.02}%`,
+                  right: `${layer * 5}px`,
+                  top: `${(layer) * 5}px`,
+                  bottom: `${7 - layer * 2}%`,
                   zIndex: layer + 1,
-                  backgroundColor: `color-mix(in srgb, ${dominantColor} ${85 - layer * 20}%, black)`,
+                  backgroundColor: `color-mix(in srgb, ${dominantColor} ${35 + layer * 20}%, black)`,
                 }}
               />
             ))}
             <img
               src={thumbnail}
               alt={`${playlist.videos[0].title || playlist.name} thumbnail`}
-              className="absolute inset-x-0 top-0 z-[5] h-[calc(100%-14px)] w-full rounded-xl object-cover transition duration-300"
+              className="absolute inset-x-1 bottom-0 z-[5] h-[calc(100%-14px)] w-full rounded-xl object-cover transition duration-300"
               style={{ clipPath: "inset(0 12% 0 0 round 0.75rem)" }}
             />
           </>
@@ -56,7 +58,8 @@ function PlaylistCard({ playlist }) {
             No videos yet
           </div>
         )}
-        <span className="absolute bottom-3 right-3 z-[10 shrink-0 rounded-full bg-black/75 px-2.5 py-1 text-xs font-medium text-white">
+        <span className="absolute bottom-3 right-14 z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-black/75 px-2.5 py-1 pb-1.5 text-xs font-medium text-white">
+          <ListVideo className="h-3.5 w-3.5 shrink-0" />
           {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
           {(playlist.totalVideos ?? playlist.videos?.length ?? 0) === 1
             ? "video"
