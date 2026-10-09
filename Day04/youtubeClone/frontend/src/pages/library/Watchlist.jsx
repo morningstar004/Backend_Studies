@@ -28,7 +28,10 @@ export function Watchlist() {
       : Number.NEGATIVE_INFINITY;
     return rightDate - leftDate;
   });
-  const watchlistVideosBySort = sortVideos(sortedWatchlistVideos, watchlistSort);
+  const watchlistVideosBySort = sortVideos(
+    sortedWatchlistVideos,
+    watchlistSort,
+  );
   const watchlistVideoIds = watchlistVideosBySort
     .map((video) => video._id)
     .filter(Boolean);
@@ -78,7 +81,8 @@ export function Watchlist() {
               <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-black/65 dark:text-white/65">
                 <span>
                   {sortedWatchlistVideos.length}{" "}
-                  {sortedWatchlistVideos.length === 1 ? "video" : "videos"} saved
+                  {sortedWatchlistVideos.length === 1 ? "video" : "videos"}{" "}
+                  saved
                 </span>
                 <span>
                   Last updated{" "}
