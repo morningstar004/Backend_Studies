@@ -107,7 +107,7 @@ export default function SpeechSearchButton({ onSearch }) {
         aria-label="Speech to search"
         title="Search by voice"
         onClick={startListening}
-        className="icon-button absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 text-black/55 dark:text-white/55"
+        className="icon-button absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 text-black/55 dark:text-white/55 hover:rounded-full hover:bg-black/5 dark:hover:bg-white/10"
       >
         <Mic size={18} />
       </button>
@@ -140,17 +140,17 @@ export default function SpeechSearchButton({ onSearch }) {
                 aria-label={
                   isListening ? "Stop listening" : "Search recognized words"
                 }
-                className="absolute right-3 top-3 inline-flex h-10 items-center gap-2 rounded-full border border-black/10 px-3 text-sm font-medium transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/10"
+                className="absolute right-3 top-3 inline-flex h-10 items-center gap-2 rounded-full border border-black/10 px-3 text-sm font-medium transition text-black dark:text-white hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/10"
               >
                 {isListening ? (
                   <>
-                    <Square size={14} fill="currentColor" />
+                    <Square className="text-primary -mr-1" size={14} fill="currentColor" />
                     Stop
                   </>
                 ) : (
                   <>
                     Enter
-                    <CornerDownLeft size={15} />
+                    <CornerDownLeft size={15} className="text-primary -ml-1" />
                   </>
                 )}
               </button>
@@ -171,7 +171,7 @@ export default function SpeechSearchButton({ onSearch }) {
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold text-black dark:text-white">
                   {isListening ? "Listening..." : "Listening complete"}
                 </h2>
                 <p className="min-h-6 text-sm text-black/60 dark:text-white/60">

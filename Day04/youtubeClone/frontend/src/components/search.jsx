@@ -5,7 +5,7 @@ const SearchPage = ({ open, query, setQuery, onClose, onSubmit, onSearch }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-black">
+    <div className="fixed inset-0 z-60 bg-white dark:bg-black">
       <div className="flex items-center gap-3 border-b border-black/10 bg-white px-4 py-3 dark:border-white/10 dark:bg-black">
         <button
           type="button"

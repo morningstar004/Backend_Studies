@@ -70,7 +70,9 @@ const VideoCollectionCard = ({
             </span>
           </div>
           <div className="min-w-0 flex-1 py-1">
-            <h2 className="line-clamp-2 font-semibold">{video.title}</h2>
+            <h2 className="line-clamp-2 font-semibold dark:text-white text-black">
+              {video.title}
+            </h2>
             <div className="mt-2 flex min-w-0 items-center gap-2 text-xs text-black/60 dark:text-white/60">
               {video.owner?.avatar && (
                 <img

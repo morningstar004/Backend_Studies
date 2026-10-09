@@ -106,7 +106,7 @@ const Home = () => {
                 </div>
               </div>
               <div className="relative z-10 flex-col px-4 pb-2">
-                <h2 className="line-clamp-2 font-bold text-white">
+                <h2 className="line-clamp-2 font-bold dark:text-white text-black">
                   {video.title}
                 </h2>
                 <div className="absolute bottom-2 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
