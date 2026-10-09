@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bookmark,
@@ -7,6 +8,11 @@ import {
   MoreVertical,
   Share2,
   History,
+  ArrowLeft,
+  Globe2,
+  LockKeyhole,
+  Plus,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { playlistService, userService } from "../api/services.ts";
@@ -23,9 +29,21 @@ const VideoOptionsMenu = ({
   buttonClassName = "text-white",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [playlistDialog, setPlaylistDialog] = useState(null);
+  const [playlistForm, setPlaylistForm] = useState({
+    name: "",
+    description: "",
+    isPublished: false,
+  });
+  const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
   const menuRef = useRef(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const playlistsQuery = useQuery({
+    queryKey: ["user-playlists", user?._id],
+    queryFn: () => playlistService.list(user._id),
+    enabled: !!user?._id && playlistDialog === "select",
+  });
   const watchlistQuery = useQuery({
     queryKey: ["watchlist"],
     queryFn: userService.watchlist,
@@ -97,24 +115,53 @@ const VideoOptionsMenu = ({
       return;
     }
 
-    try {
-      const safeTitle = (title || "My playlist").trim();
-      const playlistName =
-        safeTitle.length > 25 ? `${safeTitle.slice(0, 25)}...` : safeTitle;
-      const createResponse = await playlistService.create({
-        name: `${playlistName} playlist`,
-        description: `Videos related to ${safeTitle}.`,
-      });
+    if (!user?._id) {
+      toast.error("Sign in to add videos to a playlist.");
+      return;
+    }
 
+    setPlaylistDialog("select");
+  };
+
+  const handleSelectPlaylist = async (playlistId) => {
+    try {
+      await playlistService.add(playlistId, videoId);
+      await queryClient.invalidateQueries({
+        queryKey: ["user-playlists", user?._id],
+      });
+      toast.success("Video added to playlist.");
+      setPlaylistDialog(null);
+    } catch (error) {
+      toast.error(error?.message || "Unable to add the video to a playlist.");
+    }
+  };
+
+  const handleCreatePlaylist = async (event) => {
+    event.preventDefault();
+    if (!videoId) {
+      toast.error("Video is missing.");
+      return;
+    }
+
+    setIsSavingPlaylist(true);
+    try {
+      const createResponse = await playlistService.create(playlistForm);
       const playlistId = createResponse?.data?._id || createResponse?.data?.id;
       if (!playlistId) {
         throw new Error("Playlist was not created.");
       }
 
       await playlistService.add(playlistId, videoId);
-      toast.success("Video added to playlist.");
+      await queryClient.invalidateQueries({
+        queryKey: ["user-playlists", user?._id],
+      });
+      toast.success("Playlist created and video added.");
+      setPlaylistDialog(null);
+      setPlaylistForm({ name: "", description: "", isPublished: false });
     } catch (error) {
-      toast.error(error?.message || "Unable to add the video to a playlist.");
+      toast.error(error?.message || "Unable to create the playlist.");
+    } finally {
+      setIsSavingPlaylist(false);
     }
   };
 
@@ -219,6 +266,241 @@ const VideoOptionsMenu = ({
           ))}
         </div>
       )}
+
+      {playlistDialog &&
+        createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="presentation"
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="playlist-dialog-title"
+            className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-5 text-black shadow-2xl dark:border-white/10 dark:bg-[#111111] dark:text-white"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {playlistDialog === "select" ? (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2
+                      id="playlist-dialog-title"
+                      className="text-lg font-semibold"
+                    >
+                      Add to playlist
+                    </h2>
+                    <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+                      Choose a playlist or create a new one.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Close playlist dialog"
+                    onClick={() => setPlaylistDialog(null)}
+                    className="rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {playlistsQuery.isPending ? (
+                  <p className="py-5 text-center text-sm text-black/60 dark:text-white/60">
+                    Loading your playlists...
+                  </p>
+                ) : playlistsQuery.isError ? (
+                  <div className="py-4">
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {playlistsQuery.error?.message ||
+                        "Unable to load your playlists."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => playlistsQuery.refetch()}
+                      className="mt-3 text-sm font-medium text-primary"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : (
+                  <div className="max-h-64 space-y-2 overflow-y-auto">
+                    {(playlistsQuery.data?.data || []).map((playlist) => (
+                      <button
+                        key={playlist._id}
+                        type="button"
+                        onClick={() => handleSelectPlaylist(playlist._id)}
+                        className="flex w-full items-center justify-between rounded-xl border border-black/10 px-4 py-3 text-left transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">
+                            {playlist.name}
+                          </span>
+                          <span className="text-xs text-black/55 dark:text-white/55">
+                            {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
+                            videos
+                          </span>
+                        </span>
+                        {playlist.isPublished ? (
+                          <Globe2
+                            className="ml-3 h-4 w-4 shrink-0"
+                            aria-label="Public"
+                          />
+                        ) : (
+                          <LockKeyhole
+                            className="ml-3 h-4 w-4 shrink-0"
+                            aria-label="Private"
+                          />
+                        )}
+                      </button>
+                    ))}
+                    {!playlistsQuery.data?.data?.length && (
+                      <p className="py-4 text-center text-sm text-black/60 dark:text-white/60">
+                        You don&apos;t have any playlists yet.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setPlaylistDialog("create")}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create new playlist
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Back to playlists"
+                      onClick={() => setPlaylistDialog("select")}
+                      className="rounded-full p-2 hover:bg-black/5 dark:hover:bg-white/10"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <h2
+                      id="playlist-dialog-title"
+                      className="text-lg font-semibold"
+                    >
+                      Create playlist
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Close playlist dialog"
+                    onClick={() => setPlaylistDialog(null)}
+                    disabled={isSavingPlaylist}
+                    className="rounded-full p-2 hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreatePlaylist} className="space-y-4">
+                  <label className="block space-y-1.5 text-sm font-medium">
+                    Playlist name
+                    <input
+                      autoFocus
+                      required
+                      minLength={3}
+                      maxLength={50}
+                      value={playlistForm.name}
+                      onChange={(event) =>
+                        setPlaylistForm((form) => ({
+                          ...form,
+                          name: event.target.value,
+                        }))
+                      }
+                      placeholder="Name your playlist"
+                      className="w-full rounded-xl border border-black/15 bg-transparent px-3 py-2.5 font-normal outline-none focus:border-primary dark:border-white/15"
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5 text-sm font-medium">
+                    Description
+                    <textarea
+                      required
+                      minLength={10}
+                      maxLength={1000}
+                      rows={3}
+                      value={playlistForm.description}
+                      onChange={(event) =>
+                        setPlaylistForm((form) => ({
+                          ...form,
+                          description: event.target.value,
+                        }))
+                      }
+                      placeholder="Describe what this playlist is about"
+                      className="w-full resize-y rounded-xl border border-black/15 bg-transparent px-3 py-2.5 font-normal outline-none focus:border-primary dark:border-white/15"
+                    />
+                  </label>
+
+                  <fieldset>
+                    <legend className="mb-2 text-sm font-medium">
+                      Visibility
+                    </legend>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        {
+                          published: false,
+                          label: "Private",
+                          Icon: LockKeyhole,
+                        },
+                        {
+                          published: true,
+                          label: "Public",
+                          Icon: Globe2,
+                        },
+                      ].map(({ published, label, Icon }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          aria-pressed={playlistForm.isPublished === published}
+                          onClick={() =>
+                            setPlaylistForm((form) => ({
+                              ...form,
+                              isPublished: published,
+                            }))
+                          }
+                          className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition ${
+                            playlistForm.isPublished === published
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-black/15 hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  <p className="text-xs text-black/55 dark:text-white/55">
+                    This playlist will be saved to your account.
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={isSavingPlaylist}
+                    className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSavingPlaylist
+                      ? "Creating playlist..."
+                      : "Create playlist and add video"}
+                  </button>
+                </form>
+              </>
+            )}
+          </section>
+        </div>,
+          document.body,
+        )}
     </div>
   );
 };
