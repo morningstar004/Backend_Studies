@@ -12,10 +12,16 @@ import UploadVideo from "./pages/UploadVideo.jsx";
 import CreateTweet from "./pages/CreateTweet.jsx";
 import AppShell from "./components/AppShell.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import Library from "./pages/Library.jsx";
+import {
+  LibraryOverview,
+  LikedVideos,
+  Playlists,
+  Watchlist,
+} from "./pages/library/index.js";
 import History from "./pages/History.jsx";
 import Subscriptions from "./pages/Subscriptions.jsx";
 import UpdateVideo from "./pages/UpdateVideo.jsx";
+import PlaylistDetail from "./pages/PlaylistDetail.jsx";
 
 function App() {
   return (
@@ -32,19 +38,11 @@ function App() {
           <Route path="/video/:videoId/edit" element={<UpdateVideo />} />
           <Route path="/create-tweet" element={<CreateTweet />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/library" element={<Library />} />
-          <Route
-            path="/library/watchlist"
-            element={<Library mode="watchlist" />}
-          />
-          <Route
-            path="/library/playlists"
-            element={<Library mode="playlists" />}
-          />
-          <Route
-            path="/library/liked-videos"
-            element={<Library mode="liked-videos" />}
-          />
+          <Route path="/playlist/:playlistId" element={<PlaylistDetail />} />
+          <Route path="/library" element={<LibraryOverview />} />
+          <Route path="/library/watchlist" element={<Watchlist />} />
+          <Route path="/library/playlists" element={<Playlists />} />
+          <Route path="/library/liked-videos" element={<LikedVideos />} />
           <Route
             path="/watchlist"
             element={<Navigate to="/library/watchlist" replace />}
