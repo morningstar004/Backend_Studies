@@ -26,7 +26,11 @@ function PlaylistCard({ playlist }) {
   }, [thumbnail]);
 
   return (
-    <article className="relative flex h-64 min-w-0 flex-col rounded-t-0 overflow-hidden rounded-2xl transition hover:shadow-md sm:h-72 xl:h-75">
+    <Link
+      to={`/playlist/${playlist._id}`}
+      aria-label={`Open playlist ${playlist.name}`}
+      className="relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-sm transition-[transform,background-color,box-shadow] duration-200 ease-out hover:shadow-md active:scale-[0.98] active:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-white/[0.03] sm:h-72 xl:h-75"
+    >
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {thumbnail ? (
           <>
@@ -89,17 +93,15 @@ function PlaylistCard({ playlist }) {
               {formatRelativeTime(playlist.updatedAt || playlist.createdAt)}
             </span>
           </div>
-          <Link
-            to={`/playlist/${playlist._id}`}
-            aria-label={`Open playlist ${playlist.name}`}
-            title="Open playlist"
-            className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/75 text-white shadow transition hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 right-14 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/75 text-white shadow"
           >
             <ListVideo className="h-4 w-4" />
-          </Link>
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
