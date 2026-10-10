@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { likeService, playlistService, userService } from "../../api/services.ts";
 import VideoCollectionCard from "../../components/VideoCollectionCard.jsx";
@@ -8,6 +10,9 @@ const normalizeVideo = (entry) => entry?.video ?? entry;
 
 export function LibraryOverview() {
   const navigate = useNavigate();
+  const collectionScrollRefs = useRef(new Map());
+  const previewCardClassName =
+    "w-[calc((100%_-_1rem)/2)] shrink-0 snap-start sm:w-[calc((100%_-_2rem)/3)] xl:w-[calc((100%_-_3rem)/4)]";
   const { user } = useAuth();
   const watchlistQuery = useQuery({
     queryKey: ["watchlist"],
@@ -69,7 +74,7 @@ export function LibraryOverview() {
               key={title}
               className={`h-100 max-h-80 px-6 overflow-hidden rounded-2xl border border-black/10 bg-linear-to-br ${tone} p-3 shadow-sm`}
             >
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <span className="text-[15px] font-bold text-black/65 dark:text-white/70">
                     {title}
@@ -78,25 +83,56 @@ export function LibraryOverview() {
                     {description}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigate(href)}
-                  className="rounded-full border border-white/50 bg-white/35 px-3 py-1.5 text-sm font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/15 dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_8px_rgba(0,0,0,0.2)] dark:hover:bg-white/15"
-                >
-                  View all{" "}
-                  {count}
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label={`Scroll ${title} left`}
+                    onClick={() =>
+                      collectionScrollRefs.current
+                        .get(title)
+                        ?.scrollBy({ left: -320, behavior: "smooth" })
+                    }
+                    className="rounded-full border border-white/50 bg-white/35 p-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/15 dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_8px_rgba(0,0,0,0.2)] dark:hover:bg-white/15"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Scroll ${title} right`}
+                    onClick={() =>
+                      collectionScrollRefs.current
+                        .get(title)
+                        ?.scrollBy({ left: 320, behavior: "smooth" })
+                    }
+                    className="rounded-full border border-white/50 bg-white/35 p-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/15 dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_8px_rgba(0,0,0,0.2)] dark:hover:bg-white/15"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(href)}
+                    className="rounded-full border border-white/50 bg-white/35 px-3 py-1.5 text-sm font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/15 dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_8px_rgba(0,0,0,0.2)] dark:hover:bg-white/15"
+                  >
+                    View all {count}
+                  </button>
+                </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 rounded-t-2xl bg-amber-50/5 p-4 shadow-[inset_0_10px_14px_rgba(0,0,0,0.10),inset_12px_0_14px_rgba(0,0,0,0.08),inset_-12px_0_14px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_10px_14px_rgba(255,255,255,0.06),inset_12px_0_14px_rgba(255,255,255,0.04),inset_-12px_0_14px_rgba(255,255,255,0.04)] dark:bg-amber-50/5">
+              <div
+                ref={(element) => {
+                  if (element) collectionScrollRefs.current.set(title, element);
+                  else collectionScrollRefs.current.delete(title);
+                }}
+                className="flex snap-x snap-mandatory gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-t-2xl bg-amber-50/5 p-4 shadow-[inset_0_10px_14px_rgba(0,0,0,0.10),inset_12px_0_14px_rgba(0,0,0,0.08),inset_-12px_0_14px_rgba(0,0,0,0.08)] dark:bg-amber-50/5 dark:shadow-[inset_0_10px_14px_rgba(255,255,255,0.06),inset_12px_0_14px_rgba(255,255,255,0.04),inset_-12px_0_14px_rgba(255,255,255,0.04)]"
+              >
                 {hasItems
                   ? title === "Playlists"
                     ? preview.map((playlist) => (
                         <div
                           key={playlist._id}
-                          className="min-w-0 overflow-hidden rounded-2xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+                          className={`${previewCardClassName} overflow-hidden rounded-2xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70`}
                         >
-                          <div className="relative flex h-20 items-center justify-center overflow-hidden rounded-xl bg-black/5 dark:bg-white/5">
+                          <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-black/5 dark:bg-white/5">
                             {playlist.videos?.[0]?.thumbnail ? (
                               <>
                                 {[0, 1, 2].map((layer) => (
@@ -138,13 +174,17 @@ export function LibraryOverview() {
                         </div>
                       ))
                     : preview.map((video) => (
-                        <VideoCollectionCard
+                        <div
                           key={video._id}
-                          video={video}
-                          isInWatchlist={title === "Watchlist"}
-                          compact
-                          dominantColorHover
-                        />
+                          className={previewCardClassName}
+                        >
+                          <VideoCollectionCard
+                            video={video}
+                            isInWatchlist={title === "Watchlist"}
+                            compact
+                            dominantColorHover
+                          />
+                        </div>
                       ))
                   : null}
               </div>
