@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { likeService, playlistService, userService } from "../../api/services.ts";
 import VideoCollectionCard from "../../components/VideoCollectionCard.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 const normalizeVideo = (entry) => entry?.video ?? entry;
 
 export function LibraryOverview() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const watchlistQuery = useQuery({
     queryKey: ["watchlist"],
@@ -66,36 +67,73 @@ export function LibraryOverview() {
           return (
             <div
               key={title}
-              className={`h-[375px] max-h-[300px] overflow-hidden rounded-2xl border border-black/10 bg-gradient-to-br ${tone} p-3 shadow-sm`}
+              className={`h-100 max-h-80 px-6 overflow-hidden rounded-2xl border border-black/10 bg-linear-to-br ${tone} p-3 shadow-sm`}
             >
-              <Link to={href} className="mb-4 block">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[15px] font-bold text-black/65 dark:text-white/70">
-                      {title}
-                    </span>
-                    <p className="text-[9px] text-black/60 dark:text-white/60">
-                      {description}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[9px] font-semibold dark:bg-white/10">
-                    {count}
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[15px] font-bold text-black/65 dark:text-white/70">
+                    {title}
                   </span>
+                  <p className="text-[9px] text-black/60 dark:text-white/60">
+                    {description}
+                  </p>
                 </div>
-              </Link>
+                <button
+                  type="button"
+                  onClick={() => navigate(href)}
+                  className="rounded-full border border-white/50 bg-white/35 px-3 py-1.5 text-sm font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:border-white/15 dark:bg-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_8px_rgba(0,0,0,0.2)] dark:hover:bg-white/15"
+                >
+                  View all{" "}
+                  {count}
+                </button>
+              </div>
 
-              <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4 rounded-t-2xl bg-amber-50/5 p-4 shadow-[inset_0_10px_14px_rgba(0,0,0,0.10),inset_12px_0_14px_rgba(0,0,0,0.08),inset_-12px_0_14px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_10px_14px_rgba(255,255,255,0.06),inset_12px_0_14px_rgba(255,255,255,0.04),inset_-12px_0_14px_rgba(255,255,255,0.04)] dark:bg-amber-50/5">
                 {hasItems
                   ? title === "Playlists"
                     ? preview.map((playlist) => (
                         <div
                           key={playlist._id}
-                          className="rounded-2xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
+                          className="min-w-0 overflow-hidden rounded-2xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-slate-900/70"
                         >
-                          <p className="text-xs font-semibold">{playlist.name}</p>
-                          <p className="text-[9px] text-black/60 dark:text-white/60">
-                            {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
-                            videos
+                          <div className="relative flex h-20 items-center justify-center overflow-hidden rounded-xl bg-black/5 dark:bg-white/5">
+                            {playlist.videos?.[0]?.thumbnail ? (
+                              <>
+                                {[0, 1, 2].map((layer) => (
+                                  <div
+                                    key={layer}
+                                    aria-hidden="true"
+                                    className="absolute bottom-1 rounded-lg bg-slate-500/50"
+                                    style={{
+                                      left: `${8 - layer * 2}%`,
+                                      width: `${86.5 - layer * 0.02}%`,
+                                      right: `${layer * 5}px`,
+                                      top: `${layer * 5}px`,
+                                      bottom: `${7 - layer * 2}%`,
+                                      zIndex: layer + 1,
+                                    }}
+                                  />
+                                ))}
+                                <img
+                                  src={playlist.videos[0].thumbnail}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="absolute inset-x-1 bottom-0 z-[5] h-[calc(100%-8px)] w-full rounded-xl object-cover"
+                                  style={{ clipPath: "inset(0 12% 0 0 round 0.75rem)" }}
+                                />
+                              </>
+                            ) : (
+                              <p className="text-[9px] text-black/50 dark:text-white/50">
+                                No videos yet
+                              </p>
+                            )}
+                            <span className="absolute bottom-1.5 right-2 z-10 rounded-lg bg-black/75 px-2 py-1 text-[9px] font-medium text-white">
+                              {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
+                              videos
+                            </span>
+                          </div>
+                          <p className="mt-2 truncate text-xs font-semibold">
+                            {playlist.name}
                           </p>
                         </div>
                       ))
