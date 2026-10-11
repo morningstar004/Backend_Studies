@@ -17,6 +17,20 @@ const tweetSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    imageContents: {
+      type: [String],
+      default: [],
+    },
+    imageCrops: {
+      type: [
+        {
+          _id: false,
+          x: { type: Number, min: 0, max: 100, required: true },
+          y: { type: Number, min: 0, max: 100, required: true },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

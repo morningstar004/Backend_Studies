@@ -58,10 +58,15 @@ export const subscriptionService = {
 };
 export const tweetService = {
   list: (id: string) => api.get(`/tweets/getUserTweets/${id}`),
-  create: (caption: string, imageContent?: File) => {
+  create: (
+    caption: string,
+    images: File[] = [],
+    imageCrops: { x: number; y: number }[] = [],
+  ) => {
     const body = new FormData();
     body.append("caption", caption);
-    if (imageContent) body.append("imageContent", imageContent);
+    images.forEach((image) => body.append("imageContent", image));
+    body.append("imageCrops", JSON.stringify(imageCrops));
     return api.postForm("/tweets/createTweet", body);
   },
   update: (id: string, caption: string) =>

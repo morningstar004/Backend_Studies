@@ -16,18 +16,58 @@ const removeTemporaryFile = async (filePath) => {
   }
 };
 
+const removeTemporaryFiles = async (files = []) => {
+  await Promise.all(files.map((file) => removeTemporaryFile(file.path)));
+};
+
 const createTweet = asyncHandler(async (req, res) => {
   const { caption } = req.body;
   if (typeof caption !== "string" || caption.trim() === "") {
-    await removeTemporaryFile(req.file?.path);
+    await removeTemporaryFiles(req.files);
     throw new apiError(400, "Caption is required to Tweet.");
   }
 
-  const image = req.file?.path ? await uploadOnCloudinary(req.file.path) : null;
+  let imageCrops = [];
+  if (req.body.imageCrops) {
+    try {
+      imageCrops = JSON.parse(req.body.imageCrops);
+    } catch {
+      await removeTemporaryFiles(req.files);
+      throw new apiError(400, "Image crop positions are invalid.");
+    }
+
+    if (
+      !Array.isArray(imageCrops) ||
+      (imageCrops.length !== 0 && imageCrops.length !== (req.files || []).length) ||
+      imageCrops.some(
+        (crop) =>
+          !crop ||
+          !Number.isFinite(crop.x) ||
+          !Number.isFinite(crop.y) ||
+          crop.x < 0 ||
+          crop.x > 100 ||
+          crop.y < 0 ||
+          crop.y > 100,
+      )
+    ) {
+      await removeTemporaryFiles(req.files);
+      throw new apiError(400, "Image crop positions are invalid.");
+    }
+  }
+
+  const images = await Promise.all(
+    (req.files || []).map((file) => uploadOnCloudinary(file.path)),
+  );
+  const imageContents = images.map((image) => image?.url).filter(Boolean);
+  if (imageCrops.length === 0) {
+    imageCrops = imageContents.map(() => ({ x: 50, y: 50 }));
+  }
 
   const tweet = await Tweet.create({
     caption: caption.trim(),
-    imageContent: image?.url ?? null,
+    imageContent: imageContents[0] ?? null,
+    imageContents,
+    imageCrops,
     owner: req.user?._id,
   });
 
@@ -223,7 +263,11 @@ const updateTweet = asyncHandler(async (req, res) => {
     {
       $set: {
         caption: caption.trim(),
-        ...(image && { imageContent: image.url }),
+        ...(image && {
+          imageContent: image.url,
+          imageContents: [image.url],
+          imageCrops: [{ x: 50, y: 50 }],
+        }),
       },
     },
     {
@@ -232,8 +276,13 @@ const updateTweet = asyncHandler(async (req, res) => {
     },
   );
 
-  if (image && tweet.imageContent) {
-    await deleteFromCloudinary(tweet.imageContent);
+  if (image) {
+    const previousImages = [
+      ...new Set([tweet.imageContent, ...(tweet.imageContents || [])].filter(Boolean)),
+    ];
+    await Promise.all(
+      previousImages.map((previousImage) => deleteFromCloudinary(previousImage)),
+    );
   }
 
   return res

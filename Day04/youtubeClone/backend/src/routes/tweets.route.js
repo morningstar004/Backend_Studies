@@ -12,7 +12,7 @@ const router = Router();
 
 router
   .route("/createTweet")
-  .post(verifyJWT, upload.single("imageContent"), createTweet);
+  .post(verifyJWT, upload.array("imageContent", 10), createTweet);
 router.route("/getUserTweets/:userId").get(verifyJWT, getUserTweets);
 router
   .route("/updateTweet/:tweetId")
