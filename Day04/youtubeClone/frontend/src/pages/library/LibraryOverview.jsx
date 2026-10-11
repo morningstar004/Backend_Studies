@@ -402,7 +402,7 @@ export function LibraryOverview() {
                   minLength={3}
                   maxLength={50}
                   defaultValue={editingPlaylist.name}
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none placeholder:text-black/40 focus:border-primary dark:border-white/15 dark:bg-black dark:text-white dark:placeholder:text-white/40"
+                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none placeholder:text-black/40 focus:border-primary dark:border-white/15 dark:bg-black dark:text-white/60 dark:placeholder:text-white/40"
                 />
               </label>
               <label className="block space-y-1.5 text-sm font-medium">

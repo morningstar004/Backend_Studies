@@ -49,10 +49,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const matchCondition = { isPublished: true };
 
   if (typeof query === "string" && query.trim()) {
-    matchCondition.title = {
+    const searchRegex = {
       $regex: query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       $options: "i",
     };
+    const matchingOwners = await User.find({
+      $or: [{ fullName: searchRegex }, { username: searchRegex }],
+    })
+      .select("_id")
+      .lean();
+
+    matchCondition.$or = [
+      { title: searchRegex },
+      { owner: { $in: matchingOwners.map(({ _id }) => _id) } },
+    ];
   }
 
   if (userId) {

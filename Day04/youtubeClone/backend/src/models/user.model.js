@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    watchlistDates: {
+      type: Map,
+      of: Date,
+      default: {},
+    },
     username: {
       type: String,
       required: true,

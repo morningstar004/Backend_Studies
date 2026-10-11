@@ -87,11 +87,63 @@ const request = async (path, options = {}) => {
   return readResponse(response);
 };
 
+const requestFormWithProgress = async (path, body, onUploadProgress) => {
+  const token = await getCsrfToken();
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BASE_URL}${path}`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("X-CSRF-Token", token);
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        onUploadProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    xhr.addEventListener("load", async () => {
+      if (!xhr.status) {
+        reject(
+          new Error(
+            "Unable to connect to the server. Please check your connection and try again.",
+          ),
+        );
+        return;
+      }
+
+      try {
+        resolve(
+          await readResponse(
+            new Response(xhr.responseText, {
+              status: xhr.status,
+              statusText: xhr.statusText,
+            }),
+          ),
+        );
+      } catch (error) {
+        reject(error);
+      }
+    });
+    xhr.addEventListener("error", () => {
+      reject(
+        new Error(
+          "Unable to connect to the server. Please check your connection and try again.",
+        ),
+      );
+    });
+    xhr.addEventListener("abort", () => {
+      reject(new Error("The upload was canceled."));
+    });
+    xhr.send(body);
+  });
+};
+
 export const api = {
   get: (path) => request(path, { method: "GET" }),
   post: (path, body) =>
     request(path, { method: "POST", body: JSON.stringify(body) }),
   postForm: (path, body) => request(path, { method: "POST", body }),
+  postFormWithProgress: (path, body, onUploadProgress) =>
+    requestFormWithProgress(path, body, onUploadProgress),
   patch: (path, body) =>
     request(path, { method: "PATCH", body: JSON.stringify(body) }),
   patchForm: (path, body) => request(path, { method: "PATCH", body }),

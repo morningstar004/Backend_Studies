@@ -62,7 +62,11 @@ app.use(
 app.use(cookieParse());
 
 app.get("/api/v1/csrf-token", (req, res, next) => {
-  if (!isTrustedOrigin(req.get("Origin"))) {
+  const origin = req.get("Origin");
+  const isSameOriginBrowserRequest =
+    !origin && req.get("Sec-Fetch-Site") === "same-origin";
+
+  if (!isTrustedOrigin(origin) && !isSameOriginBrowserRequest) {
     return next(new apiError(403, "Untrusted or missing Origin."));
   }
 

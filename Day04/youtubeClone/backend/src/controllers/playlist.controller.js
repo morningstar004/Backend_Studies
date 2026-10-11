@@ -339,6 +339,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   }
 
   const updates = {};
+  let clearDescription = false;
   if (name !== undefined) {
     if (typeof name !== "string" || name.trim().length < 3) {
       throw new apiError(400, "Playlist name must be at least 3 characters.");
@@ -346,15 +347,20 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     updates.name = name.trim();
   }
   if (description !== undefined) {
-    if (typeof description !== "string" || description.trim().length < 10) {
+    if (typeof description !== "string") {
+      throw new apiError(400, "Description must be a string.");
+    }
+    const trimmedDescription = description.trim();
+    if (trimmedDescription && trimmedDescription.length < 10) {
       throw new apiError(400, "Description must be at least 10 characters.");
     }
-    updates.description = description.trim();
+    if (trimmedDescription) updates.description = trimmedDescription;
+    else clearDescription = true;
   }
   if (isPublished !== undefined) {
     updates.isPublished = parseIsPublished(isPublished);
   }
-  if (Object.keys(updates).length === 0) {
+  if (Object.keys(updates).length === 0 && !clearDescription) {
     throw new apiError(
       400,
       "Provide a name, description, or publish status to update.",
@@ -373,7 +379,10 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 
   const updatedPlaylist = await Playlist.findByIdAndUpdate(
     playlistId,
-    { $set: updates },
+    {
+      ...(Object.keys(updates).length > 0 && { $set: updates }),
+      ...(clearDescription && { $unset: { description: 1 } }),
+    },
     {
       returnDocument: "after",
       runValidators: true,
