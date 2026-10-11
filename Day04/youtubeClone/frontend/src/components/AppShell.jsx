@@ -45,6 +45,9 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const isVideoPage = location.pathname.startsWith("/video/");
+  const isCreatePostPage =
+    location.pathname === "/create-post" ||
+    location.pathname === "/create-tweet";
   //trangitional rendering while navigation inside the app, when user clicks on a link, the page will fade out and the new page will fade in
   const profileRoute = location.pathname.match(
     /^(\/profile|\/channel\/[^/]+)(?:\/(?:home|videos|playlists|posts))?\/?$/,
@@ -164,6 +167,19 @@ export default function AppShell() {
       setDesktopSidebarExpanded(false);
     }
   }, [isVideoPage]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      "hide-page-scrollbar",
+      isCreatePostPage,
+    );
+    document.body.classList.toggle("hide-page-scrollbar", isCreatePostPage);
+
+    return () => {
+      document.documentElement.classList.remove("hide-page-scrollbar");
+      document.body.classList.remove("hide-page-scrollbar");
+    };
+  }, [isCreatePostPage]);
 
   const toggleMenu = () => {
     if (window.matchMedia("(min-width: 1024px)").matches) {
@@ -356,7 +372,13 @@ export default function AppShell() {
     </nav>
   );
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA]">
+    <div
+      className={`bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA] ${
+        isCreatePostPage
+          ? "flex h-screen flex-col overflow-hidden"
+          : "min-h-screen"
+      }`}
+    >
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-black/80">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
@@ -510,7 +532,11 @@ export default function AppShell() {
           </div>
         </div>
       </header>
-      <div className="mx-auto flex w-full bg-white dark:bg-darkBg">
+      <div
+        className={`mx-auto flex w-full bg-white dark:bg-darkBg ${
+          isCreatePostPage ? "min-h-0 flex-1 overflow-hidden" : ""
+        }`}
+      >
         {isVideoPage ? (
           <AnimatePresence>
             {desktopSidebarExpanded && (
@@ -534,7 +560,13 @@ export default function AppShell() {
             {lapMenu}
           </motion.aside>
         )}
-        <main className="min-w-0 flex-1 p-4 sm:p-6">
+        <main
+          className={`min-w-0 flex-1 p-4 sm:p-6 ${
+            isCreatePostPage
+              ? "min-h-0 overflow-y-auto overscroll-contain"
+              : ""
+          }`}
+        >
           <AnimatePresence mode="wait">
             {/* Animates page transitions by fading and sliding each route's content in and out. */}
             <motion.div

@@ -57,6 +57,14 @@
     background: rgba(230, 57, 70, 1);
   }
 
+  .hide-page-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-page-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   html.dark * {
     scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
   }

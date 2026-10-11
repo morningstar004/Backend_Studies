@@ -191,6 +191,17 @@ const CreateTweet = () => {
                         objectPosition: `${cropPositions[index]?.x ?? 50}% ${cropPositions[index]?.y ?? 50}%`,
                       }}
                     />
+                    {activeCropIndex === index && (
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0"
+                      >
+                        <span className="absolute inset-y-0 left-1/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-y-0 left-2/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-x-0 top-1/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-x-0 top-2/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                      </span>
+                    )}
                   </button>
                   <button
                     type="button"

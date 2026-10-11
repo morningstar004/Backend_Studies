@@ -37,6 +37,7 @@ function App() {
           <Route path="/upload-video" element={<UploadVideo />} />
           <Route path="/video/:videoId/edit" element={<UpdateVideo />} />
           <Route path="/create-tweet" element={<CreateTweet />} />
+          <Route path="/create-post" element={<CreateTweet />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/playlist/:playlistId" element={<PlaylistDetail />} />
           <Route path="/library" element={<LibraryOverview />} />
