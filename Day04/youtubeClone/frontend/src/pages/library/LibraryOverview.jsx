@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import {
   likeService,
   playlistService,
+  tweetService,
   userService,
 } from "../../api/services.ts";
 import VideoCollectionCard from "../../components/VideoCollectionCard.jsx";
@@ -49,12 +50,18 @@ export function LibraryOverview() {
     queryFn: () => playlistService.list(user._id),
     enabled: !!user?._id,
   });
+  const tweetsQuery = useQuery({
+    queryKey: ["profile-tweets", user?._id],
+    queryFn: () => tweetService.list(user._id),
+    enabled: !!user?._id,
+  });
 
   const watchlistVideos = watchlistQuery.data?.data || [];
   const likedVideos = (likedQuery.data?.data || [])
     .map(normalizeVideo)
     .filter(Boolean);
   const playlists = playlistQuery.data?.data || [];
+  const tweets = tweetsQuery.data?.data || [];
 
   useEffect(() => {
     if (!editingPlaylist) return undefined;
@@ -145,6 +152,14 @@ export function LibraryOverview() {
       href: "/library/liked-videos",
       preview: likedVideos.slice(0, 6),
     },
+    {
+      title: "Tweets",
+      description: "Posts you have shared",
+      count: tweets.length,
+      tone: "from-cyan-500/20 via-cyan-500/5 to-transparent",
+      href: "/library/tweets",
+      preview: tweets.slice(0, 6),
+    },
   ];
 
   return (
@@ -213,7 +228,20 @@ export function LibraryOverview() {
                   className="flex pt-6 snap-x snap-mandatory gap-3.5 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden rounded-t-2xl bg-amber-50/5 p-4 shadow-[inset_0_10px_14px_rgba(0,0,0,0.10),inset_12px_0_14px_rgba(0,0,0,0.08),inset_-12px_0_14px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_10px_14px_rgba(255,255,255,0.06),inset_12px_0_14px_rgba(255,255,255,0.04),inset_-12px_0_14px_rgba(255,255,255,0.04)]"
                 >
                   {hasItems
-                    ? title === "Playlists"
+                    ? title === "Tweets"
+                      ? preview.map((tweet) => (
+                          <Link
+                            key={tweet._id}
+                            to={href}
+                            aria-label="View your tweets"
+                            className={`${previewCardClassName} rounded-2xl border border-black/5 bg-white/35 p-3 text-sm shadow-sm transition hover:bg-white/55 dark:border-white/10 dark:bg-black/15 dark:hover:bg-white/10`}
+                          >
+                            <p className="line-clamp-5 whitespace-pre-wrap">
+                              {tweet.caption}
+                            </p>
+                          </Link>
+                        ))
+                      : title === "Playlists"
                       ? preview.map((playlist) => (
                           <div
                             key={playlist._id}

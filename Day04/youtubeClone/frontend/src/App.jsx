@@ -16,6 +16,7 @@ import {
   LibraryOverview,
   LikedVideos,
   Playlists,
+  Tweets,
   Watchlist,
 } from "./pages/library/index.js";
 import History from "./pages/History.jsx";
@@ -44,6 +45,7 @@ function App() {
           <Route path="/library/watchlist" element={<Watchlist />} />
           <Route path="/library/playlists" element={<Playlists />} />
           <Route path="/library/liked-videos" element={<LikedVideos />} />
+          <Route path="/library/tweets" element={<Tweets />} />
           <Route
             path="/watchlist"
             element={<Navigate to="/library/watchlist" replace />}

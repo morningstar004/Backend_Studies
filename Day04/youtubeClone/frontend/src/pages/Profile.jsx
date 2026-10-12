@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import { EmptyState, SkeletonCard } from "../components/States.jsx";
 import { ProfileContentSkeleton } from "../components/ProfileSkeleton.jsx";
+import TweetCard from "../components/TweetCard.jsx";
 
 const formatDuration = (seconds = 0) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -27,41 +28,6 @@ const formatDate = (dateString) =>
         year: "numeric",
       })
     : "Date unavailable";
-
-const TweetImages = ({ tweet }) => {
-  const images = tweet.imageContents?.length
-    ? tweet.imageContents
-    : tweet.imageContent
-      ? [tweet.imageContent]
-      : [];
-
-  if (!images.length) return null;
-
-  return (
-    <div
-      className={`mt-3 grid gap-1 overflow-hidden rounded-lg ${
-        images.length === 1 ? "grid-cols-1" : "grid-cols-2"
-      }`}
-    >
-      {images.map((image, index) => {
-        const crop = tweet.imageCrops?.[index];
-        return (
-          <img
-            key={`${image}-${index}`}
-            src={image}
-            alt={`Post image ${index + 1}`}
-            className={`w-full object-cover ${
-              images.length === 1 ? "max-h-[32rem]" : "aspect-square"
-            }`}
-            style={{
-              objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-};
 
 const getCachedChannelProfile = (username) => {
   if (!username) return undefined;
@@ -367,13 +333,7 @@ const Profile = () => {
           ) : tweets.length ? (
             <div className="space-y-3">
               {tweets.map((tweet) => (
-                <article key={tweet._id} className="surface p-4">
-                  <p className="whitespace-pre-wrap text-sm">{tweet.caption}</p>
-                  <TweetImages tweet={tweet} />
-                  <p className="mt-2 text-xs text-black/50 dark:text-white/50">
-                    {formatDate(tweet.createdAt)}
-                  </p>
-                </article>
+                <TweetCard key={tweet._id} tweet={tweet} />
               ))}
             </div>
           ) : (
@@ -420,13 +380,7 @@ const Profile = () => {
     ) : tweets.length ? (
       <div className="space-y-3">
         {tweets.map((tweet) => (
-          <article key={tweet._id} className="surface p-4">
-            <p className="whitespace-pre-wrap text-sm">{tweet.caption}</p>
-            <TweetImages tweet={tweet} />
-            <p className="mt-2 text-xs text-black/50 dark:text-white/50">
-              {formatDate(tweet.createdAt)}
-            </p>
-          </article>
+          <TweetCard key={tweet._id} tweet={tweet} />
         ))}
       </div>
     ) : (
