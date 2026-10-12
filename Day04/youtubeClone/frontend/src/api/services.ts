@@ -37,6 +37,8 @@ export const likeService = {
   commentDislike: (id: string) =>
     api.patch(`/likes/toggleCommentDislike/${id}`, {}),
   tweet: (id: string) => api.patch(`/likes/toggleTweetLike/${id}`, {}),
+  tweetDislike: (id: string) =>
+    api.patch(`/likes/toggleTweetDislike/${id}`, {}),
   videos: () => api.get("/likes/getLikedVideos"),
 };
 export const playlistService = {
@@ -58,6 +60,9 @@ export const subscriptionService = {
 };
 export const tweetService = {
   list: (id: string) => api.get(`/tweets/getUserTweets/${id}`),
+  comments: (id: string) => api.get(`/tweets/getTweetComments/${id}`),
+  addComment: (id: string, content: string) =>
+    api.post(`/tweets/addTweetComment/${id}`, { content }),
   create: (
     caption: string,
     images: File[] = [],

@@ -26,6 +26,7 @@ import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
 const links = [
   { to: "/", label: "Home", icon: Compass },
+  { to: "/library/tweets", label: "Tweets", icon: MessageSquareText },
   { to: "/subscriptions", label: "Subscriptions", icon: UsersRound },
 ];
 const active = ({ isActive }) =>
