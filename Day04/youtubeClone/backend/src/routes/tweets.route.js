@@ -7,6 +7,10 @@ import {
   getUserTweets,
   updateTweet,
 } from "../controllers/tweets.controller.js";
+import {
+  addTweetComment,
+  getTweetComments,
+} from "../controllers/comments.controller.js";
 
 const router = Router();
 
@@ -14,6 +18,8 @@ router
   .route("/createTweet")
   .post(verifyJWT, upload.array("imageContent", 10), createTweet);
 router.route("/getUserTweets/:userId").get(verifyJWT, getUserTweets);
+router.route("/getTweetComments/:tweetId").get(verifyJWT, getTweetComments);
+router.route("/addTweetComment/:tweetId").post(verifyJWT, addTweetComment);
 router
   .route("/updateTweet/:tweetId")
   .patch(verifyJWT, upload.single("imageContent"), updateTweet);

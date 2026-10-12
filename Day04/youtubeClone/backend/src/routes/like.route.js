@@ -3,6 +3,7 @@ import {
   getLikedVideos,
   toggleCommentDislike,
   toggleCommentLike,
+  toggleTweetDislike,
   toggleTweetLike,
   toggleVideoDislike,
   toggleVideoLike,
@@ -22,6 +23,9 @@ router
   .route("/toggleCommentDislike/:commentId")
   .patch(verifyJWT, toggleCommentDislike);
 router.route("/toggleTweetLike/:tweetId").patch(verifyJWT, toggleTweetLike);
+router
+  .route("/toggleTweetDislike/:tweetId")
+  .patch(verifyJWT, toggleTweetDislike);
 router.route("/getLikedVideos").get(verifyJWT, getLikedVideos);
 
 export { router as likeRouter };

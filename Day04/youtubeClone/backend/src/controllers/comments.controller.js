@@ -4,6 +4,7 @@ import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Comment } from "../models/comments.model.js";
 import { Video } from "../models/video.model.js";
+import { Tweet } from "../models/tweets.model.js";
 
 const getVideoComments = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -187,6 +188,84 @@ const addComment = asyncHandler(async (req, res) => {
     );
 });
 
+const getTweetComments = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+  if (!isValidObjectId(tweetId)) {
+    throw new apiError(400, "Invalid TweetID.");
+  }
+
+  const tweet = await Tweet.exists({ _id: tweetId });
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found.");
+  }
+
+  const comments = await Comment.aggregate([
+    { $match: { tweet: new mongoose.Types.ObjectId(tweetId) } },
+    { $sort: { createdAt: -1, _id: -1 } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [{ $project: { username: 1, fullName: 1, avatar: 1 } }],
+      },
+    },
+    { $set: { owner: { $first: "$owner" } } },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Tweet comments fetched successfully.", comments));
+});
+
+const addTweetComment = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+  const { content } = req.body ?? {};
+
+  if (!isValidObjectId(tweetId)) {
+    throw new apiError(400, "Invalid TweetID.");
+  }
+  if (typeof content !== "string" || content.trim() === "") {
+    throw new apiError(400, "Comment content is required.");
+  }
+  if (content.trim().length > 1000) {
+    throw new apiError(400, "Comment cannot exceed 1000 characters.");
+  }
+
+  const tweet = await Tweet.exists({ _id: tweetId });
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found.");
+  }
+
+  const createdComment = await Comment.create({
+    owner: req.user?._id,
+    content: content.trim(),
+    tweet: tweetId,
+  });
+  const [comment] = await Comment.aggregate([
+    {
+      $match: {
+        _id: createdComment._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [{ $project: { username: 1, fullName: 1, avatar: 1 } }],
+      },
+    },
+    { $set: { owner: { $first: "$owner" } } },
+  ]);
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Tweet comment added successfully.", comment));
+});
+
 const editComment = asyncHandler(async (req, res) => {
   // TODO: update a comment
   const { commentId } = req.params;
@@ -255,4 +334,11 @@ const deleteComment = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Comment Deleted.", null));
 });
 
-export { getVideoComments, addComment, editComment, deleteComment };
+export {
+  getVideoComments,
+  addComment,
+  getTweetComments,
+  addTweetComment,
+  editComment,
+  deleteComment,
+};

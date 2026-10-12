@@ -181,21 +181,67 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     likedBy: req.user?._id,
   });
 
-  if (alreadyLiked) {
+  if (alreadyLiked && !alreadyLiked.isDislike) {
     await Like.findByIdAndDelete(alreadyLiked._id);
     return res
       .status(200)
       .json(new ResponseHandler(200, "tweet Unliked successfully.", null));
   }
 
-  const like = await Like.create({
-    tweet: tweetId,
-    likedBy: req.user?._id,
-  });
+  const like = alreadyLiked
+    ? await Like.findByIdAndUpdate(
+        alreadyLiked._id,
+        { $set: { isDislike: false } },
+        { new: true },
+      )
+    : await Like.create({
+        tweet: tweetId,
+        likedBy: req.user?._id,
+      });
 
   return res
     .status(201)
     .json(new ResponseHandler(201, "Tweet Liked successfully.", like));
+});
+
+const toggleTweetDislike = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+  if (!isValidObjectId(tweetId)) {
+    throw new apiError(400, "Invalid TweetID.");
+  }
+
+  const tweet = await Tweet.findById(tweetId);
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found.");
+  }
+
+  const existingReaction = await Like.findOne({
+    tweet: tweetId,
+    likedBy: req.user?._id,
+  });
+
+  if (existingReaction?.isDislike) {
+    await Like.findByIdAndDelete(existingReaction._id);
+    return res
+      .status(200)
+      .json(new ResponseHandler(200, "Tweet dislike removed successfully.", null));
+  }
+
+  const dislike = existingReaction
+    ? await Like.findByIdAndUpdate(
+        existingReaction._id,
+        { $set: { isDislike: true } },
+        { new: true },
+      )
+    : await Like.create({
+        tweet: tweetId,
+        likedBy: req.user?._id,
+        isDislike: true,
+      });
+
+  return res
+    .status(201)
+    .json(new ResponseHandler(201, "Tweet disliked successfully.", dislike));
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
@@ -289,5 +335,6 @@ export {
   toggleCommentLike,
   toggleCommentDislike,
   toggleTweetLike,
+  toggleTweetDislike,
   getLikedVideos,
 };

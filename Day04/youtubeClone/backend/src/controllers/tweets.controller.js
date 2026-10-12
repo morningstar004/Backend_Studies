@@ -102,7 +102,7 @@ const createTweet = asyncHandler(async (req, res) => {
           },
           {
             $addFields: {
-              subscriberCount: {
+              subscribersCount: {
                 $size: "$subscribers",
               },
               subscribedChannelsCount: {
@@ -183,7 +183,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
           },
           {
             $addFields: {
-              subscriberCount: {
+              subscribersCount: {
                 $size: "$subscribers",
               },
               subscribedChannelsCount: {
@@ -205,7 +205,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
               fullName: 1,
               username: 1,
               avatar: 1,
-              subscriberCount: 1,
+              subscribersCount: 1,
               subscribedChannelsCount: 1,
               isSubscribed: 1,
             },
@@ -218,6 +218,89 @@ const getUserTweets = asyncHandler(async (req, res) => {
         owner: { $first: "$owner" },
       },
     },
+    {
+      $lookup: {
+        from: "likes",
+        let: {
+          tweetId: "$_id",
+          userId: new mongoose.Types.ObjectId(req.user._id),
+        },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$tweet", "$$tweetId"] } } },
+          {
+            $group: {
+              _id: null,
+              likeCount: {
+                $sum: { $cond: [{ $ne: ["$isDislike", true] }, 1, 0] },
+              },
+              dislikeCount: {
+                $sum: { $cond: [{ $eq: ["$isDislike", true] }, 1, 0] },
+              },
+              isLiked: {
+                $max: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$likedBy", "$$userId"] },
+                        { $ne: ["$isDislike", true] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              isDisliked: {
+                $max: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$likedBy", "$$userId"] },
+                        { $eq: ["$isDislike", true] },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        as: "reactionStats",
+      },
+    },
+    {
+      $lookup: {
+        from: "comments",
+        let: { tweetId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$tweet", "$$tweetId"] } } },
+          { $count: "count" },
+        ],
+        as: "commentStats",
+      },
+    },
+    {
+      $set: {
+        reactionStats: {
+          $ifNull: [
+            { $first: "$reactionStats" },
+            { likeCount: 0, dislikeCount: 0, isLiked: 0, isDisliked: 0 },
+          ],
+        },
+      },
+    },
+    {
+      $set: {
+        likeCount: "$reactionStats.likeCount",
+        dislikeCount: "$reactionStats.dislikeCount",
+        isLiked: { $eq: ["$reactionStats.isLiked", 1] },
+        isDisliked: { $eq: ["$reactionStats.isDisliked", 1] },
+        commentCount: { $ifNull: [{ $first: "$commentStats.count" }, 0] },
+      },
+    },
+    { $unset: ["reactionStats", "commentStats"] },
     {
       $sort: {
         createdAt: -1,

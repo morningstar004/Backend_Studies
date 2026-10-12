@@ -17,13 +17,22 @@ const commentSchema = new mongoose.Schema(
     video: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Video",
-      required: true,
+    },
+    tweet: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tweet",
     },
   },
   {
     timestamps: true,
   },
 );
+
+commentSchema.pre("validate", function () {
+  if (Boolean(this.video) === Boolean(this.tweet)) {
+    this.invalidate("video", "A comment must belong to exactly one post.");
+  }
+});
 
 commentSchema.plugin(mongooseAggregatePaginate);
 
