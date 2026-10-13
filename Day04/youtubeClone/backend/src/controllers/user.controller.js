@@ -163,8 +163,8 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   //login on the basis of username/email
-  if (!username && !email) {
-    throw new apiError(400, "Credential missing.");
+  if ((!username && !email) || typeof password !== "string" || !password) {
+    throw new apiError(400, "Credentials are required.");
   }
 
   //find the username/email in User DB
@@ -180,14 +180,14 @@ const loginUser = asyncHandler(async (req, res) => {
   }).select("+password");
   //If user not exist
   if (!user) {
-    throw new apiError(404, "User does not exist.");
+    throw new apiError(401, "Invalid email, username, or password.");
   }
 
   //Password Check
   const IsPasswordValid = await user.isPasswordCorrect(password);
 
   if (!IsPasswordValid) {
-    throw new apiError(401, "Invalid Password.");
+    throw new apiError(401, "Invalid email, username, or password.");
   }
 
   //access and refresh token
@@ -249,7 +249,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
       );
   }
 
-  const otp = crypto.randomInt(1000, 9999).toString();
+  const otp = crypto.randomInt(100000, 1000000).toString();
   user.passwordResetOtpHash = crypto
     .createHash("sha256")
     .update(otp)
@@ -310,9 +310,9 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   user.password = newPassword;
+  user.refreshToken = undefined;
   user.passwordResetOtpHash = undefined;
   user.passwordResetOtpExpires = undefined;
-  user.refreshToken = undefined;
   await user.save();
 
   return res
@@ -418,6 +418,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   //set password as newPassword
   user.password = newPassword;
+  user.refreshToken = undefined;
   await user.save({ validateBeforeSave: false });
 
   return res
@@ -547,8 +548,8 @@ const updateAvtar = asyncHandler(async (req, res) => {
     if (oldAvatar) {
       try {
         await deleteFromCloudinary(oldAvatar);
-      } catch (error) {
-        console.error("Error deleting old avatar from Cloudinary:", error);
+      } catch {
+        // The replacement upload succeeded; keep provider details out of logs.
       }
     }
   })();
@@ -591,8 +592,8 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     if (oldCoverImage) {
       try {
         await deleteFromCloudinary(oldCoverImage);
-      } catch (error) {
-        console.error("Error deleting old cover image from Cloudinary:", error);
+      } catch {
+        // The replacement upload succeeded; keep provider details out of logs.
       }
     }
   })();
@@ -618,13 +619,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
 const deleteUser = asyncHandler(async (req, res) => {
   //Todo: adduser verification via otp/password before deleting
-  const userId = req.params.id;
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new apiError(400, "Invalid user ID");
-  }
-
-  const user = await User.findByIdAndDelete(userId);
+  const user = await User.findByIdAndDelete(req.user._id);
 
   if (!user) {
     throw new apiError(404, "User not found");
@@ -711,7 +706,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  console.log(channel);
   if (!channel?.length) {
     throw new apiError(404, "Channel Does not Exists");
   }

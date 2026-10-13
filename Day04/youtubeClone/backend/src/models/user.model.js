@@ -92,22 +92,36 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
+userSchema.pre("save", async function (next) {
+  try {
+    if (!this.isModified("password")) return next();
+
+    this.password = await bcrypt.hash(this.password, 10);
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 });
 
+// Instance methods for the User model 
 userSchema.methods.isPasswordCorrect = async function (password) {
+  // here this refers to the current user document instance, and this.password is the hashed password stored in the database. The bcrypt.compare function compares the provided password with the hashed password and returns a boolean indicating whether they match or not.
   return await bcrypt.compare(password, this.password);
 };
 
+
+//Access Token : It is used to authenticate the user and authorize access to protected resources. It is usually short-lived and has an expiration time. The access token is sent with each request to the server to verify the user's identity and permissions.
+
+//Refresh Token : It is used to obtain a new access token when the current access token expires. It is usually long-lived and can be stored securely on the client-side. The refresh token is sent to the server to request a new access token without requiring the user to re-authenticate. 
+
 userSchema.methods.generateAccessToken = function () {
+  // sign method is used to create a new JWT (JSON Web Token) with the specified payload and secret key. The payload contains the user's unique identifier (_id), username, full name, and email. The token is signed using the ACCESS_TOKEN_SECRET from the environment variables and has an expiration time defined by ACCESS_TOKEN_EXPIRES_IN.
   return jwt.sign(
     {
       //PAYLOAD
       _id: this._id,
       username: this.username,
-      fullname: this.fullName,
+      fullName: this.fullName,
       email: this.email,
     },
     process.env.ACCESS_TOKEN_SECRET,
@@ -116,6 +130,7 @@ userSchema.methods.generateAccessToken = function () {
     },
   );
 };
+
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {

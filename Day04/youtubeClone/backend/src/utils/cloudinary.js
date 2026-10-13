@@ -24,17 +24,17 @@ const uploadOnCloudinary = async (localFilePath) => {
       fs.unlinkSync(localFilePath);
     }
 
-    console.log("File uploaded to Cloudinary:", response.url);
-    return response; // Return the URL of the uploaded file
+    // Never persist or return Cloudinary's HTTP URL; it can cause mixed-content
+    // requests and browser privacy warnings. The secure URL is HTTPS.
+    return { ...response, url: response.secure_url };
   } catch (error) {
     if (localFilePath && fs.existsSync(localFilePath)) {
       try {
         fs.unlinkSync(localFilePath);
-      } catch (unlinkError) {
-        console.warn("Failed to delete temp file after upload error:", unlinkError);
+      } catch {
+        // The original upload error is propagated without exposing local paths.
       }
     }
-    console.error("Error uploading to Cloudinary:", error);
     throw error;
   }
 };
@@ -78,10 +78,8 @@ const deleteFromCloudinary = async (cloudinaryUrl, expectedResourceType) => {
       resource_type: resourceType,
     });
 
-    console.log("File deleted from Cloudinary:", publicId);
     return response;
   } catch (error) {
-    console.error("Error deleting from Cloudinary:", error);
     throw error;
   }
 };

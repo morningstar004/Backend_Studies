@@ -12,8 +12,8 @@ connectDB()
       console.log(`⚙️ Server is running on port ${process.env.PORT || 5000}`);
     });
   })
-  .catch((error) => {
-    console.error(`Error: ${error.message}`);
+  .catch(() => {
+    console.error("Application startup failed.");
     // process.exit(1) mean that the process will exit with a failure code. In Node.js, an exit code of 0 indicates success, while any non-zero value indicates an error or abnormal termination. By calling `process.exit(1)`, you are signaling that the application encountered an error and is terminating as a result. This can be useful for logging and monitoring purposes, as it allows other systems to detect that the application did not complete successfully.
   });
 // const app = express();

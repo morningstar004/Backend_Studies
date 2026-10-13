@@ -10,6 +10,13 @@ import {
 } from "./middlewares/csrf.middleware.js";
 
 const app = express();
+// Some existing records contain Cloudinary's legacy HTTP URLs. Normalize them
+// on every JSON response while new uploads are stored with secure_url.
+app.set("json replacer", (_key, value) =>
+  typeof value === "string" && value.startsWith("http://res.cloudinary.com/")
+    ? `https://${value.slice("http://".length)}`
+    : value,
+);
 const isProduction =
   process.env.NODE_ENV === "production" || process.env.RENDER === "true";
 const configuredOrigins = (process.env.FRONTEND_URL || "")

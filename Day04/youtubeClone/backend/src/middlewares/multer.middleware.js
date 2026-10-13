@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import crypto from "crypto";
 
 /**
  * Constructs an absolute file system path for temporary file uploads.
@@ -34,7 +35,9 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (_, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+    // Client supplied filenames can contain path separators or misleading extensions.
+    const extension = path.extname(file.originalname).toLowerCase();
+    cb(null, `${crypto.randomUUID()}${extension}`);
   },
 });
 
@@ -45,7 +48,7 @@ export const upload = multer({
   },
   fileFilter: function (_, file, cb) {
     // Accept common image mime types only
-    if (/image\/(jpeg|png|jpg|webp)/.test(file.mimetype)) return cb(null, true);
+    if (/^image\/(jpeg|png|webp)$/.test(file.mimetype)) return cb(null, true);
     cb(new Error("Only image files are allowed (jpeg, jpg, png, webp)."));
   },
 });
@@ -58,7 +61,7 @@ export const uploadVideo = multer({
   fileFilter: function (_, file, cb) {
     const isThumbnail =
       file.fieldname === "thumbnail" &&
-      /image\/(jpeg|png|jpg|webp)/.test(file.mimetype);
+      /^image\/(jpeg|png|webp)$/.test(file.mimetype);
     const isVideo =
       file.fieldname === "videoFile" &&
       /video\/(mp4|webm|ogg|quicktime)/.test(file.mimetype);
