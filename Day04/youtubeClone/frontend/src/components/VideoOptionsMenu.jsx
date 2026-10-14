@@ -38,6 +38,9 @@ const VideoOptionsMenu = ({
   });
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
   const menuRef = useRef(null);
+  const menuPortalRef = useRef(null);
+  const triggerRef = useRef(null);
+  const [menuPosition, setMenuPosition] = useState(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const playlistsQuery = useQuery({
@@ -54,19 +57,6 @@ const VideoOptionsMenu = ({
   const videoIsInWatchlist = watchlist
     ? watchlist.some((video) => String(video._id) === String(videoId))
     : isInWatchlist;
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
 
   const handleDownload = async () => {
     if (!videoFile) return;
@@ -252,15 +242,63 @@ const VideoOptionsMenu = ({
       : []),
   ];
 
+  const updateMenuPosition = () => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const menuHeight = Math.min(menuOptions.length * 44 + 8, window.innerHeight - 16);
+    const fitsBelow = rect.bottom + menuHeight + 8 <= window.innerHeight;
+    const fitsAbove = rect.top - menuHeight - 8 >= 0;
+    const placeBelow =
+      menuPlacement === "below" ? fitsBelow || !fitsAbove : !fitsAbove && fitsBelow;
+    const left = Math.max(
+      8,
+      Math.min(rect.right - 224, window.innerWidth - 232),
+    );
+    const top = placeBelow
+      ? Math.min(rect.bottom + 8, window.innerHeight - menuHeight - 8)
+      : Math.max(8, rect.top - menuHeight - 8);
+
+    setMenuPosition({ left, top, maxHeight: menuHeight });
+  };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (
+        !menuRef.current?.contains(event.target) &&
+        !menuPortalRef.current?.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    updateMenuPosition();
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [isOpen, menuPlacement, menuOptions.length]);
+
   return (
     <div className="relative" ref={menuRef}>
       <button
+        ref={triggerRef}
         type="button"
         aria-label="Open video options"
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          setIsOpen((prev) => !prev);
+          setIsOpen((prev) => {
+            if (!prev) requestAnimationFrame(updateMenuPosition);
+            return !prev;
+          });
         }}
         className={`flex items-center justify-center rounded-none border-0 bg-transparent p-0 transition hover:bg-transparent ${
           compact ? "h-6 w-6" : "h-8 w-8"
@@ -269,30 +307,43 @@ const VideoOptionsMenu = ({
         <MoreVertical className={compact ? "h-4 w-4" : "h-4 w-4"} />
       </button>
 
-      {isOpen && (
-        <div
-          className={`absolute right-0 z-20 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111] ${
-            menuPlacement === "below" ? "top-full mt-1" : "bottom-10"
-          }`}
-        >
-          {menuOptions.map(({ label, icon: Icon, action }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                action?.();
-                setIsOpen(false);
-              }}
-              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              <Icon className="h-4 w-4" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {isOpen &&
+        menuPosition &&
+        createPortal(
+          <div
+            ref={menuPortalRef}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+            role="menu"
+            aria-label="Video options"
+            style={{
+              position: "fixed",
+              left: menuPosition.left,
+              top: menuPosition.top,
+              maxHeight: menuPosition.maxHeight,
+            }}
+            className="z-[100] w-56 overflow-y-auto rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]"
+          >
+            {menuOptions.map(({ label, icon: Icon, action }) => (
+              <button
+                key={label}
+                type="button"
+                role="menuitem"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  action?.();
+                  setIsOpen(false);
+                }}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                <Icon className="h-4 w-4" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
 
       {playlistDialog &&
         createPortal(
