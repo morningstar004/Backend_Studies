@@ -136,9 +136,7 @@ app.use((error, req, res, next) => {
       ? error.status
       : 500;
   const message =
-    knownApiError || statusCode < 500
-      ? error.message
-      : "Internal Server Error";
+    statusCode < 500 ? error.message : "Internal Server Error";
 
   return res.status(statusCode).json({
     success: false,

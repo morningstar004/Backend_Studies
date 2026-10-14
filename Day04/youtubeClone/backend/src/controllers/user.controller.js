@@ -9,12 +9,14 @@ import {
 import { ResponseHandler } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import crypto from "crypto";
-import nodemailer from "nodemailer";
+import crypto from "crypto"; //help otp generation.
+import nodemailer from "nodemailer"; //help in mailing the otp.
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const isProduction =
   process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+  
 const authCookieOptions = {
   httpOnly: true,
   secure: isProduction,
@@ -32,6 +34,7 @@ const sendPasswordResetOtp = async (email, otp) => {
     );
   }
 
+  // Create a transporter object using the SMTP configuration
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
@@ -43,8 +46,22 @@ const sendPasswordResetOtp = async (email, otp) => {
     await transporter.sendMail({
       from: SMTP_FROM,
       to: email,
-      subject: "Your password reset OTP",
-      text: `Your password reset OTP is ${otp}. It expires in 10 minutes. Do not share it with anyone.`,
+      subject: "Reset your password securely",
+      text: `Hello,\n\nWe received a request to reset the password for your account.\n\nYour one-time password (OTP) is: ${otp}\n\nThis code is valid for 10 minutes. Please do not share it with anyone.\n\nIf you did not request this, you can ignore this email and your account will remain secure.\n\nThanks,\nThe Safroon Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; color: #111827;">
+          <div style="font-size: 24px; font-weight: 700; margin-bottom: 16px; color: #111827;">Password Reset</div>
+          <p style="margin: 0 0 12px; font-size: 16px; line-height: 1.6;">Hello,</p>
+          <p style="margin: 0 0 12px; font-size: 16px; line-height: 1.6;">We received a request to reset the password for your account.</p>
+          <div style="margin: 20px 0; padding: 18px 20px; border-radius: 10px; background: #f3f4f6; border: 1px solid #e5e7eb; text-align: center;">
+            <div style="font-size: 13px; letter-spacing: 0.08em; color: #6b7280; text-transform: uppercase; margin-bottom: 8px;">Your OTP</div>
+            <div style="font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #111827;">${otp}</div>
+          </div>
+          <p style="margin: 0 0 12px; font-size: 16px; line-height: 1.6;">This code is valid for 10 minutes. Please do not share it with anyone.</p>
+          <p style="margin: 0 0 12px; font-size: 16px; line-height: 1.6;">If you did not request this, you can safely ignore this email and your account will remain secure.</p>
+          <p style="margin: 24px 0 0; font-size: 16px; line-height: 1.6;">Thanks,<br />The Safroon Team</p>
+        </div>
+      `,
     });
   } catch (error) {
     // Gmail does not allow a normal account password for SMTP. Keeping this
@@ -52,7 +69,7 @@ const sendPasswordResetOtp = async (email, otp) => {
     if (error.code === "EAUTH" || error.responseCode === 535) {
       throw new apiError(
         502,
-        "Gmail rejected the SMTP credentials. Set SMTP_USER to the Google account that created SMTP_PASS, and use a current 16-character Google App Password (not the account password).",
+        "Gmail rejected the SMTP credentials. Ensure SMTP_USER is the Google account that generated the app password and SMTP_PASS is a valid 16-character Google App Password, not your regular account password.",
       );
     }
 
@@ -151,10 +168,8 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    throw new apiError(
-      500,
-      "Something went wrong while generating access and refresh token.",
-    );
+    console.error("Access and refresh token generation failed.", error);
+    throw new apiError(500, "Internal Server Error");
   }
 };
 
@@ -384,7 +399,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
           }),
       );
   } catch (error) {
-    throw new apiError(401, error?.message || "Invalid refresh Token");
+    if (error instanceof apiError) {
+      throw error;
+    }
+    throw new apiError(401, "Invalid refresh token.");
   }
 });
 
