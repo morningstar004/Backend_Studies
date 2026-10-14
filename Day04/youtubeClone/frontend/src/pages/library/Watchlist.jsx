@@ -109,7 +109,11 @@ export function Watchlist() {
               </div>
             </div>
           </header>
-          <VideoSort value={watchlistSort} onChange={setWatchlistSort} />
+          <VideoSort
+            value={watchlistSort}
+            onChange={setWatchlistSort}
+            ariaLabel="Sort watchlist videos"
+          />
           <div className="space-y-3">
             {watchlistVideosBySort.map((video) => (
               <VideoCollectionCard

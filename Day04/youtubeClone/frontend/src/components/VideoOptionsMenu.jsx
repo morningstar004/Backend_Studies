@@ -22,6 +22,7 @@ const VideoOptionsMenu = ({
   videoId,
   videoFile,
   title = "video",
+  playlistId,
   showHistoryRemoval = false,
   isInWatchlist = false,
   compact = false,
@@ -205,13 +206,39 @@ const VideoOptionsMenu = ({
     }
   };
 
+  const handleRemoveFromPlaylist = async () => {
+    if (!playlistId || !videoId) {
+      toast.error("Playlist or video is missing.");
+      return;
+    }
+
+    try {
+      const response = await playlistService.remove(playlistId, videoId);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["playlist", playlistId] }),
+        queryClient.invalidateQueries({
+          queryKey: ["user-playlists", user?._id],
+        }),
+      ]);
+      toast.success(response?.data?.message || "Video removed from playlist.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to remove video from playlist.");
+    }
+  };
+
   const menuOptions = [
     {
       label: videoIsInWatchlist ? "Remove from watchlist" : "Save to watchlist",
       icon: Bookmark,
       action: handleSaveWatchlist,
     },
-    { label: "Add Playlist", icon: ListPlus, action: handleAddPlaylist },
+    playlistId
+      ? {
+          label: "Remove from playlist",
+          icon: X,
+          action: handleRemoveFromPlaylist,
+        }
+      : { label: "Add to playlist", icon: ListPlus, action: handleAddPlaylist },
     { label: "Download", icon: Download, action: handleDownload },
     { label: "Share", icon: Share2, action: handleShare },
     ...(showHistoryRemoval

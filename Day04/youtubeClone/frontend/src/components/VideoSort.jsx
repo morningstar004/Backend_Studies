@@ -40,7 +40,11 @@ export const sortVideos = (videos, sortBy) => {
   return sortedEntries.map(({ video }) => video);
 };
 
-export default function VideoSort({ value, onChange }) {
+export default function VideoSort({
+  value,
+  onChange,
+  ariaLabel = "Sort videos",
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const selectedOption =
@@ -86,7 +90,7 @@ export default function VideoSort({ value, onChange }) {
         {isOpen && (
           <div
             role="menu"
-            aria-label="Sort watchlist videos"
+            aria-label={ariaLabel}
             className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
           >
             {sortOptions.map((option) => (
