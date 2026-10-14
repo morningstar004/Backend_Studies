@@ -7,6 +7,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 const getLoginErrorMessage = (message = "") => {
   const normalized = String(message).toLowerCase();
 
+  if (normalized.includes("internal server error")) {
+    return "Unable to sign in right now. Please try again.";
+  }
+
   if (
     normalized.includes("credential missing") ||
     normalized.includes("username is required") ||
