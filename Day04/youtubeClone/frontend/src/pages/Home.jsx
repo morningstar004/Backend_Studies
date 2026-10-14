@@ -67,11 +67,7 @@ const Home = () => {
       ) : // Displaying an error message if there is an error while fetching the videos.
       error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
-          <div className="font-semibold">Failed to load videos</div>
-          <div className="mt-1">
-            {error.message ||
-              "An unexpected error occurred. Please try again later."}
-          </div>
+          Failed to load the videos.
         </div>
       ) : // Displaying an empty state message if there are no videos available.
       videos.length === 0 ? (

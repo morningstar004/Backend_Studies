@@ -293,7 +293,7 @@ const Profile = () => {
         </div>
       ) : videosQuery.error ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
-          {videosQuery.error.message || "Failed to load videos."}
+          Failed to load the videos.
         </div>
       ) : items.length ? (
         <div
