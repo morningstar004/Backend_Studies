@@ -151,71 +151,80 @@ const CreateTweet = () => {
           </div>
         </header>
 
-        <div className="mx-4 overflow-hidden rounded-xl border border-black/10 bg-black/3 p-2 dark:border-white/10 dark:bg-white/3 sm:mx-5 sm:p-3">
+        <div className="mx-4 overflow-hidden rounded-xl border border-black/10 bg-black/3 dark:border-white/10 dark:bg-white/3 sm:mx-5">
           {imagePreviews.length ? (
             <div className="relative overflow-hidden rounded-lg">
-              <div className="group relative aspect-4/3 overflow-hidden">
-                <button
-                  type="button"
-                  onPointerDown={(event) =>
-                    startCropDrag(event, activeCropIndex)
-                  }
-                  onPointerMove={moveCrop}
-                  onDragStart={(event) => event.preventDefault()}
-                  onPointerUp={() => {
-                    cropDragRef.current = null;
-                  }}
-                  onPointerCancel={() => {
-                    cropDragRef.current = null;
-                  }}
-                  aria-label={`Adjust crop for image ${activeCropIndex + 1}`}
-                  className="block h-full w-full cursor-grab active:cursor-grabbing"
-                  style={{ touchAction: "none" }}
+              <div
+                className="group relative overflow-hidden"
+                style={{ aspectRatio: "3 / 4" }}
+              >
+                <div
+                  className="flex h-full transition-transform duration-300 ease-in-out motion-reduce:transition-none"
+                  style={{ transform: `translateX(-${activeCropIndex * 100}%)` }}
                 >
-                  <img
-                    src={imagePreviews[activeCropIndex]}
-                    alt={`Post image ${activeCropIndex + 1}`}
-                    draggable={false}
-                    className="pointer-events-none h-full w-full select-none object-cover"
-                    style={{
-                      objectPosition: `${cropPositions[activeCropIndex]?.x ?? 50}% ${cropPositions[activeCropIndex]?.y ?? 50}%`,
-                    }}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0"
-                  >
-                    <span className="absolute inset-y-0 left-1/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
-                    <span className="absolute inset-y-0 left-2/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
-                    <span className="absolute inset-x-0 top-1/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
-                    <span className="absolute inset-x-0 top-2/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
-                  </span>
-                </button>
+                  {imagePreviews.map((preview, index) => (
+                    <button
+                      key={preview}
+                      type="button"
+                      onPointerDown={(event) => startCropDrag(event, index)}
+                      onPointerMove={moveCrop}
+                      onDragStart={(event) => event.preventDefault()}
+                      onPointerUp={() => {
+                        cropDragRef.current = null;
+                      }}
+                      onPointerCancel={() => {
+                        cropDragRef.current = null;
+                      }}
+                      aria-label={`Adjust crop for image ${index + 1}`}
+                      aria-hidden={index !== activeCropIndex}
+                      tabIndex={index === activeCropIndex ? 0 : -1}
+                      className="relative h-full min-w-full cursor-grab overflow-hidden active:cursor-grabbing"
+                      style={{ touchAction: "none" }}
+                    >
+                      <img
+                        src={preview}
+                        alt={`Post image ${index + 1}`}
+                        draggable={false}
+                        className="pointer-events-none h-full w-full select-none object-cover"
+                        style={{
+                          objectPosition: `${cropPositions[index]?.x ?? 50}% ${cropPositions[index]?.y ?? 50}%`,
+                        }}
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0"
+                      >
+                        <span className="absolute inset-y-0 left-1/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-y-0 left-2/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-x-0 top-1/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                        <span className="absolute inset-x-0 top-2/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
                 {imagePreviews.length > 1 && (
                   <>
                     <button
                       type="button"
                       onClick={() =>
-                        setActiveCropIndex(
-                          (index) =>
-                            (index - 1 + imagePreviews.length) %
-                            imagePreviews.length,
-                        )
+                        setActiveCropIndex((index) => Math.max(0, index - 1))
                       }
+                      disabled={activeCropIndex === 0}
                       aria-label="Show previous image"
-                      className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85"
+                      className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ChevronLeft size={21} />
                     </button>
                     <button
                       type="button"
                       onClick={() =>
-                        setActiveCropIndex(
-                          (index) => (index + 1) % imagePreviews.length,
+                        setActiveCropIndex((index) =>
+                          Math.min(imagePreviews.length - 1, index + 1),
                         )
                       }
+                      disabled={activeCropIndex === imagePreviews.length - 1}
                       aria-label="Show next image"
-                      className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85"
+                      className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ChevronRight size={21} />
                     </button>
@@ -249,7 +258,8 @@ const CreateTweet = () => {
           ) : (
             <label
               htmlFor="tweet-image"
-              className="flex aspect-4/3 cursor-pointer flex-col items-center justify-center gap-3 text-black/45 transition hover:bg-black/2.5 hover:text-primary dark:text-white/45 dark:hover:bg-white/2.5"
+              className="flex cursor-pointer flex-col items-center justify-center gap-3 text-black/45 transition hover:bg-black/2.5 hover:text-primary dark:text-white/45 dark:hover:bg-white/2.5"
+              style={{ aspectRatio: "3 / 4" }}
             >
               <span className="grid h-14 w-14 place-items-center rounded-full bg-black/5 dark:bg-white/10">
                 <ImagePlus size={26} />
