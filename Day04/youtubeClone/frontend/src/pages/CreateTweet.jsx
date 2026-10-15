@@ -26,6 +26,7 @@ const CreateTweet = () => {
   const [cropPositions, setCropPositions] = useState([]);
   const [activeCropIndex, setActiveCropIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cropHintPosition, setCropHintPosition] = useState(null);
   const cropDragRef = useRef(null);
 
   useEffect(() => {
@@ -124,7 +125,10 @@ const CreateTweet = () => {
   };
 
   return (
-    <form onSubmit={submitTweet} className="mx-auto max-w-2xl">
+    <form
+      onSubmit={submitTweet}
+      className="mx-auto w-[65%] max-w-[29rem]"
+    >
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Create post</h1>
         <p className="mt-1 text-sm text-black/55 dark:text-white/55">
@@ -136,11 +140,11 @@ const CreateTweet = () => {
         className="surface !rounded-lg overflow-hidden"
         style={{ aspectRatio: "9 / 16" }}
       >
-        <header className="flex items-center gap-3 p-4 sm:p-5">
+        <header className="flex items-center gap-3 p-2 sm:p-2.5">
           <img
             src={user?.avatar}
             alt=""
-            className="h-11 w-11 rounded-full bg-black/10 object-cover dark:bg-white/10"
+            className="h-8 w-8 rounded-full bg-black/10 object-cover dark:bg-white/10"
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">
@@ -154,7 +158,7 @@ const CreateTweet = () => {
           </div>
         </header>
 
-        <div className="mx-4 overflow-hidden rounded-xl border border-black/10 bg-black/3 dark:border-white/10 dark:bg-white/3 sm:mx-5">
+        <div className="overflow-hidden rounded-xl border border-black/10 bg-black/3 dark:border-white/10 dark:bg-white/3">
           {imagePreviews.length ? (
             <div className="relative overflow-hidden rounded-lg">
               <div
@@ -169,8 +173,20 @@ const CreateTweet = () => {
                     <button
                       key={preview}
                       type="button"
-                      onPointerDown={(event) => startCropDrag(event, index)}
+                      onPointerDown={(event) => {
+                        setCropHintPosition(null);
+                        startCropDrag(event, index);
+                      }}
                       onPointerMove={moveCrop}
+                      onMouseMove={(event) => {
+                        if (!cropDragRef.current) {
+                          setCropHintPosition({
+                            x: event.clientX,
+                            y: event.clientY,
+                          });
+                        }
+                      }}
+                      onMouseLeave={() => setCropHintPosition(null)}
                       onDragStart={(event) => event.preventDefault()}
                       onPointerUp={() => {
                         cropDragRef.current = null;
@@ -205,6 +221,18 @@ const CreateTweet = () => {
                     </button>
                   ))}
                 </div>
+                {cropHintPosition && (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none fixed z-50 rounded bg-black/80 px-2 py-1 text-xs font-medium text-white shadow"
+                    style={{
+                      left: cropHintPosition.x + 14,
+                      top: cropHintPosition.y + 14,
+                    }}
+                  >
+                    Drag to adjust image
+                  </span>
+                )}
                 {imagePreviews.length > 1 && (
                   <>
                     <button
@@ -280,35 +308,25 @@ const CreateTweet = () => {
           />
         </div>
 
-        {imageFiles.length > 0 && (
-          <p className="mx-4 mt-2 text-xs text-black/50 dark:text-white/50 sm:mx-5">
-            Drag an image to adjust its crop · editing image {activeCropIndex + 1}{" "}
-            of {imageFiles.length}
-          </p>
-        )}
-
-        <div className="px-4 pb-3 pt-4 sm:px-5">
-          <label className="sr-only" htmlFor="tweet-caption">
-            Description
-          </label>
+        <div className="relative px-2.5 pb-3 pt-4 sm:px-3.5">
           <textarea
             id="tweet-caption"
             value={caption}
             onChange={(event) => setCaption(event.target.value)}
-            maxLength={280}
+            maxLength={120}
             required
-            rows={3}
+            rows={2}
             placeholder="Write a description..."
-            className="w-full resize-y bg-transparent text-sm leading-6 outline-none placeholder:text-black/40 dark:placeholder:text-white/40"
+            className="w-full resize-none bg-transparent pb-4 text-sm leading-6 outline-none placeholder:text-black/40 dark:placeholder:text-white/40"
           />
-          <p className="mt-1 text-right text-xs text-black/45 dark:text-white/45">
-            {caption.length}/280
+          <p className="pointer-events-none absolute bottom-3 right-2.5 text-[10px] text-black/45 dark:text-white/45 sm:right-3.5">
+            {caption.length}/120
           </p>
         </div>
 
         <div
           aria-label="Post actions preview"
-          className="flex items-center gap-5 border-t border-black/10 px-4 py-3 text-black/35 dark:border-white/10 dark:text-white/35 sm:px-5"
+          className="flex items-center gap-5 border-t border-black/10 px-4 py-1.5 text-black/35 dark:border-white/10 dark:text-white/35 sm:px-3.5"
         >
           <button
             type="button"
