@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  ChevronLeft,
+  ChevronRight,
   ImagePlus,
   MessageCircle,
   Send,
@@ -58,9 +60,11 @@ const CreateTweet = () => {
     setCropPositions((positions) =>
       positions.filter((_, index) => index !== indexToRemove),
     );
-    setActiveCropIndex((index) =>
-      Math.max(0, Math.min(index, imageFiles.length - 2)),
-    );
+    setActiveCropIndex((index) => {
+      if (indexToRemove < index) return index - 1;
+      if (indexToRemove === index) return Math.max(0, index - 1);
+      return index;
+    });
   };
 
   const startCropDrag = (event, index) => {
@@ -149,77 +153,96 @@ const CreateTweet = () => {
 
         <div className="mx-4 overflow-hidden rounded-xl border border-black/10 bg-black/3 p-2 dark:border-white/10 dark:bg-white/3 sm:mx-5 sm:p-3">
           {imagePreviews.length ? (
-            <div
-              className={`grid gap-2 ${
-                imagePreviews.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              }`}
-            >
-              {imagePreviews.map((preview, index) => (
-                <div
-                  key={`${imageFiles[index].name}-${imageFiles[index].lastModified}-${index}`}
-                  className={`group relative overflow-hidden rounded-lg ${
-                    imagePreviews.length === 1 ? "aspect-4/3" : "aspect-square"
-                  }`}
+            <div className="relative overflow-hidden rounded-lg">
+              <div className="group relative aspect-4/3 overflow-hidden">
+                <button
+                  type="button"
+                  onPointerDown={(event) =>
+                    startCropDrag(event, activeCropIndex)
+                  }
+                  onPointerMove={moveCrop}
+                  onDragStart={(event) => event.preventDefault()}
+                  onPointerUp={() => {
+                    cropDragRef.current = null;
+                  }}
+                  onPointerCancel={() => {
+                    cropDragRef.current = null;
+                  }}
+                  aria-label={`Adjust crop for image ${activeCropIndex + 1}`}
+                  className="block h-full w-full cursor-grab active:cursor-grabbing"
+                  style={{ touchAction: "none" }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setActiveCropIndex(index)}
-                    onPointerDown={(event) => startCropDrag(event, index)}
-                    onPointerMove={moveCrop}
-                    onDragStart={(event) => event.preventDefault()}
-                    onPointerUp={() => {
-                      cropDragRef.current = null;
+                  <img
+                    src={imagePreviews[activeCropIndex]}
+                    alt={`Post image ${activeCropIndex + 1}`}
+                    draggable={false}
+                    className="pointer-events-none h-full w-full select-none object-cover"
+                    style={{
+                      objectPosition: `${cropPositions[activeCropIndex]?.x ?? 50}% ${cropPositions[activeCropIndex]?.y ?? 50}%`,
                     }}
-                    onPointerCancel={() => {
-                      cropDragRef.current = null;
-                    }}
-                    aria-label={`Adjust crop for image ${index + 1}`}
-                    aria-pressed={activeCropIndex === index}
-                    className={`block h-full w-full ${
-                      activeCropIndex === index
-                        ? "cursor-grab ring-2 ring-inset ring-primary active:cursor-grabbing"
-                        : "cursor-grab active:cursor-grabbing"
-                    }`}
-                    style={{ touchAction: "none" }}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0"
                   >
-                    <img
-                      src={preview}
-                      alt={`Post image ${index + 1}`}
-                      draggable={false}
-                      className="pointer-events-none h-full w-full select-none object-cover"
-                      style={{
-                        objectPosition: `${cropPositions[index]?.x ?? 50}% ${cropPositions[index]?.y ?? 50}%`,
-                      }}
-                    />
-                    {activeCropIndex === index && (
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0"
-                      >
-                        <span className="absolute inset-y-0 left-1/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
-                        <span className="absolute inset-y-0 left-2/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
-                        <span className="absolute inset-x-0 top-1/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
-                        <span className="absolute inset-x-0 top-2/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    aria-label={`Remove image ${index + 1}`}
-                    className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-white transition hover:bg-black"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
+                    <span className="absolute inset-y-0 left-1/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                    <span className="absolute inset-y-0 left-2/3 border-l border-white/80 shadow-[1px_0_1px_rgba(0,0,0,0.45)]" />
+                    <span className="absolute inset-x-0 top-1/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                    <span className="absolute inset-x-0 top-2/3 border-t border-white/80 shadow-[0_1px_1px_rgba(0,0,0,0.45)]" />
+                  </span>
+                </button>
+                {imagePreviews.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveCropIndex(
+                          (index) =>
+                            (index - 1 + imagePreviews.length) %
+                            imagePreviews.length,
+                        )
+                      }
+                      aria-label="Show previous image"
+                      className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85"
+                    >
+                      <ChevronLeft size={21} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveCropIndex(
+                          (index) => (index + 1) % imagePreviews.length,
+                        )
+                      }
+                      aria-label="Show next image"
+                      className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85"
+                    >
+                      <ChevronRight size={21} />
+                    </button>
+                    <span
+                      aria-live="polite"
+                      className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white"
+                    >
+                      {activeCropIndex + 1} / {imagePreviews.length}
+                    </span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(activeCropIndex)}
+                  aria-label={`Remove image ${activeCropIndex + 1}`}
+                  className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-white transition hover:bg-black"
+                >
+                  <X size={16} />
+                </button>
+              </div>
               {imageFiles.length < 10 && (
                 <label
                   htmlFor="tweet-image"
-                  className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 text-black/45 transition hover:border-primary hover:text-primary dark:border-white/20 dark:text-white/45"
+                  className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 py-3 text-xs font-medium text-black/50 transition hover:border-primary hover:text-primary dark:border-white/20 dark:text-white/50"
                 >
-                  <ImagePlus size={24} />
-                  <span className="text-xs font-medium">Add more</span>
+                  <ImagePlus size={17} />
+                  Add more photos
                 </label>
               )}
             </div>
