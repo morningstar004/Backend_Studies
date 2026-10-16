@@ -16,6 +16,7 @@ const removeTemporaryFiles = async (paths) => {
   );
 };
 
+// 01
 const getAllVideos = asyncHandler(async (req, res) => {
   const {
     page: pageQuery = "1",
@@ -48,8 +49,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
   const matchCondition = { isPublished: true };
 
+  // Search by title or owner name
   if (typeof query === "string" && query.trim()) {
     const searchRegex = {
+      // Escape special characters in the query string for regex
       $regex: query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       $options: "i",
     };
@@ -59,10 +62,15 @@ const getAllVideos = asyncHandler(async (req, res) => {
       .select("_id")
       .lean();
 
-    matchCondition.$or = [
-      { title: searchRegex },
-      { owner: { $in: matchingOwners.map(({ _id }) => _id) } },
-    ];
+      // If there are no matching owners, we can set the owner condition to an empty array to ensure no videos are returned for that case.
+    if (matchingOwners.length === 0) {
+      matchCondition.owner = { $in: [] };
+    } else {
+      matchCondition.$or = [
+        { title: searchRegex },
+        { owner: { $in: matchingOwners.map(({ _id }) => _id) } },
+      ];
+    }
   }
 
   if (userId) {
@@ -80,6 +88,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     { $match: matchCondition },
     { $sort: sortOptions },
     {
+      // Using $facet to get both the paginated videos and the total count in a single aggregation pipeline
       $facet: {
         videos: [
           { $skip: skip },
@@ -121,6 +130,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
   );
 });
 
+// 02
 const publishAVideo = asyncHandler(async (req, res) => {
   const { title, description, isPublished = "true" } = req.body;
   const videoLocalPath = req.files?.videoFile?.[0]?.path;
@@ -182,6 +192,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     );
 });
 
+// 03
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
@@ -340,6 +351,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Video fetched successfully", video));
 });
 
+// 04
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
@@ -401,6 +413,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     );
 });
 
+// 05
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
@@ -448,6 +461,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
   );
 });
 
+// 06
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
 
