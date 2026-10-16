@@ -30,7 +30,29 @@ const links = [
   { to: "/subscriptions", label: "Subscriptions", icon: UsersRound },
 ];
 const active = ({ isActive }) =>
-  `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+  `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+function AppNavLink({ children, className, pillGroup, ...props }) {
+  return (
+    <NavLink
+      {...props}
+      className={(state) => `${className(state)} app-nav-option`}
+    >
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <motion.span
+              aria-hidden="true"
+              layoutId={`app-nav-pill-${pillGroup}`}
+              className="app-nav-pill"
+              transition={{ type: "spring", stiffness: 480, damping: 36 }}
+            />
+          )}
+          {children}
+        </>
+      )}
+    </NavLink>
+  );
+}
 export default function AppShell() {
   const [query, setQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -77,11 +99,12 @@ export default function AppShell() {
     <div className="ml-5 space-y-1 border-l border-black/15 py-1 pl-3 dark:border-white/15">
       <div className="max-h-64 space-y-1 overflow-y-auto">
         {visibleSubscribedChannels.map((channel) => (
-          <NavLink
+          <AppNavLink
             key={channel._id || channel.username}
             onClick={closeMenu ? () => setMobileMenuOpen(false) : undefined}
+            pillGroup={closeMenu ? "mobile-subscriptions" : "desktop-subscriptions"}
             className={({ isActive }) =>
-              `flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              `flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
             }
             to={`/channel/${channel.username}`}
           >
@@ -93,7 +116,7 @@ export default function AppShell() {
             <span className="truncate">
               {channel.fullName || channel.username}
             </span>
-          </NavLink>
+          </AppNavLink>
         ))}
       </div>
       {subscribedChannels.length > 5 && (
@@ -191,93 +214,105 @@ export default function AppShell() {
   };
   // menu component for navigation links, the links displayed on the left side of the screen
   const menu = (
-    <nav className="space-y-1">
+    <nav className="app-nav-list space-y-1">
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
-        <NavLink
+        <AppNavLink
           onClick={() => setMobileMenuOpen(false)}
           className={active}
+          pillGroup="mobile-primary"
           to={to}
           key={to}
         >
           <Icon size={18} />
           {label}
-        </NavLink>
+        </AppNavLink>
       ))}
       {user && renderSubscribedChannels(true)}
-      <NavLink
+      <AppNavLink
         onClick={() => setMobileMenuOpen(false)}
         className={active}
+        pillGroup="mobile-primary"
         to="/library"
         end
       >
         <Library size={18} />
         Library
-      </NavLink>
+      </AppNavLink>
       <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
-        <NavLink
+        <AppNavLink
           onClick={() => setMobileMenuOpen(false)}
+          pillGroup="mobile-library"
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
           }
           to="/library/watchlist"
         >
           <Bookmark size={16} />
           Watchlist
-        </NavLink>
-        <NavLink
+        </AppNavLink>
+        <AppNavLink
           onClick={() => setMobileMenuOpen(false)}
+          pillGroup="mobile-library"
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
           }
           to="/library/playlists"
         >
           <ListVideo size={16} />
           Playlists
-        </NavLink>
-        <NavLink
+        </AppNavLink>
+        <AppNavLink
           onClick={() => setMobileMenuOpen(false)}
+          pillGroup="mobile-library"
           className={({ isActive }) =>
-            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+            `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
           }
           to="/library/liked-videos"
         >
           <ThumbsUp size={16} />
           Liked videos
-        </NavLink>
+        </AppNavLink>
       </div>
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <NavLink className={active} to="/profile" end>
+          <AppNavLink
+            className={active}
+            pillGroup="mobile-primary"
+            to="/profile"
+            end
+          >
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
               alt="Your profile"
             />
             Your channel
-          </NavLink>
+          </AppNavLink>
           <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
-            <NavLink
+            <AppNavLink
               onClick={() => setMobileMenuOpen(false)}
+              pillGroup="mobile-account"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
               }
               to="/dashboard"
             >
               <Clapperboard size={16} />
               Studio
-            </NavLink>
-            <NavLink
+            </AppNavLink>
+            <AppNavLink
               onClick={() => setMobileMenuOpen(false)}
+              pillGroup="mobile-account"
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
               }
               to="/history"
             >
               <History size={16} />
               History
-            </NavLink>
+            </AppNavLink>
           </div>
         </>
       )}
@@ -286,86 +321,101 @@ export default function AppShell() {
   const desktopActive = ({ isActive }) =>
     `flex items-center rounded-xl px-3 py-3 font-medium transition ${
       desktopSidebarExpanded ? "gap-3 text-sm" : "flex-col gap-2 text-[10px]"
-    } ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+    } ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
   const lapMenu = (
     <nav
-      className="space-y-1 -m-1.5"
+      className="app-nav-list space-y-1 -m-1.5"
       onClick={() => isVideoPage && setDesktopSidebarExpanded(false)}
     >
       {/*navigation links on the left side */}
       {links.map(({ to, label, icon: Icon }) => (
-        <NavLink className={desktopActive} to={to} key={to}>
+        <AppNavLink
+          className={desktopActive}
+          pillGroup="desktop-primary"
+          to={to}
+          key={to}
+        >
           <Icon size={18} />
           <span>{label}</span>
-        </NavLink>
+        </AppNavLink>
       ))}
       {user && desktopSidebarExpanded && renderSubscribedChannels()}
-      <NavLink className={desktopActive} to="/library" end>
+      <AppNavLink
+        className={desktopActive}
+        pillGroup="desktop-primary"
+        to="/library"
+        end
+      >
         <Library size={18} />
         <span>Library</span>
-      </NavLink>
+      </AppNavLink>
       {desktopSidebarExpanded && (
         <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
-          <NavLink
+          <AppNavLink
+            pillGroup="desktop-library"
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
             }
             to="/library/watchlist"
           >
             <Bookmark size={16} />
             <span>Watchlist</span>
-          </NavLink>
-          <NavLink
+          </AppNavLink>
+          <AppNavLink
+            pillGroup="desktop-library"
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
             }
             to="/library/playlists"
           >
             <ListVideo size={16} />
             <span>Playlists</span>
-          </NavLink>
-          <NavLink
+          </AppNavLink>
+          <AppNavLink
+            pillGroup="desktop-library"
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
             }
             to="/library/liked-videos"
           >
             <ThumbsUp size={16} />
             <span>Liked videos</span>
-          </NavLink>
+          </AppNavLink>
         </div>
       )}
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <NavLink className={desktopActive} to="/profile">
+          <AppNavLink className={desktopActive} pillGroup="desktop-primary" to="/profile">
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
               alt="Your profile"
             />
             <span>{desktopSidebarExpanded ? "Your channel" : "You"}</span>
-          </NavLink>
+          </AppNavLink>
           {desktopSidebarExpanded && (
             <div className="ml-5 space-y-1 border-l border-black/15 pl-3 dark:border-white/15">
-              <NavLink
+              <AppNavLink
+                pillGroup="desktop-account"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
                 }
                 to="/dashboard"
               >
                 <Clapperboard size={16} />
                 <span>Studio</span>
-              </NavLink>
-              <NavLink
+              </AppNavLink>
+              <AppNavLink
+                pillGroup="desktop-account"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "bg-primary text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
+                  `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
                 }
                 to="/history"
               >
                 <History size={16} />
                 <span>History</span>
-              </NavLink>
+              </AppNavLink>
             </div>
           )}
         </>

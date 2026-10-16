@@ -16,6 +16,43 @@
     scrollbar-color: rgba(230, 57, 70, 0.8) transparent;
   }
 
+  .app-nav-list {
+    anchor-scope: --app-nav-active-option;
+  }
+
+  .app-nav-option {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .app-nav-option[aria-current="page"] {
+    anchor-name: --app-nav-active-option;
+  }
+
+  .app-nav-option > :not(.app-nav-pill) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .app-nav-pill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-color: #e63946;
+    pointer-events: none;
+  }
+
+  @supports (position-anchor: --app-nav-active-option) and (anchor-size(width) > 0px) {
+    .app-nav-pill {
+      position-anchor: --app-nav-active-option;
+      position-area: center;
+      inset: auto;
+      width: anchor-size(width);
+      height: anchor-size(height);
+    }
+  }
+
   html,
   body,
   #root {
