@@ -43,8 +43,9 @@ function AppNavLink({ children, className, pillGroup, ...props }) {
             <motion.span
               aria-hidden="true"
               layoutId={`app-nav-pill-${pillGroup}`}
+              layout="position"
               className="app-nav-pill"
-              transition={{ type: "spring", stiffness: 480, damping: 36 }}
+              transition={{ type: "spring", stiffness: 600, damping: 40 }}
             />
           )}
           {children}
