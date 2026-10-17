@@ -275,16 +275,17 @@ const CreateTweet = () => {
                 >
                   <X size={16} />
                 </button>
+                {imageFiles.length < 10 && (
+                  <label
+                    htmlFor="tweet-image"
+                    aria-label="Add more photos"
+                    title="Add more photos"
+                    className="absolute bottom-3 right-3 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-black/70 text-white transition hover:bg-black"
+                  >
+                    <ImagePlus size={18} />
+                  </label>
+                )}
               </div>
-              {imageFiles.length < 10 && (
-                <label
-                  htmlFor="tweet-image"
-                  className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 py-3 text-xs font-medium text-black/50 transition hover:border-primary hover:text-primary dark:border-white/20 dark:text-white/50"
-                >
-                  <ImagePlus size={17} />
-                  Add more photos
-                </label>
-              )}
             </div>
           ) : (
             <label
