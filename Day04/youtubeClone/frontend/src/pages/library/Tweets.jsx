@@ -52,9 +52,9 @@ export function Tweets() {
           {tweetsQuery.error.message || "Failed to load tweets."}
         </div>
       ) : tweets.length ? (
-        <div className="space-y-3">
+        <div className="mx-auto w-[65%] max-w-[29rem] space-y-3">
           {tweets.map((tweet) => (
-            <TweetCard key={tweet._id} tweet={tweet} />
+            <TweetCard key={tweet._id} tweet={tweet} compact />
           ))}
         </div>
       ) : (

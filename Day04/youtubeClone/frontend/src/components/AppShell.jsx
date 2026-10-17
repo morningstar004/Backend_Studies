@@ -202,7 +202,7 @@ export default function AppShell() {
 
     return () => {
       document.documentElement.classList.remove("hide-page-scrollbar");
-      document.body.classList.remove("hide-page-scrollbar");
+      // document.body.classList.remove("hide-page-scrollbar");
     };
   }, [isCreatePostPage]);
 
@@ -615,7 +615,7 @@ export default function AppShell() {
         <main
           className={`min-w-0 flex-1 p-4 sm:p-6 ${
             isCreatePostPage
-              ? "min-h-0 overflow-hidden"
+              ? "min-h-0 overflow-y-auto"
               : ""
           }`}
         >

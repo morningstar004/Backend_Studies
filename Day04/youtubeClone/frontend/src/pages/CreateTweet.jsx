@@ -138,7 +138,7 @@ const CreateTweet = () => {
 
       <article
         className="surface !rounded-lg overflow-hidden"
-        style={{ aspectRatio: "9 / 16" }}
+        // style={{ aspectRatio: "9 / 16" }}
       >
         <header className="flex items-center gap-3 p-2 sm:p-2.5">
           <img

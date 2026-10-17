@@ -17,7 +17,7 @@ import {
 } from "../api/services.ts";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const TweetImages = ({ tweet }) => {
+const TweetImages = ({ tweet, compact }) => {
   const images = tweet.imageContents?.length
     ? tweet.imageContents
     : tweet.imageContent
@@ -40,7 +40,11 @@ const TweetImages = ({ tweet }) => {
             src={image}
             alt={`Post image ${index + 1}`}
             className={`w-full object-cover ${
-              images.length === 1 ? "max-h-[32rem]" : "aspect-square"
+              compact && images.length === 1
+                ? "aspect-[3/4]"
+                : images.length === 1
+                  ? "max-h-[32rem]"
+                  : "aspect-square"
             }`}
             style={{
               objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
@@ -55,7 +59,7 @@ const TweetImages = ({ tweet }) => {
 const actionButtonClass =
   "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-black/60 transition hover:bg-black/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-white/60 dark:hover:bg-white/10";
 
-export default function TweetCard({ tweet }) {
+export default function TweetCard({ tweet, compact = false }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -146,9 +150,16 @@ export default function TweetCard({ tweet }) {
 
   const commentList = commentsQuery.data?.data || [];
 
+  const cardClass = compact
+    ? "surface !rounded-lg scroll-mt-24 overflow-hidden p-2.5"
+    : "surface scroll-mt-24 p-4";
+  const compactActionButtonClass = compact
+    ? "px-2 py-1.5 text-xs"
+    : "";
+
   return (
-    <article id={`tweet-${tweet._id}`} className="surface scroll-mt-24 p-4">
-      <header className="flex items-center gap-3">
+    <article id={`tweet-${tweet._id}`} className={cardClass}>
+      <header className={`flex items-center ${compact ? "gap-2" : "gap-3"}`}>
         {owner?.username ? (
           <Link
             to={`/channel/${encodeURIComponent(owner.username)}`}
@@ -158,14 +169,14 @@ export default function TweetCard({ tweet }) {
             <img
               src={owner.avatar}
               alt=""
-              className="h-11 w-11 rounded-full bg-black/10 object-cover dark:bg-white/10"
+              className={`${compact ? "h-8 w-8" : "h-11 w-11"} rounded-full bg-black/10 object-cover dark:bg-white/10`}
             />
           </Link>
         ) : (
           <img
             src={owner?.avatar}
             alt=""
-            className="h-11 w-11 rounded-full bg-black/10 object-cover dark:bg-white/10"
+            className={`${compact ? "h-8 w-8" : "h-11 w-11"} rounded-full bg-black/10 object-cover dark:bg-white/10`}
           />
         )}
         <div className="min-w-0 flex-1">
@@ -184,7 +195,7 @@ export default function TweetCard({ tweet }) {
             type="button"
             onClick={() => subscribeMutation.mutate()}
             disabled={subscribeMutation.isPending}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60`}
           >
             <UserPlus size={15} />
             Subscribe
@@ -192,10 +203,16 @@ export default function TweetCard({ tweet }) {
         )}
       </header>
 
-      <p className="mt-3 whitespace-pre-wrap text-sm">{tweet.caption}</p>
-      <TweetImages tweet={tweet} />
+      <p
+        className={`${compact ? "mt-2" : "mt-3"} whitespace-pre-wrap text-sm`}
+      >
+        {tweet.caption}
+      </p>
+      <TweetImages tweet={tweet} compact={compact} />
 
-      <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-black/10 pt-2 dark:border-white/10">
+      <div
+        className={`${compact ? "mt-2" : "mt-3"} flex flex-wrap items-center gap-1 border-t border-black/10 pt-2 dark:border-white/10`}
+      >
         {user && (
           <>
             <button
@@ -204,7 +221,7 @@ export default function TweetCard({ tweet }) {
               disabled={likeMutation.isPending || dislikeMutation.isPending}
               aria-label="Like post"
               aria-pressed={Boolean(tweet.isLiked)}
-              className={`${actionButtonClass} ${tweet.isLiked ? "text-primary" : ""}`}
+              className={`${actionButtonClass} ${compactActionButtonClass} ${tweet.isLiked ? "text-primary" : ""}`}
             >
               <ThumbsUp
                 size={17}
@@ -218,7 +235,7 @@ export default function TweetCard({ tweet }) {
               disabled={dislikeMutation.isPending || likeMutation.isPending}
               aria-label="Dislike post"
               aria-pressed={Boolean(tweet.isDisliked)}
-              className={`${actionButtonClass} ${tweet.isDisliked ? "text-primary" : ""}`}
+              className={`${actionButtonClass} ${compactActionButtonClass} ${tweet.isDisliked ? "text-primary" : ""}`}
             >
               <ThumbsDown
                 size={17}
@@ -231,7 +248,7 @@ export default function TweetCard({ tweet }) {
               onClick={() => setCommentsOpen((isOpen) => !isOpen)}
               aria-expanded={commentsOpen}
               aria-label="Show comments"
-              className={actionButtonClass}
+              className={`${actionButtonClass} ${compactActionButtonClass}`}
             >
               <MessageCircle size={17} />
               {tweet.commentCount ?? 0}
@@ -241,7 +258,7 @@ export default function TweetCard({ tweet }) {
         <button
           type="button"
           onClick={shareTweet}
-          className={actionButtonClass}
+          className={`${actionButtonClass} ${compactActionButtonClass}`}
           aria-label="Share post"
         >
           <Share2 size={17} />
