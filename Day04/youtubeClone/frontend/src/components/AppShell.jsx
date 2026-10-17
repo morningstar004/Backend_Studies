@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
 import SpeechSearchButton from "./SpeechSearchButton.jsx";
+import GlassFilterDefinitions from "./GlassFilterDefinitions.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
@@ -431,7 +432,8 @@ export default function AppShell() {
           : "min-h-screen"
       }`}
     >
-      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-black/80">
+      <GlassFilterDefinitions />
+      <header className="glass-texture sticky top-0 z-30 border-b border-black/10 bg-white/80 dark:border-white/10 dark:bg-black/80">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
           <button

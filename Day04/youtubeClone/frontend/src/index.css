@@ -140,6 +140,36 @@
 }
 
 @layer components {
+  .glass-filter-definitions {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .glass-texture {
+    --glass-blur: 14px;
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.1));
+    background: var(--glass-background, rgba(255, 255, 255, 0.72));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+  }
+
+  html.dark .glass-texture {
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-background: rgba(0, 0, 0, 0.72);
+  }
+
+  @supports (backdrop-filter: url("#glass-displacement")) {
+    .glass-texture {
+      -webkit-backdrop-filter: url("#glass-displacement") blur(var(--glass-blur));
+      backdrop-filter: url("#glass-displacement") blur(var(--glass-blur));
+    }
+  }
+
   .surface {
     @apply rounded-2xl border border-black/10 bg-white dark:border-white/10 dark:bg-white/[0.035];
   }
