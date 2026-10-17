@@ -45,7 +45,11 @@ function App() {
           <Route path="/library/watchlist" element={<Watchlist />} />
           <Route path="/library/playlists" element={<Playlists />} />
           <Route path="/library/liked-videos" element={<LikedVideos />} />
-          <Route path="/library/tweets" element={<Tweets />} />
+          <Route path="/tweets" element={<Tweets />} />
+          <Route
+            path="/library/tweets"
+            element={<Navigate to="/tweets" replace />}
+          />
           <Route
             path="/watchlist"
             element={<Navigate to="/library/watchlist" replace />}

@@ -157,7 +157,7 @@ export function LibraryOverview() {
       description: "Posts you have shared",
       count: tweets.length,
       tone: "from-cyan-500/20 via-cyan-500/5 to-transparent",
-      href: "/library/tweets",
+      href: "/tweets",
       preview: tweets.slice(0, 6),
     },
   ];

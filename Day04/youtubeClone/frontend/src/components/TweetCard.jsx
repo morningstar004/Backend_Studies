@@ -124,7 +124,7 @@ export default function TweetCard({ tweet }) {
   const shareTweet = async () => {
     const sharePath = owner?.username
       ? `/channel/${encodeURIComponent(owner.username)}/posts#tweet-${tweet._id}`
-      : `/library/tweets#tweet-${tweet._id}`;
+      : `/tweets#tweet-${tweet._id}`;
     const url = `${window.location.origin}${sharePath}`;
     try {
       if (navigator.share) {
