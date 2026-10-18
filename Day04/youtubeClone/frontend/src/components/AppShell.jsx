@@ -44,7 +44,7 @@ function AppNavLink({ children, className, pillGroup, ...props }) {
               aria-hidden="true"
               layoutId={`app-nav-pill-${pillGroup}`}
               layout="position"
-              className="app-nav-pill glass"
+              className="app-nav-pill"
               transition={{ type: "spring", stiffness: 600, damping: 40 }}
             />
           )}
