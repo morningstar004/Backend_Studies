@@ -21,7 +21,6 @@ import { useEffect, useRef, useState } from "react";
 import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
 import SpeechSearchButton from "./SpeechSearchButton.jsx";
-import GlassFilterDefinitions from "./GlassFilterDefinitions.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
@@ -45,7 +44,7 @@ function AppNavLink({ children, className, pillGroup, ...props }) {
               aria-hidden="true"
               layoutId={`app-nav-pill-${pillGroup}`}
               layout="position"
-              className="app-nav-pill"
+              className="app-nav-pill glass"
               transition={{ type: "spring", stiffness: 600, damping: 40 }}
             />
           )}
@@ -426,14 +425,13 @@ export default function AppShell() {
   );
   return (
     <div
-      className={`bg-white text-[#1A1A1B] transition-colors dark:bg-black dark:text-[#F8F9FA] ${
+      className={`starry-sky text-[#F8F9FA] transition-colors ${
         isCreatePostPage
           ? "flex h-screen flex-col overflow-hidden"
           : "min-h-screen"
       }`}
     >
-      <GlassFilterDefinitions />
-      <header className="glass-texture sticky top-0 z-30 border-b border-black/10 bg-white/80 dark:border-white/10 dark:bg-black/80">
+      <header className="glass-texture sticky top-0 z-30 border-b border-white/10 bg-black/65 text-[#F8F9FA]">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
           <button
@@ -587,7 +585,7 @@ export default function AppShell() {
         </div>
       </header>
       <div
-        className={`mx-auto flex w-full bg-white dark:bg-darkBg ${
+        className={`mx-auto flex w-full ${
           isCreatePostPage ? "min-h-0 flex-1 overflow-hidden" : ""
         }`}
       >

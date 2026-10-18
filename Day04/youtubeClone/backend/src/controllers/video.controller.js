@@ -201,11 +201,13 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const [video] = await Video.aggregate([
+    // $match: used to filter the documents in the collection based on the specified condition. In this case, it filters the videos by their _id field, which is converted to a mongoose.Types.ObjectId using the videoId parameter from the request.
     {
       $match: {
         _id: new mongoose.Types.ObjectId(videoId),
       },
     },
+    // $lookup: used to perform a left outer join with the users collection. It matches the owner field in the videos collection with the _id field in the users collection. The result is stored in an array called owner. Additionally, it uses a pipeline to further process the matched user documents.
     {
       $lookup: {
         from: "users",
@@ -232,12 +234,13 @@ const getVideoById = asyncHandler(async (req, res) => {
               },
             },
           },
+          // $project: used to specify which fields should be included or excluded in the final output. In this case, it includes the fullName, username, avatar, subscribersCount, and isSubscribed fields while excluding the coverImage field (commented out).
           {
             $project: {
               fullName: 1,
               username: 1,
               avatar: 1,
-              coverImage: 1,
+              // coverImage: 1,
               subscribersCount: 1,
               isSubscribed: 1,
             },
@@ -325,6 +328,8 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new apiError(404, "Video not found");
   }
 
+  // Check if the video is published or if the requesting user is the owner of the video
+  // if client requesting for a video which is not published and the user is not the owner of the video then throw an error
   if (
     !video.isPublished &&
     video.owner?._id.toString() !== req.user?._id.toString()
@@ -332,6 +337,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new apiError(403, "This video is private.");
   }
 
+  // Increment the view count and update the user's watch history in parallel
   const [updatedVideo] = await Promise.all([
     Video.findByIdAndUpdate(
       videoId,
