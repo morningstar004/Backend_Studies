@@ -16,9 +16,9 @@ import {
   LibraryOverview,
   LikedVideos,
   Playlists,
-  Tweets,
   Watchlist,
 } from "./pages/library/index.js";
+import { Tweets } from "./pages/Tweets.jsx";
 import History from "./pages/History.jsx";
 import Subscriptions from "./pages/Subscriptions.jsx";
 import UpdateVideo from "./pages/UpdateVideo.jsx";

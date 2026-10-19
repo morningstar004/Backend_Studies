@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { tweetService } from "../../api/services.ts";
-import TweetCard from "../../components/TweetCard.jsx";
-import { EmptyState } from "../../components/States.jsx";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { tweetService } from "../api/services.ts";
+import TweetCard from "../components/TweetCard.jsx";
+import { EmptyState } from "../components/States.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export function Tweets() {
   const { user } = useAuth();
@@ -27,9 +27,6 @@ export function Tweets() {
             Library
           </Link>
           <h1 className="text-2xl font-bold">Your tweets</h1>
-          <p className="mt-1 text-sm text-black/55 dark:text-white/55">
-            Posts you have shared.
-          </p>
         </div>
         <Link
           to="/create-tweet"
