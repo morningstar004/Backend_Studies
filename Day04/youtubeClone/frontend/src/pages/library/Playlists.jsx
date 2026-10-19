@@ -29,7 +29,7 @@ function PlaylistCard({ playlist }) {
     <Link
       to={`/playlist/${playlist._id}`}
       aria-label={`Open playlist ${playlist.name}`}
-      className="relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-sm transition-[transform,background-color,box-shadow] duration-200 ease-out hover:shadow-md active:scale-[0.98] active:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-white/[0.03] sm:h-72 xl:h-75"
+      className="glass-hover relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl border border-transparent transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out active:scale-[0.98] active:bg-primary/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-white/3 sm:h-72 xl:h-75 bg-transparent"
     >
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {thumbnail ? (
@@ -53,7 +53,7 @@ function PlaylistCard({ playlist }) {
             <img
               src={thumbnail}
               alt={`${playlist.videos[0].title || playlist.name} thumbnail`}
-              className="absolute inset-x-1 bottom-0 z-[5] h-[calc(100%-14px)] w-full rounded-xl object-cover transition duration-300"
+              className="absolute inset-x-1 bottom-0 z-5 h-[calc(100%-14px)] w-full rounded-xl object-cover transition duration-300"
               style={{ clipPath: "inset(0 12% 0 0 round 0.75rem)" }}
             />
           </>

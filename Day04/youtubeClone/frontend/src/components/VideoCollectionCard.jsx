@@ -113,7 +113,7 @@ const VideoCollectionCard = ({
   return (
     <Link
       to={`/video/${video._id}`}
-      className={`group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold`}
+      className={`group relative isolate overflow-hidden rounded-2xl text-black transition-colors duration-[400ms] ease-out hover:text-primary dark:text-white`}
     >
       {dominantColorHover && (
         <span
@@ -141,9 +141,9 @@ const VideoCollectionCard = ({
       <div
         className={`relative z-10 flex-col pb-2 ${compact ? "px-3" : "px-4"}`}
       >
-        <h2 className="line-clamp-2 font-bold text-white">{video.title}</h2>
+        <h2 className="line-clamp-2 font-bold text-black dark:text-white">{video.title}</h2>
         <div
-          className={`absolute right-2 z-10 flex items-center justify-center rounded-full text-black transition-all duration-300 hover:bg-black/40 dark:text-white ${
+          className={`absolute right-2 z-10 flex items-center justify-center rounded-full text-black transition-all duration-300 hover:bg-black/5 dark:text-white dark:hover:bg-white/10 ${
             compact ? "bottom-1.5 h-7 w-7" : "bottom-2 h-10 w-10"
           }`}
         >
@@ -157,7 +157,7 @@ const VideoCollectionCard = ({
             compact={compact}
           />
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs text-black/60 dark:text-white/60">
           {video.owner?.avatar && (
             <img
               src={video.owner.avatar}

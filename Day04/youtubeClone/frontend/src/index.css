@@ -5,7 +5,7 @@
   :root {
     font-family: "Didone", "Bodoni MT", Didot, Georgia, serif;
     color: #1a1a1b;
-    background: #ffffff;
+    background: #f6f7f9;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
   }
@@ -20,6 +20,10 @@
 
   .starry-sky {
     min-height: 100vh;
+    background-color: #f6f7f9;
+  }
+
+  html.dark .starry-sky {
     background-color: #000;
     background-image:
       radial-gradient(1px 1px at 20px 30px, #fff, transparent),
@@ -32,7 +36,7 @@
   * {
     box-sizing: border-box;
     scrollbar-width: thin;
-    scrollbar-color: rgba(230, 57, 70, 0.8) transparent;
+    scrollbar-color: rgba(93, 117, 192, 0.8) transparent;
   }
 
   .app-nav-list {
@@ -115,7 +119,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #ffffff;
+    background-color: #f6f7f9;
     color: #1a1a1b;
     overflow-y: auto;
   }
@@ -135,14 +139,14 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(230, 57, 70, 0.8);
+    background: rgba(93, 117, 192, 0.8);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(230, 57, 70, 1);
+    background: #5d75c0;
   }
 
   .hide-page-scrollbar {
@@ -191,6 +195,22 @@
     background: var(--glass-background, rgba(255, 255, 255, 0.72));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .glass-hover:hover,
+  .glass-hover:focus-visible {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  html.dark .glass-hover:hover,
+  html.dark .glass-hover:focus-visible {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   }
 
   html.dark .glass-texture {

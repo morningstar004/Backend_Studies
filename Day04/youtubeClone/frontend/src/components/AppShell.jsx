@@ -425,13 +425,13 @@ export default function AppShell() {
   );
   return (
     <div
-      className={`starry-sky text-[#F8F9FA] transition-colors ${
+      className={`starry-sky text-[#1A1A1B] transition-colors dark:text-[#F8F9FA] ${
         isCreatePostPage
           ? "flex h-screen flex-col overflow-hidden"
           : "min-h-screen"
       }`}
     >
-      <header className="glass-texture sticky top-0 z-30 border-b border-white/10 bg-black/65 text-[#F8F9FA]">
+      <header className="glass-texture sticky top-0 z-30 border-b border-black/10 bg-white/85 text-[#1A1A1B] dark:border-white/10 dark:bg-black/65 dark:text-[#F8F9FA]">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
           <button

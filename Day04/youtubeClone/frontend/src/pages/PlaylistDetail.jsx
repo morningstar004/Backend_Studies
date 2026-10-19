@@ -107,7 +107,7 @@ function PlaylistOptionsMenu({ onEdit, onDelete, align = "left" }) {
             }}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
-            className="z-[100] w-48 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
+            className="z-100 w-48 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
           >
             <button
               type="button"
