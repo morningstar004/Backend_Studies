@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  ChevronLeft,
+  ChevronRight,
   MessageCircle,
   Send,
   Share2,
@@ -18,6 +20,7 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 
 const TweetImages = ({ tweet, compact }) => {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const images = tweet.imageContents?.length
     ? tweet.imageContents
     : tweet.imageContent
@@ -25,33 +28,68 @@ const TweetImages = ({ tweet, compact }) => {
       : [];
 
   if (!images.length) return null;
+  const currentImageIndex = Math.min(activeImageIndex, images.length - 1);
 
   return (
-    <div
-      className={`mt-3 grid gap-1 overflow-hidden rounded-lg ${
-        images.length === 1 ? "grid-cols-1" : "grid-cols-2"
-      }`}
-    >
-      {images.map((image, index) => {
-        const crop = tweet.imageCrops?.[index];
-        return (
-          <img
-            key={`${image}-${index}`}
-            src={image}
-            alt={`Post image ${index + 1}`}
-            className={`w-full object-cover ${
-              compact && images.length === 1
-                ? "aspect-[3/4]"
-                : images.length === 1
-                  ? "max-h-[32rem]"
-                  : "aspect-square"
-            }`}
-            style={{
-              objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
-            }}
-          />
-        );
-      })}
+    <div className="relative mt-3 overflow-hidden rounded-lg">
+      <div
+        className={`flex transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
+          compact ? "aspect-[3/4]" : "max-h-[32rem]"
+        }`}
+        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+      >
+        {images.map((image, index) => {
+          const crop = tweet.imageCrops?.[index];
+          return (
+            <img
+              key={`${image}-${index}`}
+              src={image}
+              alt={`Post image ${index + 1}`}
+              aria-hidden={index !== currentImageIndex}
+              className={`w-full shrink-0 object-cover ${
+                compact ? "h-full" : "max-h-[32rem]"
+              }`}
+              style={{
+                objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+              }}
+            />
+          );
+        })}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() =>
+              setActiveImageIndex(Math.max(0, currentImageIndex - 1))
+            }
+            disabled={currentImageIndex === 0}
+            aria-label="Show previous image"
+            className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft size={21} />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setActiveImageIndex((index) =>
+                Math.min(images.length - 1, currentImageIndex + 1),
+              )
+            }
+            disabled={currentImageIndex === images.length - 1}
+            aria-label="Show next image"
+            className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/65 text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight size={21} />
+          </button>
+          <span
+            aria-live="polite"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white"
+          >
+            {currentImageIndex + 1} / {images.length}
+          </span>
+        </>
+      )}
     </div>
   );
 };
@@ -184,10 +222,9 @@ export default function TweetCard({ tweet, compact = false }) {
             {owner?.fullName || "Creator"}
           </p>
           <p className="truncate text-xs text-black/50 dark:text-white/50">
-            {owner?.username ? `@${owner.username} · ` : ""}
-            {createdAt}
+            {owner?.username ? `@${owner.username}` : ""}
             {owner?.subscribersCount != null &&
-              ` · ${owner.subscribersCount} subscribers`}
+              `${owner?.username ? " · " : ""}${owner.subscribersCount} subscribers`}
           </p>
         </div>
         {showSubscribe && (
@@ -203,12 +240,17 @@ export default function TweetCard({ tweet, compact = false }) {
         )}
       </header>
 
-      <p
-        className={`${compact ? "mt-2" : "mt-3"} whitespace-pre-wrap text-sm`}
-      >
-        {tweet.caption}
-      </p>
       <TweetImages tweet={tweet} compact={compact} />
+      <div
+        className={`${compact ? "mt-2" : "mt-3"} flex items-start justify-between gap-3`}
+      >
+        <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm">
+          {tweet.caption}
+        </p>
+        <time className="shrink-0 whitespace-nowrap text-xs text-black/50 dark:text-white/50">
+          {createdAt}
+        </time>
+      </div>
 
       <div
         className={`${compact ? "mt-2" : "mt-3"} flex flex-wrap items-center gap-1 border-t border-black/10 pt-2 dark:border-white/10`}

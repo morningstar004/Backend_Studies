@@ -49,9 +49,9 @@ export function Tweets() {
           {tweetsQuery.error.message || "Failed to load tweets."}
         </div>
       ) : tweets.length ? (
-        <div className="glass-texture bg-glass backdrop-blur-glass mx-auto m-8 w-[65%] max-w-116 space-y-3 rounded-lg">
+        <div className="glass-texture bg-glass backdrop-blur-glass mx-auto w-[65%] max-w-116 space-y-3 rounded-2xl p-5">
           {tweets.map((tweet) => (
-            <TweetCard key={tweet._id} tweet={tweet} compact />
+            <TweetCard className="-z-10" key={tweet._id} tweet={tweet} compact />
           ))}
         </div>
       ) : (
