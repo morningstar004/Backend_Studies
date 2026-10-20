@@ -86,7 +86,7 @@ const Register = () => {
   };
 
   return (
-    <div className="mx-auto max-w-xl max-h-screen py-6">
+    <div className="mx-auto flex flex-col max-w-xl px-4 py-6 sm:py-10">
       <AuthrizationCard
         fields={[
           "fullName",
