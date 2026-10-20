@@ -24,11 +24,13 @@ import SpeechSearchButton from "./SpeechSearchButton.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
+
 const links = [
   { to: "/", label: "Home", icon: Compass },
   { to: "/tweets", label: "Tweets", icon: MessageSquareText },
   { to: "/subscriptions", label: "Subscriptions", icon: UsersRound },
 ];
+
 const active = ({ isActive }) =>
   `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
 function AppNavLink({ children, className, pillGroup, ...props }) {

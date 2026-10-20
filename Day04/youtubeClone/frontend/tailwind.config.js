@@ -8,6 +8,12 @@ export default {
         darkBg: "#000000",
         lightGrey: "#696969",
       },
+      backgroundColor: {
+        glass: "var(--glass-background, rgba(255, 255, 255, 0.72))",
+      },
+      backdropBlur: {
+        glass: "var(--glass-blur, 14px)",
+      },
     },
   },
   plugins: [],
