@@ -115,7 +115,7 @@ export default function SpeechSearchButton({ onSearch }) {
       {phase !== "idle" &&
         createPortal(
           <div
-            className="pointer-events-auto fixed inset-0 z-[100] flex items-start justify-center bg-black/45 px-4 pt-[12vh] backdrop-blur-[1.5px] backdrop-brightness-90 backdrop-saturate-50"
+            className="pointer-events-auto fixed inset-0 z-[100] flex items-start justify-center bg-black/25 px-4 pt-[12vh] backdrop-blur-md backdrop-saturate-75"
             onClick={(event) => {
               if (event.target === event.currentTarget) stopListening();
             }}
@@ -131,7 +131,7 @@ export default function SpeechSearchButton({ onSearch }) {
               aria-label="Voice search"
               aria-modal="true"
               aria-live="polite"
-              className="relative flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-black/10 bg-white px-6 py-8 text-center shadow-2xl dark:border-white/10 dark:bg-[#111111]"
+              className="voice-search-glass relative flex w-full max-w-md flex-col items-center gap-5 rounded-3xl px-6 py-8 text-center"
             >
               <button
                 type="button"

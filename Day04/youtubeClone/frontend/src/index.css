@@ -1,6 +1,18 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+@property --search-glass-angle-1 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -75deg;
+}
+
+@property --search-glass-angle-2 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -45deg;
+}
+
 @layer base {
   :root {
     font-family: "Didone", "Bodoni MT", Didot, Georgia, serif;
@@ -187,6 +199,236 @@
 }
 
 @layer components {
+  .search-glass {
+    --search-glass-angle-1: -75deg;
+    --search-glass-angle-2: -45deg;
+    --search-glass-border-width: 1px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(30, 41, 59, 0.24);
+    border-radius: 9999px;
+    background:
+      linear-gradient(-75deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.12) 42%, rgba(255, 255, 255, 0.36)),
+      rgba(255, 255, 255, 0.32);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 rgba(30, 41, 59, 0.12);
+    -webkit-backdrop-filter: blur(28px) saturate(1.2);
+    backdrop-filter: blur(28px) saturate(1.2);
+    transition: background 500ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 350ms ease, border-color 350ms ease;
+  }
+
+  .search-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    background:
+      conic-gradient(
+        from var(--search-glass-angle-1) at 50% 50%,
+        rgba(20, 30, 45, 0.48),
+        rgba(255, 255, 255, 0.12) 8% 40%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(255, 255, 255, 0.12) 60% 92%,
+        rgba(20, 30, 45, 0.48)
+      ),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5);
+    transition: --search-glass-angle-1 500ms ease;
+  }
+
+  .search-glass::after,
+  .voice-search-glass::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      var(--search-glass-angle-2, -30deg),
+      transparent 0%,
+      rgba(255, 255, 255, 0.52) 44% 52%,
+      transparent 58%
+    );
+    background-size: 200% 200%;
+    background-position: 0% 10%;
+    background-repeat: no-repeat;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transition:
+      background-position 500ms cubic-bezier(0.25, 1, 0.5, 1),
+      --search-glass-angle-2 500ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .search-glass:hover,
+  .search-glass:focus-within {
+    --search-glass-angle-1: -125deg;
+    border-color: rgba(30, 41, 59, 0.28);
+    background:
+      linear-gradient(-75deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.06) 44%, rgba(255, 255, 255, 0.24)),
+      rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.13),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 rgba(30, 41, 59, 0.1);
+  }
+
+  .search-glass:hover::before,
+  .search-glass:focus-within::before,
+  .voice-search-glass:hover::before {
+    --search-glass-angle-1: -125deg;
+  }
+
+  .search-glass:hover::after,
+  .search-glass:focus-within::after,
+  .voice-search-glass:hover::after {
+    background-position: 0.2% 0.5%;
+  }
+
+  .search-glass:active::before,
+  .voice-search-glass:active::before {
+    --search-glass-angle-1: -75deg;
+  }
+
+  .search-glass:active::after,
+  .voice-search-glass:active::after {
+    --search-glass-angle-2: -15deg;
+    background-position: 0.5% 0.15%;
+  }
+
+  html.dark .search-glass {
+    border-color: rgba(255, 255, 255, 0.3);
+    background:
+      linear-gradient(-75deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.035) 45%, rgba(255, 255, 255, 0.12)),
+      rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  html.dark .search-glass:hover,
+  html.dark .search-glass:focus-within {
+    background:
+      linear-gradient(-75deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.025) 45%, rgba(255, 255, 255, 0.08)),
+      rgba(255, 255, 255, 0.055);
+    box-shadow:
+      0 10px 32px rgba(0, 0, 0, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .voice-search-glass {
+    --search-glass-angle-1: -75deg;
+    --search-glass-angle-2: -45deg;
+    --search-glass-border-width: 1.5px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(30, 41, 59, 0.2);
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.78),
+        rgba(255, 255, 255, 0.24) 48%,
+        rgba(255, 255, 255, 0.5)
+      ),
+      rgba(255, 255, 255, 0.52);
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 0 rgba(30, 41, 59, 0.1);
+    -webkit-backdrop-filter: blur(32px) saturate(1.15);
+    backdrop-filter: blur(32px) saturate(1.15);
+    transition:
+      transform 400ms cubic-bezier(0.25, 1, 0.5, 1),
+      box-shadow 400ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  html.dark .voice-search-glass {
+    border-color: rgba(255, 255, 255, 0.24);
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 255, 255, 0.045) 48%,
+        rgba(255, 255, 255, 0.12)
+      ),
+      rgba(24, 24, 27, 0.68);
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .voice-search-glass::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    padding: var(--search-glass-border-width);
+    border-radius: inherit;
+    background:
+      conic-gradient(
+        from var(--search-glass-angle-1) at 50% 50%,
+        rgba(20, 30, 45, 0.48),
+        rgba(255, 255, 255, 0.12) 8% 40%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(255, 255, 255, 0.12) 60% 92%,
+        rgba(20, 30, 45, 0.48)
+      ),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: --search-glass-angle-1 500ms ease;
+  }
+
+  .voice-search-glass > * {
+    position: relative;
+    z-index: 3;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .search-glass,
+    .search-glass::before {
+      transition: none;
+    }
+
+    .search-glass::after,
+    .voice-search-glass,
+    .voice-search-glass::before,
+    .voice-search-glass::after {
+      transition: none;
+    }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .search-glass::before,
+    .search-glass:hover::before,
+    .search-glass:focus-within::before,
+    .voice-search-glass::before,
+    .voice-search-glass:hover::before {
+      --search-glass-angle-1: -75deg;
+    }
+
+    .search-glass::after,
+    .search-glass:active::after,
+    .voice-search-glass::after,
+    .voice-search-glass:active::after {
+      --search-glass-angle-2: -45deg;
+    }
+  }
+
   .glass-texture {
     --glass-blur: 14px;
     position: relative;
