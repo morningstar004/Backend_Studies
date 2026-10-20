@@ -76,7 +76,7 @@ const Login = () => {
   };
 
   return (
-    <div className="mx-auto flex-col max-w-xl py-6">
+    <div className="mx-auto flex flex-col max-w-xl px-4 py-6 sm:py-10">
       <AuthrizationCard
         fields={["email", "username", "password"]}
         optionalFields={["email", "username"]}

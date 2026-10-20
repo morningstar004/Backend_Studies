@@ -142,10 +142,12 @@ export default function AuthrizationCard({
         e.preventDefault();
         onSubmit(values);
       }}
-      className="surface rounded-full px-0 h-[560px] -m-4 mb-4 w-[560px] sm:p-8"
+      className="surface mx-auto w-full max-w-md rounded-3xl p-6 sm:p-8"
     >
-      <h1 className="text-center text-4xl mt-5 font-bold">{title}</h1>
-      <p className="text-center text-sm mt-3 font-sans">{description}</p>
+      <h1 className="text-center text-3xl sm:text-4xl font-bold">{title}</h1>
+      <p className="text-center text-sm mt-2 text-black/60 dark:text-white/60 font-sans">
+        {description}
+      </p>
       <div className="mt-6 space-y-4">
         {fields
           .filter((field) => fieldConfigs[field]?.type !== "file")
@@ -155,8 +157,8 @@ export default function AuthrizationCard({
               config && (
                 <label key={field} className="block text-sm font-medium">
                   {config.icon ? (
-                    <div className="group relative mt-1.5 flex justify-center">
-                      <span className="pointer-events-none relative inset-y-0 left-8 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
+                    <div className="group relative mt-1.5 w-full max-w-sm mx-auto">
+                      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#8D8D8D] transition-colors group-focus-within:text-primary [&>svg]:h-5 [&>svg]:w-5">
                         {config.icon}
                       </span>
                       <input
@@ -184,7 +186,7 @@ export default function AuthrizationCard({
                               : event.target.value,
                           )
                         }
-                        className="input pl-10 pr-10 w-80"
+                        className="input pl-10 pr-10 w-full"
                       />
                       {field === "password" && (
                         <button
@@ -193,7 +195,7 @@ export default function AuthrizationCard({
                             showPassword ? "Hide password" : "Show password"
                           }
                           onClick={() => setShowPassword((visible) => !visible)}
-                          className="absolute inset-y-0 right-24 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
+                          className="absolute inset-y-0 right-3 flex items-center text-black/50 transition group-focus-within:text-primary hover:text-black dark:text-white/50 dark:hover:text-white"
                         >
                           {showPassword ? (
                             <EyeOff size={18} />
@@ -204,36 +206,38 @@ export default function AuthrizationCard({
                       )}
                     </div>
                   ) : (
-                    <input
-                      required={
-                        config.required ??
-                        (config.type !== "file" &&
-                          !optionalFields.includes(field))
-                      }
-                      type={config.type}
-                      name={field}
-                      autoComplete={config.autoComplete}
-                      placeholder={config.placeholder}
-                      {...(config.type === "file"
-                        ? { accept: config.accept }
-                        : { value: values[field] || "" })}
-                      onChange={(event) =>
-                        onChange(
-                          field,
-                          config.type === "file"
-                            ? event.target.files?.[0] || null
-                            : event.target.value,
-                        )
-                      }
-                      className="input"
-                    />
+                    <div className="w-full max-w-sm mx-auto">
+                      <input
+                        required={
+                          config.required ??
+                          (config.type !== "file" &&
+                            !optionalFields.includes(field))
+                        }
+                        type={config.type}
+                        name={field}
+                        autoComplete={config.autoComplete}
+                        placeholder={config.placeholder}
+                        {...(config.type === "file"
+                          ? { accept: config.accept }
+                          : { value: values[field] || "" })}
+                        onChange={(event) =>
+                          onChange(
+                            field,
+                            config.type === "file"
+                              ? event.target.files?.[0] || null
+                              : event.target.value,
+                          )
+                        }
+                        className="input w-full"
+                      />
+                    </div>
                   )}
                 </label>
               )
             );
           })}
         {fields.some((field) => fieldConfigs[field]?.type === "file") && (
-          <div className="mt-[6px] flex flex-wrap justify-center gap-[6rem]">
+          <div className="mt-4 flex flex-wrap justify-center gap-8 sm:gap-12">
             {fields
               .filter((field) => fieldConfigs[field]?.type === "file")
               .map((field) => {
@@ -267,22 +271,20 @@ export default function AuthrizationCard({
           </div>
         )}
       </div>
-      <div className=" flex flex-col items-center justify-center gap-2">
+      <div className="mt-6 flex flex-col items-center justify-center gap-2">
         {showForgotPassword ? (
           <button
             type="button"
-            className="w-80 text-right text-sm mt-1 mb-2 text-primary hover:underline"
+            className="w-full max-w-sm text-right text-sm mb-1 text-primary hover:underline"
             onClick={onForgotPassword}
           >
             {forgotPasswordText}
           </button>
-        ) : (
-          <span />
-        )}
+        ) : null}
         <button
           disabled={disabled}
           type="submit"
-          className="rounded-xl translate-x-2.5 bg-primary w-80 px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full max-w-sm rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitLabel}
         </button>

@@ -49,7 +49,7 @@ export function Tweets() {
           {tweetsQuery.error.message || "Failed to load tweets."}
         </div>
       ) : tweets.length ? (
-        <div className="mx-auto w-[65%] max-w-116 rounded-lg m-8  space-y-3">
+        <div className="glass-texture bg-glass backdrop-blur-glass mx-auto m-8 w-[65%] max-w-116 space-y-3 rounded-lg">
           {tweets.map((tweet) => (
             <TweetCard key={tweet._id} tweet={tweet} compact />
           ))}
