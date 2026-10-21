@@ -10,16 +10,19 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 
+// Function to remove a temporary file
 const removeTemporaryFile = async (filePath) => {
   if (filePath) {
     await unlink(filePath).catch(() => {});
   }
 };
 
+// Function to remove multiple temporary files
 const removeTemporaryFiles = async (files = []) => {
   await Promise.all(files.map((file) => removeTemporaryFile(file.path)));
 };
 
+// 01
 const createTweet = asyncHandler(async (req, res) => {
   const { caption } = req.body;
   if (typeof caption !== "string" || caption.trim() === "") {
@@ -27,6 +30,7 @@ const createTweet = asyncHandler(async (req, res) => {
     throw new apiError(400, "Caption is required to Tweet.");
   }
 
+  // Validate image crop positions if provided
   let imageCrops = [];
   if (req.body.imageCrops) {
     try {
@@ -36,6 +40,7 @@ const createTweet = asyncHandler(async (req, res) => {
       throw new apiError(400, "Image crop positions are invalid.");
     }
 
+    // Validate the structure and values of imageCrops
     if (
       !Array.isArray(imageCrops) ||
       (imageCrops.length !== 0 && imageCrops.length !== (req.files || []).length) ||
@@ -55,14 +60,17 @@ const createTweet = asyncHandler(async (req, res) => {
     }
   }
 
+  // Upload images to Cloudinary and get their URLs
   const images = await Promise.all(
     (req.files || []).map((file) => uploadOnCloudinary(file.path)),
   );
+  // Extract the URLs of the uploaded images and filter out any undefined values
   const imageContents = images.map((image) => image?.url).filter(Boolean);
   if (imageCrops.length === 0) {
     imageCrops = imageContents.map(() => ({ x: 50, y: 50 }));
   }
 
+  // Create a new tweet document in the database
   const tweet = await Tweet.create({
     caption: caption.trim(),
     imageContent: imageContents[0] ?? null,
@@ -146,6 +154,7 @@ const createTweet = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Tweet Created", createTweent));
 });
 
+// 02
 const getUserTweets = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   if (!isValidObjectId(userId)) {
@@ -313,6 +322,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Tweets Fetched Successfully", tweets));
 });
 
+// 03
 const updateTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
   const { caption } = req.body ?? {};
@@ -373,6 +383,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Tweet Updated", updatedTweet));
 });
 
+// 04
 const deleteTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
 

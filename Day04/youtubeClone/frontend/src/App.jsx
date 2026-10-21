@@ -28,13 +28,16 @@ function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route element={<RequireAuth />}>
+          <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:section" element={<Profile />} />
+          <Route path="/channel/:username" element={<Profile />} />
+          <Route path="/channel/:username/:section" element={<Profile />} />
+          <Route path="/video/:videoId" element={<VideoDetail />} />
           <Route path="/upload-video" element={<UploadVideo />} />
           <Route path="/video/:videoId/edit" element={<UpdateVideo />} />
           <Route path="/create-tweet" element={<CreateTweet />} />
@@ -61,9 +64,6 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
         </Route>
-        <Route path="/channel/:username" element={<Profile />} />
-        <Route path="/channel/:username/:section" element={<Profile />} />
-        <Route path="/video/:videoId" element={<VideoDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

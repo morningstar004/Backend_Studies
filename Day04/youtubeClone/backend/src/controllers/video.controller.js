@@ -120,6 +120,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
   const videos = result?.videos ?? [];
   const totalVideos = result?.metadata[0]?.totalVideos ?? 0;
 
+  res.set("Cache-Control", "private, no-store");
   return res.status(200).json(
     new ResponseHandler(200, "Video Fetched Successfully", {
       videos,
@@ -352,6 +353,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 
   video.views = updatedVideo.views;
 
+  res.set("Cache-Control", "private, no-store");
   return res
     .status(200)
     .json(new ResponseHandler(200, "Video fetched successfully", video));
