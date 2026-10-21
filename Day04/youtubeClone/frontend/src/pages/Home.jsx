@@ -79,9 +79,8 @@ const Home = () => {
         // Displaying the list of videos if they are available.
         <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
           {videos.map((video) => (
-            <Link
+            <article
               key={video._id}
-              to={`/video/${video._id}`}
               className="group relative isolate overflow-hidden rounded-2xl transition-colors duration-[400ms] ease-out hover:text-teal-100 text-semibold"
             >
               <span
@@ -91,19 +90,21 @@ const Home = () => {
                   backgroundColor: `color-mix(in srgb, ${dominantColors[video._id] || "hsl(210 80% 60%)"} 65%, black)`,
                 }}
               />
-              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
-                <img
-                  src={video.thumbnail}
-                  alt={video.title}
-                  className="h-[95%] w-[97%] rounded-2xl object-cover transition duration-300"
-                />
-                <div className="absolute bottom-3 right-3 rounded-md bg-black/80 px-1.5 py-0.25 text-[10px] font-medium text-white backdrop-blur-md opacity-80">
-                  {formatDuration(video.duration)}
+              <Link to={`/video/${video._id}`} className="block">
+                <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl">
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
+                    className="h-[95%] w-[97%] rounded-2xl object-cover transition duration-300"
+                  />
+                  <div className="absolute bottom-3 right-3 rounded-md bg-black/80 px-1.5 py-0.25 text-[10px] font-medium text-white backdrop-blur-md opacity-80">
+                    {formatDuration(video.duration)}
+                  </div>
                 </div>
-              </div>
+              </Link>
               <div className="relative z-10 flex-col px-4 pb-2">
                 <h2 className="line-clamp-2 font-bold dark:text-white text-black">
-                  {video.title}
+                  <Link to={`/video/${video._id}`}>{video.title}</Link>
                 </h2>
                 <div className="absolute bottom-2 right-3 z-10 text-black dark:text-white hover:bg-black/40 duration-300 transition-all rounded-full h-10 w-10 flex justify-center items-center">
                   <VideoOptionsMenu
@@ -145,7 +146,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </Link>
+            </article>
           ))}
         </div>
       )}

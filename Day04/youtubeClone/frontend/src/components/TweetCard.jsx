@@ -2,14 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
+  Copy,
   MessageCircle,
+  MoreVertical,
   Send,
   Share2,
   ThumbsDown,
   ThumbsUp,
   UserPlus,
+  UserRound,
+  UserRoundMinus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -97,6 +102,156 @@ const TweetImages = ({ tweet, compact }) => {
 const actionButtonClass =
   "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-black/60 transition hover:bg-black/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-white/60 dark:hover:bg-white/10";
 
+function TweetOptionsMenu({
+  canUnsubscribe,
+  username,
+  onUnsubscribe,
+  onCopyLink,
+  onShare,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+  const menuWidth = 192;
+  const menuHeight = canUnsubscribe ? 184 : 140;
+
+  const updatePosition = () => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const top =
+      rect.bottom + menuHeight + 8 <= window.innerHeight
+        ? rect.bottom + 8
+        : Math.max(8, rect.top - menuHeight - 8);
+    setPosition({
+      left: Math.max(
+        8,
+        Math.min(rect.left, window.innerWidth - menuWidth - 8),
+      ),
+      top,
+    });
+  };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handleOutsidePointer = (event) => {
+      if (
+        !triggerRef.current?.contains(event.target) &&
+        !menuRef.current?.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    updatePosition();
+    document.addEventListener("mousedown", handleOutsidePointer);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsidePointer);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen, canUnsubscribe]);
+
+  const menuItemClass =
+    "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10";
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label="Post options"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        onClick={() => {
+          if (!isOpen) requestAnimationFrame(updatePosition);
+          setIsOpen((open) => !open);
+        }}
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-black/60 transition hover:bg-black/5 hover:text-primary dark:text-white/60 dark:hover:bg-white/10"
+      >
+        <MoreVertical size={19} />
+      </button>
+      {isOpen &&
+        position &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Post options"
+            style={{
+              position: "fixed",
+              left: position.left,
+              top: position.top,
+            }}
+            onClick={(event) => event.stopPropagation()}
+            className="z-100 w-48 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
+          >
+            {canUnsubscribe && (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsOpen(false);
+                  onUnsubscribe();
+                }}
+                className={menuItemClass}
+              >
+                <UserRoundMinus size={17} />
+                Unsubscribe
+              </button>
+            )}
+            {username && (
+              <Link
+                role="menuitem"
+                to={`/channel/${encodeURIComponent(username)}`}
+                onClick={() => setIsOpen(false)}
+                className={menuItemClass}
+              >
+                <UserRound size={17} />
+                Go to account
+              </Link>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                onCopyLink();
+              }}
+              className={menuItemClass}
+            >
+              <Copy size={17} />
+              Copy link
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                onShare();
+              }}
+              className={menuItemClass}
+            >
+              <Share2 size={17} />
+              Share
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
 export default function TweetCard({ tweet, compact = false }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -136,17 +291,24 @@ export default function TweetCard({ tweet, compact = false }) {
   });
   const subscribeMutation = useMutation({
     mutationFn: () => subscriptionService.toggle(owner._id),
-    onSuccess: async (response) => {
+    onSuccess: async (response, isSubscribing) => {
       await Promise.all([
         refreshTweets(),
         queryClient.invalidateQueries({
           queryKey: ["subscriptions", user?._id],
         }),
       ]);
-      toast.success(response.message || "Subscribed.");
+      toast.success(
+        response.message || (isSubscribing ? "Subscribed." : "Unsubscribed."),
+      );
     },
-    onError: (error) =>
-      toast.error(error.message || "Unable to subscribe to this creator."),
+    onError: (error, isSubscribing) =>
+      toast.error(
+        error.message ||
+          (isSubscribing
+            ? "Unable to subscribe to this creator."
+            : "Unable to unsubscribe from this creator."),
+      ),
   });
   const addCommentMutation = useMutation({
     mutationFn: () => tweetService.addComment(tweet._id, commentContent.trim()),
@@ -164,10 +326,7 @@ export default function TweetCard({ tweet, compact = false }) {
   });
 
   const shareTweet = async () => {
-    const sharePath = owner?.username
-      ? `/channel/${encodeURIComponent(owner.username)}/posts#tweet-${tweet._id}`
-      : `/tweets#tweet-${tweet._id}`;
-    const url = `${window.location.origin}${sharePath}`;
+    const url = getTweetUrl();
     try {
       if (navigator.share) {
         await navigator.share({
@@ -175,9 +334,11 @@ export default function TweetCard({ tweet, compact = false }) {
           text: tweet.caption,
           url,
         });
-      } else {
+      } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
         toast.success("Post link copied to clipboard.");
+      } else {
+        window.prompt("Copy this post link:", url);
       }
     } catch (error) {
       if (error?.name !== "AbortError") {
@@ -186,14 +347,32 @@ export default function TweetCard({ tweet, compact = false }) {
     }
   };
 
+  const getTweetUrl = () => {
+    const sharePath = owner?.username
+      ? `/channel/${encodeURIComponent(owner.username)}/posts#tweet-${tweet._id}`
+      : `/tweets#tweet-${tweet._id}`;
+    return `${window.location.origin}${sharePath}`;
+  };
+
+  const copyTweetLink = async () => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(getTweetUrl());
+        toast.success("Post link copied to clipboard.");
+      } else {
+        window.prompt("Copy this post link:", getTweetUrl());
+      }
+    } catch {
+      toast.error("Unable to copy this post link.");
+    }
+  };
+
   const commentList = commentsQuery.data?.data || [];
 
   const cardClass = compact
-    ? "surface !rounded-lg scroll-mt-24 overflow-hidden p-2.5"
+    ? "surface !rounded-lg scroll-mt-24 overflow-hidden p-2.5 border-0"
     : "surface scroll-mt-24 p-4";
-  const compactActionButtonClass = compact
-    ? "px-2 py-1.5 text-xs"
-    : "";
+  const compactActionButtonClass = compact ? "px-2 py-1.5 text-xs" : "";
 
   return (
     <article id={`tweet-${tweet._id}`} className={cardClass}>
@@ -223,21 +402,30 @@ export default function TweetCard({ tweet, compact = false }) {
           </p>
           <p className="truncate text-xs text-black/50 dark:text-white/50">
             {owner?.username ? `@${owner.username}` : ""}
-            {owner?.subscribersCount != null &&
-              `${owner?.username ? " · " : ""}${owner.subscribersCount} subscribers`}
+            {/* {owner?.subscribersCount != null &&
+              `${owner?.username ? " · " : ""}${owner.subscribersCount} subscribers`} */}
           </p>
         </div>
-        {showSubscribe && (
-          <button
-            type="button"
-            onClick={() => subscribeMutation.mutate()}
-            disabled={subscribeMutation.isPending}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60`}
-          >
-            <UserPlus size={15} />
-            Subscribe
-          </button>
-        )}
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          {showSubscribe && (
+            <button
+              type="button"
+              onClick={() => subscribeMutation.mutate(true)}
+              disabled={subscribeMutation.isPending}
+              className={`inline-flex items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60`}
+            >
+              <UserPlus size={15} />
+              Subscribe
+            </button>
+          )}
+          <TweetOptionsMenu
+            canUnsubscribe={Boolean(owner?.isSubscribed && !isOwnTweet)}
+            username={owner?.username}
+            onUnsubscribe={() => subscribeMutation.mutate(false)}
+            onCopyLink={copyTweetLink}
+            onShare={shareTweet}
+          />
+        </div>
       </header>
 
       <TweetImages tweet={tweet} compact={compact} />
@@ -253,7 +441,7 @@ export default function TweetCard({ tweet, compact = false }) {
       </div>
 
       <div
-        className={`${compact ? "mt-2" : "mt-3"} flex flex-wrap items-center gap-1 border-t border-black/10 pt-2 dark:border-white/10`}
+        className={`${compact ? "mt-2" : "mt-3"} flex flex-wrap items-center gap-1`}
       >
         {user && (
           <>
@@ -297,15 +485,6 @@ export default function TweetCard({ tweet, compact = false }) {
             </button>
           </>
         )}
-        <button
-          type="button"
-          onClick={shareTweet}
-          className={`${actionButtonClass} ${compactActionButtonClass}`}
-          aria-label="Share post"
-        >
-          <Share2 size={17} />
-          Share
-        </button>
       </div>
 
       {commentsOpen && user && (
