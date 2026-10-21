@@ -242,7 +242,7 @@ export default function PlaylistDetail() {
     );
   }
 
-  if (playlistQuery.isError || !playlist) {
+  if (!playlist) {
     return (
       <section className="surface grid min-h-64 place-items-center p-8 text-center">
         <div>

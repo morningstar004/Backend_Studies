@@ -1,3 +1,5 @@
+import { reportBackendReachability } from "../context/networkStatus.js";
+
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(
   /\/$/,
   "",
@@ -23,16 +25,24 @@ const readResponse = async (response) => {
         ? responseText.trim()
         : null) ||
       `Request failed (${response.status}).`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
   return responseData;
 };
 
 const fetchWithCredentials = async (url, options) => {
   try {
-    return await fetch(url, { ...options, credentials: "include" });
+    const response = await fetch(url, {
+      ...options,
+      credentials: "include",
+    });
+    reportBackendReachability(true);
+    return response;
   } catch (error) {
     if (error instanceof TypeError) {
+      reportBackendReachability(false);
       throw new Error(
         "Unable to connect to the server. Please check your connection and try again.",
         { cause: error },
@@ -102,6 +112,7 @@ const requestFormWithProgress = async (path, body, onUploadProgress) => {
     });
     xhr.addEventListener("load", async () => {
       if (!xhr.status) {
+        reportBackendReachability(false);
         reject(
           new Error(
             "Unable to connect to the server. Please check your connection and try again.",
@@ -111,6 +122,7 @@ const requestFormWithProgress = async (path, body, onUploadProgress) => {
       }
 
       try {
+        reportBackendReachability(true);
         resolve(
           await readResponse(
             new Response(xhr.responseText, {
@@ -124,6 +136,7 @@ const requestFormWithProgress = async (path, body, onUploadProgress) => {
       }
     });
     xhr.addEventListener("error", () => {
+      reportBackendReachability(false);
       reject(
         new Error(
           "Unable to connect to the server. Please check your connection and try again.",
@@ -148,4 +161,13 @@ export const api = {
     request(path, { method: "PATCH", body: JSON.stringify(body) }),
   patchForm: (path, body) => request(path, { method: "PATCH", body }),
   delete: (path) => request(path, { method: "DELETE" }),
+};
+
+export const checkApiHealth = async () => {
+  const response = await fetchWithCredentials(`${BASE_URL}/health`, {
+    method: "GET",
+    cache: "no-store",
+  });
+  reportBackendReachability(response.ok);
+  return readResponse(response);
 };

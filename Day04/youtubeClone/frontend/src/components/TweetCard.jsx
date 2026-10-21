@@ -521,7 +521,7 @@ export default function TweetCard({ tweet, compact = false }) {
             <p className="text-sm text-black/50 dark:text-white/50">
               Loading comments...
             </p>
-          ) : commentsQuery.error ? (
+          ) : commentsQuery.error && !commentList.length ? (
             <p role="alert" className="text-sm text-primary">
               {commentsQuery.error.message || "Unable to load comments."}
             </p>

@@ -291,7 +291,7 @@ const Profile = () => {
             <SkeletonCard key={item} />
           ))}
         </div>
-      ) : videosQuery.error ? (
+      ) : videosQuery.error && !items.length ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           Failed to load the videos.
         </div>

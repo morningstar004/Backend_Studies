@@ -45,7 +45,7 @@ export default function Subscriptions() {
             <SkeletonCard key={index} />
           ))}
         </div>
-      ) : videosQuery.isError ? (
+      ) : videosQuery.isError && !videosQuery.data?.length ? (
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
           <div className="font-semibold">Failed to load subscription videos</div>
           <div className="mt-1">

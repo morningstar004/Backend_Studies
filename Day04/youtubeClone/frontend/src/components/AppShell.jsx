@@ -14,6 +14,7 @@ import {
   ThumbsUp,
   UsersRound,
   Video,
+  WifiOff,
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -24,6 +25,7 @@ import SpeechSearchButton from "./SpeechSearchButton.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { subscriptionService } from "../api/services.ts";
+import { useNetworkStatus } from "../context/useNetworkStatus.jsx";
 
 const links = [
   { to: "/", label: "Home", icon: Compass },
@@ -67,6 +69,7 @@ export default function AppShell() {
   const profileMenuRef = useRef(null);
   const createMenuRef = useRef(null);
   const { user } = useAuth();
+  const { isOffline, browserOnline } = useNetworkStatus();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -434,6 +437,18 @@ export default function AppShell() {
       }`}
     >
       <header className="glass-texture sticky top-0 z-30 border-b border-black/10 bg-white/85 text-[#1A1A1B] dark:border-white/10 dark:bg-black/65 dark:text-[#F8F9FA]">
+        {isOffline && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center justify-center gap-2 bg-amber-500/15 px-3 py-2 text-center text-xs font-medium text-amber-900 dark:text-amber-200 sm:text-sm"
+          >
+            <WifiOff size={16} aria-hidden="true" />
+            {browserOnline
+              ? "The service is unavailable. Previously loaded content remains available; actions requiring a connection may not work."
+              : "You're offline. Previously loaded content remains available; actions requiring a connection may not work."}
+          </div>
+        )}
         <div className="mx-auto flex h-16 max-w-[1600px] items-center lg:gap-2 lg:px-4 px-2">
           {/* button to open the menu on small screens */}
           <button

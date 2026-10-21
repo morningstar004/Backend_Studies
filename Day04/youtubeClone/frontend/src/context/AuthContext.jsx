@@ -6,43 +6,59 @@ import {
   useMemo, // Hook to memoize expensive computations
   useState, // Hook to manage component state
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 // Import the authentication API module for making auth-related requests
 import { authApi } from "../api/authApi.js";
 // Import the toast notification library for displaying user feedback
 import { toast } from "sonner";
+import {
+  clearOfflineCache,
+  readOfflineUser,
+  saveOfflineUser,
+} from "./offlineCache.js";
 
 const AuthContext = createContext(null);
 
 // AuthProvider component that wraps the entire app to provide authentication state
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState(readOfflineUser);
+  const [loading, setLoading] = useState(() => !readOfflineUser());
   const [error, setError] = useState(null);
 
   // Memoized async function to fetch the current user's data from the server
   const fetchCurrentUser = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
       // Call the API to get current user data
       const data = await authApi.currentUser();
       // Update user state with fetched data, or null if no data is returned
-      setUser(data?.data || null);
+      const currentUser = data?.data || null;
+      setUser(currentUser);
+      saveOfflineUser(currentUser);
     } catch (err) {
-      setUser(null);
+      if (err.status >= 400 && err.status < 500) {
+        setUser(null);
+        queryClient.clear();
+        clearOfflineCache();
+      } else {
+        setUser(readOfflineUser());
+      }
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queryClient]);
 
   // useEffect hook to fetch current user when the component first mounts
   useEffect(() => {
     fetchCurrentUser();
-  }, []);
+  }, [fetchCurrentUser]);
 
   // Async function to handle user login with provided credentials
   const login = async (credentials) => {
+    clearOfflineCache();
+    queryClient.clear();
     await authApi.login(credentials);
     await fetchCurrentUser();
   };
@@ -54,6 +70,8 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setError(null);
+      queryClient.clear();
+      clearOfflineCache();
       toast.success("Signed out");
     }
   };
@@ -70,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       refreshUser: fetchCurrentUser,
     }),
     // Re-compute value only when these dependencies change
-    [user, loading, error, fetchCurrentUser],
+    [user, loading, error, fetchCurrentUser, queryClient],
   );
 
   // Provide the auth context value to all child components

@@ -68,7 +68,7 @@ export default function UpdateVideo() {
     );
   }
 
-  if (videoQuery.isError || !video) {
+  if (!video) {
     return (
       <section className="surface space-y-4 p-6">
         <p className="text-sm text-primary">

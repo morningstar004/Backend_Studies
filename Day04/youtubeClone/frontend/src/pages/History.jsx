@@ -122,7 +122,7 @@ export default function History() {
             <SkeletonCard key={index} />
           ))}
         </div>
-      ) : historyQuery.isError ? (
+      ) : historyQuery.isError && !historyVideos.length ? (
         <EmptyState
           title="History unavailable"
           detail={historyQuery.error?.message || "Unable to load watch history."}

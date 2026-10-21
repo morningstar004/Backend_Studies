@@ -389,7 +389,8 @@ const VideoOptionsMenu = ({
                   <p className="py-5 text-center text-sm text-black/60 dark:text-white/60">
                     Loading your playlists...
                   </p>
-                ) : playlistsQuery.isError ? (
+                ) : playlistsQuery.isError &&
+                  !playlistsQuery.data?.data?.length ? (
                   <div className="py-4">
                     <p className="text-sm text-red-600 dark:text-red-400">
                       {playlistsQuery.error?.message ||

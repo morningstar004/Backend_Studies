@@ -101,6 +101,7 @@ import { subscriptionRouter } from "./routes/subscription.route.js";
 import { tweetsRouter } from "./routes/tweets.route.js";
 import { videoRouter } from "./routes/video.route.js";
 import { dashboardRouter } from "./routes/dashboard.route.js";
+import { healthCheckRouter } from "./routes/healthCheck.route.js";
 
 // Routes
 app.get("/", (req, res) => {
@@ -115,6 +116,7 @@ app.use("/api/v1/subscription", subscriptionRouter);
 app.use("/api/v1/tweets", tweetsRouter);
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/health", healthCheckRouter);
 
 app.use((req, res) => {
   res.status(404).json({

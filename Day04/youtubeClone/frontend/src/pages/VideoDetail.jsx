@@ -335,7 +335,7 @@ const VideoDetail = () => {
   });
 
   //!check the error frontend design afterwards
-  if (error) {
+  if (error && !video) {
     return (
       <div className="rounded-3xl bg-danger/20 p-8 text-mist">{error}</div>
     );
@@ -752,7 +752,7 @@ const VideoDetail = () => {
               </div>
             ))}
           </div>
-        ) : suggestionsQuery.isError ? (
+        ) : suggestionsQuery.isError && !suggestions.length ? (
           <p className="text-sm text-black/55 dark:text-white/55">
             Recommended videos are unavailable.
           </p>

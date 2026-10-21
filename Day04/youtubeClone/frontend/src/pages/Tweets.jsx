@@ -41,7 +41,7 @@ export function Tweets() {
         <div className="surface animate-pulse p-8 text-sm text-black/55 dark:text-white/55">
           Loading tweets...
         </div>
-      ) : tweetsQuery.error ? (
+      ) : tweetsQuery.error && !tweets.length ? (
         <div
           role="alert"
           className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary"
