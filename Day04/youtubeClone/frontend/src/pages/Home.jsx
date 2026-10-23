@@ -110,6 +110,7 @@ const Home = () => {
                   <VideoOptionsMenu
                     videoId={video._id}
                     videoFile={video.videoFile}
+                    isDownloadable={video.isDownloadable !== false}
                     title={video.title}
                   />
                 </div>

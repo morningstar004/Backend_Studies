@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Globe, LockKeyhole, Upload } from "lucide-react";
+import { Download, Globe, LockKeyhole, Upload } from "lucide-react";
 import { videoService } from "../api/services.ts";
 import { toast } from "sonner";
 const schema = z.object({
   title: z.string().trim().min(1, "A title is required"),
   description: z.string().trim().min(1, "A description is required"),
   isPublished: z.boolean(),
+  isDownloadable: z.boolean(),
   videoFile: z.instanceof(File, { message: "Select a video file" }),
   thumbnail: z.instanceof(File, { message: "Select a thumbnail" }),
 });
@@ -25,11 +26,12 @@ const UploadVideo = () => {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { isPublished: true },
+    defaultValues: { isPublished: true, isDownloadable: true },
   });
   const selectedVideo = watch("videoFile");
   const selectedThumbnail = watch("thumbnail");
   const isPublished = watch("isPublished");
+  const isDownloadable = watch("isDownloadable");
   const [thumbnailPreview, setThumbnailPreview] = useState("");
   const [videoPreview, setVideoPreview] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -63,6 +65,7 @@ const UploadVideo = () => {
       body.append("title", form.title);
       body.append("description", form.description);
       body.append("isPublished", String(form.isPublished));
+      body.append("isDownloadable", String(form.isDownloadable));
       body.append("videoFile", form.videoFile);
       body.append("thumbnail", form.thumbnail);
       const result = await videoService.publish(body, setUploadProgress);
@@ -180,6 +183,68 @@ const UploadVideo = () => {
               {isPublished
                 ? "Anyone can find and watch this video."
                 : "Only you can access this video."}
+            </p>
+          </fieldset>
+          <fieldset>
+            <legend className="text-sm font-medium">Downloads</legend>
+            <div className="mt-2 inline-flex rounded-xl border border-black/10 bg-black/[0.035] p-1 dark:border-white/10 dark:bg-white/[0.04]">
+              <button
+                type="button"
+                aria-pressed={isDownloadable}
+                onClick={() =>
+                  setValue("isDownloadable", true, { shouldDirty: true })
+                }
+                className={`relative inline-flex w-36 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  isDownloadable
+                    ? "text-white"
+                    : "hover:bg-black/5 dark:hover:bg-white/10"
+                }`}
+              >
+                {isDownloadable && (
+                  <motion.span
+                    layoutId="download-switch-indicator"
+                    className="absolute inset-0 rounded-lg bg-primary shadow-sm"
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 34,
+                    }}
+                  />
+                )}
+                <Download className="relative z-10" size={16} />
+                <span className="relative z-10">Allowed</span>
+              </button>
+              <button
+                type="button"
+                aria-pressed={!isDownloadable}
+                onClick={() =>
+                  setValue("isDownloadable", false, { shouldDirty: true })
+                }
+                className={`relative inline-flex w-36 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  !isDownloadable
+                    ? "text-white"
+                    : "hover:bg-black/5 dark:hover:bg-white/10"
+                }`}
+              >
+                {!isDownloadable && (
+                  <motion.span
+                    layoutId="download-switch-indicator"
+                    className="absolute inset-0 rounded-lg bg-primary shadow-sm"
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 34,
+                    }}
+                  />
+                )}
+                <LockKeyhole className="relative z-10" size={16} />
+                <span className="relative z-10">Not allowed</span>
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-black/55 dark:text-white/55">
+              {isDownloadable
+                ? "Viewers can download this video."
+                : "The download option will be hidden from viewers."}
             </p>
           </fieldset>
           <label className="block text-sm font-medium">

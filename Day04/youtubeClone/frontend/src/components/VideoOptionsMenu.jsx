@@ -21,6 +21,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 const VideoOptionsMenu = ({
   videoId,
   videoFile,
+  isDownloadable = true,
   title = "video",
   playlistId,
   showHistoryRemoval = false,
@@ -59,7 +60,7 @@ const VideoOptionsMenu = ({
     : isInWatchlist;
 
   const handleDownload = async () => {
-    if (!videoFile) return;
+    if (!isDownloadable || !videoFile) return;
 
     try {
       const response = await fetch(videoFile, { mode: "cors" });
@@ -229,7 +230,9 @@ const VideoOptionsMenu = ({
           action: handleRemoveFromPlaylist,
         }
       : { label: "Add to playlist", icon: ListPlus, action: handleAddPlaylist },
-    { label: "Download", icon: Download, action: handleDownload },
+    ...(isDownloadable
+      ? [{ label: "Download", icon: Download, action: handleDownload }]
+      : []),
     { label: "Share", icon: Share2, action: handleShare },
     ...(showHistoryRemoval
       ? [

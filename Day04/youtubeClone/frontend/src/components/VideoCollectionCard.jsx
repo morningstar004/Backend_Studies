@@ -99,6 +99,7 @@ const VideoCollectionCard = ({
           <VideoOptionsMenu
             videoId={video._id}
             videoFile={video.videoFile}
+            isDownloadable={video.isDownloadable !== false}
             title={video.title}
             playlistId={playlistId}
             isInWatchlist={isInWatchlist}
@@ -150,6 +151,7 @@ const VideoCollectionCard = ({
           <VideoOptionsMenu
             videoId={video._id}
             videoFile={video.videoFile}
+            isDownloadable={video.isDownloadable !== false}
             title={video.title}
             playlistId={playlistId}
             showHistoryRemoval={showHistoryRemoval}

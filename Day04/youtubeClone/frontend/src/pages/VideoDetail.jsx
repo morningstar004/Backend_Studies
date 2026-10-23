@@ -625,15 +625,17 @@ const VideoDetail = () => {
               >
                 <Bookmark size={17} />
               </button>
-              <button
-                type="button"
-                onClick={downloadVideo}
-                aria-label="Download video"
-                title="Download"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary dark:border-white/10"
-              >
-                <Download size={17} />
-              </button>
+              {video.isDownloadable !== false && (
+                <button
+                  type="button"
+                  onClick={downloadVideo}
+                  aria-label="Download video"
+                  title="Download"
+                  className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary dark:border-white/10"
+                >
+                  <Download size={17} />
+                </button>
+              )}
             </div>
           </div>
           <section className="surface space-y-3 bg-black/[0.06] p-4 dark:bg-white/[0.08]">

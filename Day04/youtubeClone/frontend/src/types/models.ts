@@ -20,6 +20,7 @@ export interface Video {
   duration: number;
   views: number;
   isPublished: boolean;
+  isDownloadable?: boolean;
   createdAt: string;
   owner: User;
 }
