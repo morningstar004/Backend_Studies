@@ -133,7 +133,12 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 // 02
 const publishAVideo = asyncHandler(async (req, res) => {
-  const { title, description, isPublished = "true" } = req.body;
+  const {
+    title,
+    description,
+    isPublished = "true",
+    isDownloadable = "true",
+  } = req.body;
   const videoLocalPath = req.files?.videoFile?.[0]?.path;
   const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
 
@@ -150,6 +155,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
   if (![true, false, "true", "false"].includes(isPublished)) {
     await removeTemporaryFiles([videoLocalPath, thumbnailLocalPath]);
     throw new apiError(400, "isPublished must be true or false");
+  }
+
+  if (![true, false, "true", "false"].includes(isDownloadable)) {
+    await removeTemporaryFiles([videoLocalPath, thumbnailLocalPath]);
+    throw new apiError(400, "isDownloadable must be true or false");
   }
 
   if (!videoLocalPath) {
@@ -178,6 +188,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     description: description.trim(),
     duration: videoData.duration || 0,
     isPublished: isPublished === true || isPublished === "true",
+    isDownloadable: isDownloadable === true || isDownloadable === "true",
   });
 
   const uploadedVideo = await Video.findById(video._id);

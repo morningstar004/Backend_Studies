@@ -40,6 +40,10 @@ const videoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isDownloadable: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
