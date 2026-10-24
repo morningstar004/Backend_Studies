@@ -22,7 +22,7 @@ const authCookieOptions = {
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
   path: "/api/v1",
-  domain: process.env.COOKIE_DOMAIN || local, // Set your cookie domain in .env if needed
+  domain: process.env.COOKIE_DOMAIN || undefined, // Set your cookie domain in .env if needed
 };
 
 const sendPasswordResetOtp = async (email, otp) => {
