@@ -22,6 +22,7 @@ const authCookieOptions = {
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
   path: "/api/v1",
+  domain: process.env.COOKIE_DOMAIN || local, // Set your cookie domain in .env if needed
 };
 
 const sendPasswordResetOtp = async (email, otp) => {
@@ -189,6 +190,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+// 03
 const loginUser = asyncHandler(async (req, res) => {
   //get data from req.body(frontend)
   const { email, username, password } = req.body;
@@ -252,6 +254,7 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+// 04
 const forgotPassword = asyncHandler(async (req, res) => {
   const email = req.body?.email?.trim().toLowerCase();
 
@@ -263,7 +266,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new apiError(400, "Please provide a valid email address");
   }
 
-  const user = await User.findOne({ email }).select(
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
     "+passwordResetOtpHash +passwordResetOtpExpires",
   );
 
@@ -280,7 +283,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
       );
   }
 
-  const otp = crypto.randomInt(100000, 1000000).toString();
+  const otp = crypto.randomInt(0, 1000000).toString().padStart(6, "0");
   user.passwordResetOtpHash = crypto
     .createHash("sha256")
     .update(otp)
@@ -293,7 +296,14 @@ const forgotPassword = asyncHandler(async (req, res) => {
   } catch (error) {
     user.passwordResetOtpHash = undefined;
     user.passwordResetOtpExpires = undefined;
-    await user.save({ validateBeforeSave: false });
+    try {
+      await user.save({ validateBeforeSave: false });
+    } catch (rollbackError) {
+      // Optionally log the rollback error for debugging
+      if (!isProduction) {
+        console.error("Failed to rollback OTP fields after email error:", rollbackError);
+      }
+    }
     throw error;
   }
 
@@ -304,6 +314,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     );
 });
 
+// 05
 const resetPassword = asyncHandler(async (req, res) => {
   const email = req.body?.email?.trim().toLowerCase();
   const otp = req.body?.otp?.trim();
@@ -341,32 +352,51 @@ const resetPassword = asyncHandler(async (req, res) => {
   }
 
   user.password = newPassword;
-  user.refreshToken = undefined;
+  user.refreshTokens = [];
   user.passwordResetOtpHash = undefined;
   user.passwordResetOtpExpires = undefined;
   await user.save();
 
+  // Automatically log the user in after password reset
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Password reset successfully.", {}));
+    .cookie("accessToken", accessToken, authCookieOptions)
+    .cookie("refreshToken", refreshToken, authCookieOptions)
+    .json(new ResponseHandler(200, "Password reset successfully. You are now logged in.", {}));
 });
 
+// 06
 const logoutUser = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (refreshToken) {
+    const user = await User.findById(req.user._id);
+    if (user && Array.isArray(user.refreshTokens)) {
+      if (user.refreshTokens.includes(refreshToken)) {
+        await User.findByIdAndUpdate(req.user._id, {
+          $pull: { refreshTokens: refreshToken },
+        });
+      } else {
+        if (!isProduction) {
+          console.warn("Refresh token not found in user's refreshTokens array during logout.");
+        }
+      }
+    }
     await User.findByIdAndUpdate(req.user._id, {
       $pull: { refreshTokens: refreshToken },
     });
   }
-
-  return res
-    .status(200)
-    .clearCookie("accessToken", authCookieOptions)
-    .clearCookie("refreshToken", authCookieOptions)
-    .json(new ResponseHandler(200, "User Logged Out", {}));
+  // All authentication cookies are cleared and the refresh token is removed from the database during logout.
+    return res
+      .status(200)
+      .clearCookie("accessToken", authCookieOptions)
+      .clearCookie("refreshToken", authCookieOptions)
+      .json(new ResponseHandler(200, "User Logged Out", {}));
 });
 
+// 07
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body.refreshToken;
@@ -391,7 +421,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       !Array.isArray(user.refreshTokens) ||
       !user.refreshTokens.includes(incomingRefreshToken)
     ) {
-      throw new apiError(401, "Refreshtoken expired.");
+      throw new apiError(401, "Refresh token expired.");
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -400,6 +430,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
+      .clearCookie("refreshToken", authCookieOptions)
       .cookie("accessToken", accessToken, authCookieOptions)
       .cookie("refreshToken", refreshToken, authCookieOptions)
       .json(
@@ -410,6 +441,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   } catch (error) {
     if (error instanceof apiError) {
       throw error;
+    }
+
+    if (!isProduction) {
+      console.error("Refresh token error:", error);
     }
     throw new apiError(401, "Invalid refresh token.");
   }
