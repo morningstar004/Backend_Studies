@@ -78,6 +78,10 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    refreshTokens: {
+      type: [String],
+      default: [],
+    },
     passwordResetOtpHash: {
       type: String,
       select: false,

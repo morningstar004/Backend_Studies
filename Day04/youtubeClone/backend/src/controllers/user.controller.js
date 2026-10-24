@@ -77,6 +77,7 @@ const sendPasswordResetOtp = async (email, otp) => {
   }
 };
 
+// 01
 const registerUser = asyncHandler(async (req, res) => {
   // get details about the User from its model
   const { fullName, email, password, username } = req.body;
@@ -157,19 +158,34 @@ const registerUser = asyncHandler(async (req, res) => {
  * stores the refresh token in the database, and returns both tokens.
  * The validateBeforeSave option is disabled to skip model validation during save.
  */
+
+// 02
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
+    if (!user) {
+      throw new apiError(404, "User not found.");
+    }
+
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    user.refreshToken = refreshToken;
+    // Support multiple refresh tokens for multi-device login
+    if (!Array.isArray(user.refreshTokens)) {
+      user.refreshTokens = [];
+    }
+
+    user.refreshTokens.push(refreshToken);
     await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
   } catch (error) {
-    console.error("Access and refresh token generation failed.", error);
-    throw new apiError(500, "Internal Server Error");
+    if (!isProduction) {
+      // Only log detailed errors in non-production environments
+      console.error("Access and refresh token generation failed.", error);
+    }
+
+    throw new apiError(500, "Failed to generate tokens.");
   }
 };
 
@@ -332,28 +348,18 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ResponseHandler(
-        200,
-        "Password reset successfully. You can now sign in.",
-        {},
-      ),
-    );
+    .json(new ResponseHandler(200, "Password reset successfully.", {}));
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  //clear cookie and remove the refresh token
-  await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $set: {
-        refreshToken: undefined,
-      },
-    },
-    {
-      returnDocument: "after",
-    },
-  );
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+  if (refreshToken) {
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { refreshTokens: refreshToken },
+    });
+  }
+
   return res
     .status(200)
     .clearCookie("accessToken", authCookieOptions)
@@ -365,23 +371,26 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body.refreshToken;
 
-  if (!incomingRefreshToken) {
-    throw new apiError(401, "Unauthorized Request");
-  }
-
   try {
+    if (!incomingRefreshToken) {
+      throw new apiError(401, "Invalid Refresh Token");
+    }
+
     const decodedToken = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET,
     );
-
     const user = await User.findById(decodedToken._id);
 
     if (!user) {
       throw new apiError(401, "Invalid Refresh Token");
     }
 
-    if (incomingRefreshToken !== user?.refreshToken) {
+    // Check if the refresh token exists in the user's refreshTokens array
+    if (
+      !Array.isArray(user.refreshTokens) ||
+      !user.refreshTokens.includes(incomingRefreshToken)
+    ) {
       throw new apiError(401, "Refreshtoken expired.");
     }
 
@@ -395,8 +404,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .cookie("refreshToken", refreshToken, authCookieOptions)
       .json(
         new ResponseHandler(200, "Access token refreshed", {
-            authenticated: true,
-          }),
+          authenticated: true,
+        }),
       );
   } catch (error) {
     if (error instanceof apiError) {
