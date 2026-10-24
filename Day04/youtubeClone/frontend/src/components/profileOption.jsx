@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { Clapperboard, LogOut, Moon, Settings, Sun, Video } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 
 const ProfileOption = ({ onClose }) => {
@@ -8,9 +8,9 @@ const ProfileOption = ({ onClose }) => {
   const { theme, toggleTheme } = useTheme();
 
   const links = [
-    { to: "/profile", label: user?.username || "Your profile" },
-    { to: "/upload-video", label: "Add Content" },
-    { to: "/dashboard", label: "Studio" },
+    { to: "/profile", label: "Settings", icon: Settings },
+    { to: "/upload-video", label: "Add Content", icon: Video },
+    { to: "/dashboard", label: "Studio", icon: Clapperboard },
   ];
 
   return (
@@ -29,23 +29,21 @@ const ProfileOption = ({ onClose }) => {
         </p>
       </div>
 
-      {links.map(({ to, label }) => (
+      {links.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
           to={to}
           onClick={onClose}
-          className="block px-4 py-3 text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
+          className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
         >
+          <Icon className="h-4 w-4" />
           {label}
         </NavLink>
       ))}
 
       <button
         type="button"
-        onClick={() => {
-          toggleTheme();
-          onClose?.();
-        }}
+        onClick={toggleTheme}
         className="flex w-full items-center justify-between border-t border-black/10 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
       >
         <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>

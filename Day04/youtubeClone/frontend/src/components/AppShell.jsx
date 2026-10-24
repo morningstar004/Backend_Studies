@@ -108,7 +108,9 @@ export default function AppShell() {
           <AppNavLink
             key={channel._id || channel.username}
             onClick={closeMenu ? () => setMobileMenuOpen(false) : undefined}
-            pillGroup={closeMenu ? "mobile-subscriptions" : "desktop-subscriptions"}
+            pillGroup={
+              closeMenu ? "mobile-subscriptions" : "desktop-subscriptions"
+            }
             className={({ isActive }) =>
               `flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-xs font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`
             }
@@ -392,7 +394,11 @@ export default function AppShell() {
       {/* appears only when user is logged in */}
       {user && (
         <>
-          <AppNavLink className={desktopActive} pillGroup="desktop-primary" to="/profile">
+          <AppNavLink
+            className={desktopActive}
+            pillGroup="desktop-primary"
+            to="/profile"
+          >
             <img
               className="h-5 w-5 rounded-full object-cover"
               src={user.avatar}
@@ -631,9 +637,7 @@ export default function AppShell() {
         )}
         <main
           className={`min-w-0 flex-1 p-4 sm:p-6 ${
-            isCreatePostPage
-              ? "min-h-0 overflow-y-auto"
-              : ""
+            isCreatePostPage ? "min-h-0 overflow-y-auto" : ""
           }`}
         >
           <AnimatePresence mode="wait">
