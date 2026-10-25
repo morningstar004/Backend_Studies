@@ -23,6 +23,7 @@ import History from "./pages/History.jsx";
 import Subscriptions from "./pages/Subscriptions.jsx";
 import UpdateVideo from "./pages/UpdateVideo.jsx";
 import PlaylistDetail from "./pages/PlaylistDetail.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function App() {
   return (
@@ -35,6 +36,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:section" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/:section" element={<Settings />} />
           <Route path="/channel/:username" element={<Profile />} />
           <Route path="/channel/:username/:section" element={<Profile />} />
           <Route path="/video/:videoId" element={<VideoDetail />} />

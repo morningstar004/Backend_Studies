@@ -79,7 +79,7 @@ export default function AppShell() {
     location.pathname === "/create-tweet";
   //trangitional rendering while navigation inside the app, when user clicks on a link, the page will fade out and the new page will fade in
   const profileRoute = location.pathname.match(
-    /^(\/profile|\/channel\/[^/]+)(?:\/(?:home|videos|playlists|posts))?\/?$/,
+    /^(\/profile|\/channel\/[^/]+|\/settings)(?:\/(?:home|videos|playlists|posts|profile|password|comments|activities|account))?\/?$/,
   );
   const pageTransitionKey = profileRoute?.[1] || location.pathname;
   const subscriptionsQuery = useQuery({
