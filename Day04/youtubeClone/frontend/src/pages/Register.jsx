@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import AuthrizationCard from "../components/authrizationCard.jsx";
@@ -55,6 +55,7 @@ const Register = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const submitting = useRef(false);
   const navigate = useNavigate();
 
   const handleChange = (name, value) => {
@@ -62,6 +63,8 @@ const Register = () => {
   };
 
   const handleSubmit = async (values) => {
+    if (submitting.current) return;
+    submitting.current = true;
     setLoading(true);
 
     try {
@@ -81,6 +84,7 @@ const Register = () => {
         getRegisterErrorMessage(err?.message || "Registration failed."),
       );
     } finally {
+      submitting.current = false;
       setLoading(false);
     }
   };

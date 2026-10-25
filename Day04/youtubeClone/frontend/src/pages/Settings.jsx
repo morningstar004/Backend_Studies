@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
@@ -58,6 +58,7 @@ export default function Settings() {
   });
 
   const [saving, setSaving] = useState(false);
+  const actionInProgress = useRef(false);
   const [editingComment, setEditingComment] = useState(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [commentsPage, setCommentsPage] = useState(1);
@@ -80,9 +81,10 @@ export default function Settings() {
 
   const comments = commentsData?.docs || [];
 
-  // Save profile changes
   const saveProfile = async (event) => {
     event.preventDefault();
+    if (actionInProgress.current) return;
+    actionInProgress.current = true;
     setSaving(true);
     try {
       await userService.update(profileForm);
@@ -92,6 +94,7 @@ export default function Settings() {
     } catch (error) {
       toast.error(error?.message || "Unable to update your profile.");
     } finally {
+      actionInProgress.current = false;
       setSaving(false);
     }
   };
@@ -99,6 +102,11 @@ export default function Settings() {
   const uploadProfileImage = async (event, kind) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (actionInProgress.current) {
+      event.target.value = "";
+      return;
+    }
+    actionInProgress.current = true;
     const body = new FormData();
     body.append(kind === "avatar" ? "avatar" : "coverImage", file);
     setSaving(true);
@@ -114,6 +122,7 @@ export default function Settings() {
     } catch (error) {
       toast.error(error?.message || "Unable to upload the image.");
     } finally {
+      actionInProgress.current = false;
       setSaving(false);
       event.target.value = "";
     }
@@ -125,6 +134,8 @@ export default function Settings() {
       toast.error("The new passwords do not match.");
       return;
     }
+    if (actionInProgress.current) return;
+    actionInProgress.current = true;
     setSaving(true);
     try {
       await userService.changePassword({
@@ -141,11 +152,15 @@ export default function Settings() {
     } catch (error) {
       toast.error(error?.message || "Unable to change your password.");
     } finally {
+      actionInProgress.current = false;
       setSaving(false);
     }
   };
 
   const saveComment = async (commentId) => {
+    if (actionInProgress.current) return;
+    actionInProgress.current = true;
+    setSaving(true);
     try {
       await commentService.update(commentId, commentDraft);
       await queryClient.invalidateQueries({ queryKey: ["my-comments"] });
@@ -153,21 +168,36 @@ export default function Settings() {
       toast.success("Comment updated.");
     } catch (error) {
       toast.error(error?.message || "Unable to update your comment.");
+    } finally {
+      actionInProgress.current = false;
+      setSaving(false);
     }
   };
 
   const deleteComment = async (commentId) => {
+    if (actionInProgress.current) return;
     if (!window.confirm("Delete this comment?")) return;
+    actionInProgress.current = true;
+    setSaving(true);
     try {
       await commentService.delete(commentId);
       await queryClient.invalidateQueries({ queryKey: ["my-comments"] });
+      if (comments.length === 1 && commentsPage > 1) {
+        setCommentsPage((page) => page - 1);
+      }
       toast.success("Comment deleted.");
     } catch (error) {
       toast.error(error?.message || "Unable to delete your comment.");
+    } finally {
+      actionInProgress.current = false;
+      setSaving(false);
     }
   };
 
   const switchAccount = async () => {
+    if (actionInProgress.current) return;
+    actionInProgress.current = true;
+    setSaving(true);
     try {
       await logout();
     } catch (error) {
@@ -334,6 +364,7 @@ export default function Settings() {
                     <button
                       type="button"
                       onClick={() => saveComment(comment._id)}
+                      disabled={saving}
                       className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
                     >
                       Save
@@ -341,6 +372,7 @@ export default function Settings() {
                     <button
                       type="button"
                       onClick={() => setEditingComment(null)}
+                      disabled={saving}
                       className="rounded-lg px-4 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10"
                     >
                       Cancel
@@ -377,6 +409,7 @@ export default function Settings() {
                     <div className="flex gap-3 text-sm">
                       <button
                         type="button"
+                        disabled={saving}
                         onClick={() => {
                           setEditingComment(comment._id);
                           setCommentDraft(comment.content);
@@ -388,6 +421,7 @@ export default function Settings() {
                       <button
                         type="button"
                         onClick={() => deleteComment(comment._id)}
+                        disabled={saving}
                         className="font-medium text-red-500 hover:underline"
                       >
                         Delete
@@ -443,6 +477,7 @@ export default function Settings() {
         <button
           type="button"
           onClick={switchAccount}
+          disabled={saving}
           className="inline-flex items-center gap-2 rounded-xl border border-red-500/40 px-4 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-500/10"
         >
           <LogOut size={16} />
