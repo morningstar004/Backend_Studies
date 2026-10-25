@@ -28,6 +28,7 @@ const CreateTweet = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cropHintPosition, setCropHintPosition] = useState(null);
   const cropDragRef = useRef(null);
+  const submitLockRef = useRef(false);
 
   useEffect(() => {
     const previewUrls = imageFiles.map((file) => URL.createObjectURL(file));
@@ -108,9 +109,11 @@ const CreateTweet = () => {
 
   const submitTweet = async (event) => {
     event.preventDefault();
+    if (submitLockRef.current) return;
     const trimmedCaption = caption.trim();
     if (!trimmedCaption) return;
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
     try {
       await tweetService.create(trimmedCaption, imageFiles, cropPositions);
@@ -120,6 +123,7 @@ const CreateTweet = () => {
     } catch (error) {
       toast.error(error.message || "Could not post tweet");
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   };

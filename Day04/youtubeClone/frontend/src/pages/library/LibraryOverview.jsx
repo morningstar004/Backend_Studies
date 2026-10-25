@@ -28,6 +28,7 @@ export function LibraryOverview() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const collectionScrollRefs = useRef(new Map());
+  const playlistActionLockRef = useRef(false);
   const [openPlaylistMenuId, setOpenPlaylistMenuId] = useState(null);
   const [editingPlaylist, setEditingPlaylist] = useState(null);
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
@@ -68,7 +69,7 @@ export function LibraryOverview() {
 
   const handleUpdatePlaylist = async (event) => {
     event.preventDefault();
-    if (!editingPlaylist) return;
+    if (!editingPlaylist || playlistActionLockRef.current) return;
 
     const formData = new FormData(event.currentTarget);
     const description = String(formData.get("description") || "").trim();
@@ -83,6 +84,7 @@ export function LibraryOverview() {
       isPublished: formData.get("isPublished") === "public",
     };
 
+    playlistActionLockRef.current = true;
     setIsSavingPlaylist(true);
     try {
       await playlistService.update(editingPlaylist._id, updates);
@@ -99,16 +101,20 @@ export function LibraryOverview() {
     } catch (error) {
       toast.error(error?.message || "Unable to update the playlist.");
     } finally {
+      playlistActionLockRef.current = false;
       setIsSavingPlaylist(false);
     }
   };
 
   const handleDeletePlaylist = async (playlist) => {
     setOpenPlaylistMenuId(null);
+    if (playlistActionLockRef.current) return;
     if (!window.confirm(`Delete "${playlist.name}"? This cannot be undone.`)) {
       return;
     }
 
+    playlistActionLockRef.current = true;
+    setIsSavingPlaylist(true);
     try {
       await playlistService.delete(playlist._id);
       await queryClient.invalidateQueries({
@@ -117,6 +123,9 @@ export function LibraryOverview() {
       toast.success("Playlist deleted.");
     } catch (error) {
       toast.error(error?.message || "Unable to delete the playlist.");
+    } finally {
+      playlistActionLockRef.current = false;
+      setIsSavingPlaylist(false);
     }
   };
   const collections = [

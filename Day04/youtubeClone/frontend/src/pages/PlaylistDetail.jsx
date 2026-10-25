@@ -148,6 +148,7 @@ export default function PlaylistDetail() {
   const [videoSort, setVideoSort] = useState("uploaded-desc");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const actionLockRef = useRef(false);
   const playlistQuery = useQuery({
     queryKey: ["playlist", playlistId],
     queryFn: () => playlistService.byId(playlistId),
@@ -170,7 +171,7 @@ export default function PlaylistDetail() {
 
   const handleUpdatePlaylist = async (event) => {
     event.preventDefault();
-    if (!playlist) return;
+    if (!playlist || actionLockRef.current) return;
 
     const formData = new FormData(event.currentTarget);
     const description = String(formData.get("description") || "").trim();
@@ -185,6 +186,7 @@ export default function PlaylistDetail() {
       isPublished: formData.get("isPublished") === "public",
     };
 
+    actionLockRef.current = true;
     setIsSaving(true);
     try {
       await playlistService.update(playlist._id, updates);
@@ -199,17 +201,20 @@ export default function PlaylistDetail() {
     } catch (error) {
       toast.error(error?.message || "Unable to update the playlist.");
     } finally {
+      actionLockRef.current = false;
       setIsSaving(false);
     }
   };
 
   const handleDeletePlaylist = async () => {
-    if (!playlist) return;
+    if (!playlist || actionLockRef.current) return;
 
     if (!window.confirm(`Delete "${playlist.name}"? This cannot be undone.`)) {
       return;
     }
 
+    actionLockRef.current = true;
+    setIsSaving(true);
     try {
       await playlistService.delete(playlist._id);
       await queryClient.invalidateQueries({
@@ -219,6 +224,9 @@ export default function PlaylistDetail() {
       navigate("/library/playlists", { replace: true });
     } catch (error) {
       toast.error(error?.message || "Unable to delete the playlist.");
+    } finally {
+      actionLockRef.current = false;
+      setIsSaving(false);
     }
   };
 

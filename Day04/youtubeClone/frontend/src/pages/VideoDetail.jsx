@@ -53,6 +53,12 @@ const VideoDetail = () => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const actionLocksRef = useRef(new Set());
+  const runOnce = (key, action) => {
+    if (actionLocksRef.current.has(key)) return;
+    actionLocksRef.current.add(key);
+    action();
+  };
   const feedbackTimeoutRef = useRef(null);
   const { user } = useAuth();
   const client = useQueryClient();
@@ -264,18 +270,23 @@ const VideoDetail = () => {
       toast.success("Comment added");
     },
     onError: (e) => toast.error(e.message),
+    onSettled: () => actionLocksRef.current.delete(`add-comment:${videoId}`),
   });
   const likeComment = useMutation({
     mutationFn: (commentId) => likeService.comment(commentId),
     onSuccess: () =>
       client.invalidateQueries({ queryKey: ["comments", videoId] }),
     onError: (e) => toast.error(e.message),
+    onSettled: (_, __, commentId) =>
+      actionLocksRef.current.delete(`comment-reaction:${commentId}`),
   });
   const dislikeComment = useMutation({
     mutationFn: (commentId) => likeService.commentDislike(commentId),
     onSuccess: () =>
       client.invalidateQueries({ queryKey: ["comments", videoId] }),
     onError: (e) => toast.error(e.message),
+    onSettled: (_, __, commentId) =>
+      actionLocksRef.current.delete(`comment-reaction:${commentId}`),
   });
 
   const like = useMutation({
@@ -286,6 +297,7 @@ const VideoDetail = () => {
       toast.success(r.message);
     },
     onError: (e) => toast.error(e.message),
+    onSettled: () => actionLocksRef.current.delete(`video-reaction:${videoId}`),
   });
   const dislike = useMutation({
     mutationFn: () => likeService.videoDislike(videoId),
@@ -295,6 +307,7 @@ const VideoDetail = () => {
       toast.success(r.message);
     },
     onError: (e) => toast.error(e.message),
+    onSettled: () => actionLocksRef.current.delete(`video-reaction:${videoId}`),
   });
   const watchlist = useMutation({
     mutationFn: () => userService.toggleWatchlist(videoId),
@@ -303,6 +316,7 @@ const VideoDetail = () => {
       toast.success(r.message);
     },
     onError: (e) => toast.error(e.message),
+    onSettled: () => actionLocksRef.current.delete(`watchlist:${videoId}`),
   });
   const shareVideo = async () => {
     const shareUrl = window.location.href;
@@ -332,6 +346,7 @@ const VideoDetail = () => {
       toast.success(r.message);
     },
     onError: (e) => toast.error(e.message),
+    onSettled: () => actionLocksRef.current.delete(`subscription:${videoId}`),
   });
 
   //!check the error frontend design afterwards
@@ -553,7 +568,11 @@ const VideoDetail = () => {
               {video.owner?._id !== user?._id && (
                 <button
                   type="button"
-                  onClick={() => subscription.mutate()}
+                  onClick={() =>
+                    runOnce(`subscription:${videoId}`, () =>
+                      subscription.mutate(),
+                    )
+                  }
                   disabled={subscription.isPending}
                   className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-50 ${
                     video.owner?.isSubscribed
@@ -578,8 +597,10 @@ const VideoDetail = () => {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => like.mutate()}
-                disabled={like.isPending}
+                onClick={() =>
+                  runOnce(`video-reaction:${videoId}`, () => like.mutate())
+                }
+                disabled={like.isPending || dislike.isPending}
                 aria-label="Like video"
                 title="Like"
                 className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
@@ -592,8 +613,10 @@ const VideoDetail = () => {
               </button>
               <button
                 type="button"
-                onClick={() => dislike.mutate()}
-                disabled={dislike.isPending}
+                onClick={() =>
+                  runOnce(`video-reaction:${videoId}`, () => dislike.mutate())
+                }
+                disabled={dislike.isPending || like.isPending}
                 aria-label="Dislike video"
                 title="Dislike"
                 className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
@@ -617,7 +640,9 @@ const VideoDetail = () => {
               </button>
               <button
                 type="button"
-                onClick={() => watchlist.mutate()}
+                onClick={() =>
+                  runOnce(`watchlist:${videoId}`, () => watchlist.mutate())
+                }
                 disabled={watchlist.isPending}
                 aria-label="Save to watchlist"
                 title="Save to watchlist"
@@ -664,7 +689,9 @@ const VideoDetail = () => {
             className="flex gap-2"
             onSubmit={(e) => {
               e.preventDefault();
-              if (content.trim()) addComment.mutate();
+              if (content.trim()) {
+                runOnce(`add-comment:${videoId}`, () => addComment.mutate());
+              }
             }}
           >
             <input
@@ -702,8 +729,14 @@ const VideoDetail = () => {
                 <div className="mt-1 flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => likeComment.mutate(comment._id)}
-                    disabled={likeComment.isPending}
+                    onClick={() =>
+                      runOnce(`comment-reaction:${comment._id}`, () =>
+                        likeComment.mutate(comment._id),
+                      )
+                    }
+                    disabled={
+                      likeComment.isPending || dislikeComment.isPending
+                    }
                     aria-label="Like comment"
                     aria-pressed={comment.isLiked}
                     title="Like"
@@ -719,8 +752,14 @@ const VideoDetail = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => dislikeComment.mutate(comment._id)}
-                    disabled={dislikeComment.isPending}
+                    onClick={() =>
+                      runOnce(`comment-reaction:${comment._id}`, () =>
+                        dislikeComment.mutate(comment._id),
+                      )
+                    }
+                    disabled={
+                      likeComment.isPending || dislikeComment.isPending
+                    }
                     aria-label="Dislike comment"
                     aria-pressed={comment.isDisliked}
                     title="Dislike"

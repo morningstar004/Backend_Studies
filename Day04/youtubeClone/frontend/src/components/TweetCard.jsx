@@ -257,6 +257,7 @@ export default function TweetCard({ tweet, compact = false }) {
   const queryClient = useQueryClient();
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentContent, setCommentContent] = useState("");
+  const actionLocks = useRef(new Set());
   const owner = tweet.owner;
   const ownerId = owner?._id || owner;
   const isOwnTweet = Boolean(user?._id && ownerId === user._id);
@@ -283,11 +284,13 @@ export default function TweetCard({ tweet, compact = false }) {
     mutationFn: () => likeService.tweet(tweet._id),
     onSuccess: refreshTweets,
     onError: (error) => toast.error(error.message || "Unable to like post."),
+    onSettled: () => actionLocks.current.delete(`reaction:${tweet._id}`),
   });
   const dislikeMutation = useMutation({
     mutationFn: () => likeService.tweetDislike(tweet._id),
     onSuccess: refreshTweets,
     onError: (error) => toast.error(error.message || "Unable to dislike post."),
+    onSettled: () => actionLocks.current.delete(`reaction:${tweet._id}`),
   });
   const subscribeMutation = useMutation({
     mutationFn: () => subscriptionService.toggle(owner._id),
@@ -309,6 +312,7 @@ export default function TweetCard({ tweet, compact = false }) {
             ? "Unable to subscribe to this creator."
             : "Unable to unsubscribe from this creator."),
       ),
+    onSettled: () => actionLocks.current.delete(`subscribe:${tweet._id}`),
   });
   const addCommentMutation = useMutation({
     mutationFn: () => tweetService.addComment(tweet._id, commentContent.trim()),
@@ -323,7 +327,13 @@ export default function TweetCard({ tweet, compact = false }) {
       toast.success("Comment added.");
     },
     onError: (error) => toast.error(error.message || "Unable to add comment."),
+    onSettled: () => actionLocks.current.delete(`comment:${tweet._id}`),
   });
+  const runOnce = (key, action) => {
+    if (actionLocks.current.has(key)) return;
+    actionLocks.current.add(key);
+    action();
+  };
 
   const shareTweet = async () => {
     const url = getTweetUrl();
@@ -410,7 +420,11 @@ export default function TweetCard({ tweet, compact = false }) {
           {showSubscribe && (
             <button
               type="button"
-              onClick={() => subscribeMutation.mutate(true)}
+              onClick={() =>
+                runOnce(`subscribe:${tweet._id}`, () =>
+                  subscribeMutation.mutate(true),
+                )
+              }
               disabled={subscribeMutation.isPending}
               className={`inline-flex items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60`}
             >
@@ -421,7 +435,11 @@ export default function TweetCard({ tweet, compact = false }) {
           <TweetOptionsMenu
             canUnsubscribe={Boolean(owner?.isSubscribed && !isOwnTweet)}
             username={owner?.username}
-            onUnsubscribe={() => subscribeMutation.mutate(false)}
+            onUnsubscribe={() =>
+              runOnce(`subscribe:${tweet._id}`, () =>
+                subscribeMutation.mutate(false),
+              )
+            }
             onCopyLink={copyTweetLink}
             onShare={shareTweet}
           />
@@ -447,7 +465,9 @@ export default function TweetCard({ tweet, compact = false }) {
           <>
             <button
               type="button"
-              onClick={() => likeMutation.mutate()}
+              onClick={() =>
+                runOnce(`reaction:${tweet._id}`, () => likeMutation.mutate())
+              }
               disabled={likeMutation.isPending || dislikeMutation.isPending}
               aria-label="Like post"
               aria-pressed={Boolean(tweet.isLiked)}
@@ -461,7 +481,11 @@ export default function TweetCard({ tweet, compact = false }) {
             </button>
             <button
               type="button"
-              onClick={() => dislikeMutation.mutate()}
+              onClick={() =>
+                runOnce(`reaction:${tweet._id}`, () =>
+                  dislikeMutation.mutate(),
+                )
+              }
               disabled={dislikeMutation.isPending || likeMutation.isPending}
               aria-label="Dislike post"
               aria-pressed={Boolean(tweet.isDisliked)}
@@ -495,7 +519,11 @@ export default function TweetCard({ tweet, compact = false }) {
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              if (commentContent.trim()) addCommentMutation.mutate();
+              if (commentContent.trim()) {
+                runOnce(`comment:${tweet._id}`, () =>
+                  addCommentMutation.mutate(),
+                );
+              }
             }}
             className="flex items-start gap-2"
           >

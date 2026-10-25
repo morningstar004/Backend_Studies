@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ImagePlus } from "lucide-react";
@@ -13,6 +13,7 @@ export default function UpdateVideo() {
   const [description, setDescription] = useState("");
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const submitLockRef = useRef(false);
 
   const videoQuery = useQuery({
     queryKey: ["video", videoId],
@@ -49,10 +50,15 @@ export default function UpdateVideo() {
       navigate(`/video/${videoId}`);
     },
     onError: (error) => toast.error(error.message),
+    onSettled: () => {
+      submitLockRef.current = false;
+    },
   });
 
   const submit = (event) => {
     event.preventDefault();
+    if (submitLockRef.current || updateMutation.isPending) return;
+    submitLockRef.current = true;
     const body = new FormData();
     body.append("title", title.trim());
     body.append("description", description.trim());
