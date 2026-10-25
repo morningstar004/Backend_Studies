@@ -1,5 +1,6 @@
 // Import query hooks for managing asynchronous data fetching and caching.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Eye, Heart, Pencil, Trash2, Users, Video } from "lucide-react";
 import { dashboardService, videoService } from "../api/services.ts";
@@ -13,6 +14,7 @@ const stat = [
 ];
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const deletingVideoRef = useRef(false);
   const stats = useQuery({
     queryKey: ["dashboard", "stats"],
     // Fetch dashboard statistics using the dashboardService (dashboardController is has responsible for this)
@@ -39,6 +41,9 @@ export default function Dashboard() {
       toast.success("Video deleted");
     },
     onError: (error) => toast.error(error.message),
+    onSettled: () => {
+      deletingVideoRef.current = false;
+    },
   });
   // Extract the data from the stats query result that is returned from the backend API as an response object.
   const data = stats.data?.data;
@@ -97,7 +102,13 @@ export default function Dashboard() {
                   aria-label={`Delete ${v.title}`}
                   disabled={deleteMutation.isPending}
                   onClick={() => {
-                    if (window.confirm(`Delete "${v.title}"? This cannot be undone.`)) {
+                    if (
+                      !deletingVideoRef.current &&
+                      window.confirm(
+                        `Delete "${v.title}"? This cannot be undone.`,
+                      )
+                    ) {
+                      deletingVideoRef.current = true;
                       deleteMutation.mutate(v._id);
                     }
                   }}

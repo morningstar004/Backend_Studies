@@ -337,10 +337,11 @@ export function LibraryOverview() {
                                   <button
                                     type="button"
                                     role="menuitem"
+                                    disabled={isSavingPlaylist}
                                     onClick={() =>
                                       handleDeletePlaylist(playlist)
                                     }
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/10"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-black/5 disabled:cursor-wait disabled:opacity-50 dark:hover:bg-white/10"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                     Delete playlist
