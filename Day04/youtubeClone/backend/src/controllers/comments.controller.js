@@ -126,6 +126,63 @@ const getVideoComments = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Video comments fetched successfully.", comments));
 });
 
+const getCurrentUserComments = asyncHandler(async (req, res) => {
+  const page = Number(req.query.page ?? 1);
+  const limit = Number(req.query.limit ?? 20);
+
+  if (!Number.isInteger(page) || page < 1) {
+    throw new apiError(400, "Page must be a positive integer.");
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    throw new apiError(400, "Limit must be an integer between 1 and 100.");
+  }
+
+  const commentsAggregate = Comment.aggregate([
+    { $match: { owner: new mongoose.Types.ObjectId(req.user._id) } },
+    { $sort: { createdAt: -1, _id: -1 } },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "video",
+        pipeline: [{ $project: { title: 1, thumbnail: 1 } }],
+      },
+    },
+    {
+      $lookup: {
+        from: "tweets",
+        localField: "tweet",
+        foreignField: "_id",
+        as: "tweet",
+        pipeline: [{ $project: { caption: 1 } }],
+      },
+    },
+    {
+      $set: {
+        video: { $first: "$video" },
+        tweet: { $first: "$tweet" },
+      },
+    },
+    {
+      $project: {
+        content: 1,
+        createdAt: 1,
+        video: 1,
+        tweet: 1,
+      },
+    },
+  ]);
+  const comments = await Comment.aggregatePaginate(commentsAggregate, {
+    page,
+    limit,
+  });
+
+  return res
+    .status(200)
+    .json(new ResponseHandler(200, "Your comments fetched successfully.", comments));
+});
+
 const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
   const { videoId } = req.params;
@@ -336,6 +393,7 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 export {
   getVideoComments,
+  getCurrentUserComments,
   addComment,
   getTweetComments,
   addTweetComment,

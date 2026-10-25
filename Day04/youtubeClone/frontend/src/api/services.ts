@@ -21,6 +21,8 @@ export const videoService = {
     api.patch(`/video/${id}/togglePublishStatus`, {}),
 };
 export const commentService = {
+  mine: (page = 1, limit = 20) =>
+    api.get(`/comments/my-comments?page=${page}&limit=${limit}`),
   list: (id: string, page = 1) =>
     api.get(`/comments/${id}/getComments?page=${page}`),
   create: (id: string, content: string) =>

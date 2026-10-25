@@ -8,7 +8,7 @@ const ProfileOption = ({ onClose }) => {
   const { theme, toggleTheme } = useTheme();
 
   const links = [
-    { to: "/profile", label: "Settings", icon: Settings },
+    { to: "/settings", label: "Settings", icon: Settings },
     { to: "/upload-video", label: "Add Content", icon: Video },
     { to: "/dashboard", label: "Studio", icon: Clapperboard },
   ];
