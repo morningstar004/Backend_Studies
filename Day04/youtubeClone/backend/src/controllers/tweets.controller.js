@@ -1,7 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import { unlink } from "node:fs/promises";
 import { Tweet } from "../models/tweets.model.js";
-import { User } from "../models/user.model.js";
 import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -79,7 +78,11 @@ const createTweet = asyncHandler(async (req, res) => {
     owner: req.user?._id,
   });
 
-  const createTweent = await Tweet.aggregate([
+  if(!tweet) {
+    throw new apiError(500, "Failed to create tweet.");
+  }
+
+  const createTweet = await Tweet.aggregate([
     {
       $match: {
         _id: tweet?._id,
@@ -151,12 +154,13 @@ const createTweet = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ResponseHandler(200, "Tweet Created", createTweent));
+    .json(new ResponseHandler(200, "Tweet Created", createTweet));
 });
 
 // 02
 const getUserTweets = asyncHandler(async (req, res) => {
   const { userId } = req.params;
+
   if (!isValidObjectId(userId)) {
     throw new apiError(400, "Invalid UserID.");
   }
@@ -232,7 +236,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
         from: "likes",
         let: {
           tweetId: "$_id",
-          userId: new mongoose.Types.ObjectId(req.user._id),
+          userId: new mongoose.Types.ObjectId(req.user?._id),
         },
         pipeline: [
           { $match: { $expr: { $eq: ["$tweet", "$$tweetId"] } } },
