@@ -192,7 +192,7 @@ export default function Dashboard() {
                       x={x}
                       y="228"
                       textAnchor="middle"
-                      opacity={index % 2 === 0 ? 0.9 : 0.42}
+                      opacity={index % 3 === 2 ? 0.9 : 0.42}
                       fontFamily="Inter, ui-sans-serif, system-ui, sans-serif"
                       fontSize={viewDays.length > 18 ? "6" : "8"}
                       fontWeight="500"
