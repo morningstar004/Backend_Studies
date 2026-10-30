@@ -83,6 +83,8 @@ export const tweetService = {
 export const dashboardService = {
   stats: () => api.get("/dashboard/stats"),
   videos: () => api.get("/dashboard/videos"),
+  engagement: (range: string) =>
+    api.get(`/dashboard/engagement?range=${encodeURIComponent(range)}`),
 };
 export const userService = {
   current: () => api.get("/users/current-user"),

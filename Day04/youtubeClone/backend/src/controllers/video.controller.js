@@ -5,6 +5,7 @@ import { apiError } from "../utils/apiError.js";
 import { ResponseHandler } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
+import { View } from "../models/view.model.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
@@ -356,6 +357,7 @@ const getVideoById = asyncHandler(async (req, res) => {
       { $inc: { views: 1 } },
       { returnDocument: "after" },
     ),
+    View.create({ video: video._id, channel: video.owner._id }),
     User.findByIdAndUpdate(req.user._id, {
       $addToSet: { watchHistory: video._id },
       $set: { [`watchHistoryDates.${video._id}`]: new Date() },

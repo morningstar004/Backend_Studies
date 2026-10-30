@@ -5,6 +5,7 @@ import { Subscription } from "../models/subscription.model.js";
 import mongoose, { isValidObjectId } from "mongoose";
 import { ResponseHandler } from "../utils/apiResponse.js";
 
+//01
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   const subscriberId = req.user._id;
@@ -16,7 +17,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   //prevent self subscribe
   if (channelId === subscriberId.toString()) {
     throw new apiError(400, "You cannot subscribe yourself.");
-  }
+  } 
 
   //check if channel exist
   const channelExists = await User.exists({ _id: channelId });
@@ -59,6 +60,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   }
 });
 
+//02
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   // `channelId` is the channel whose subscriber list the client requested.
   const { channelId } = req.params;
@@ -177,6 +179,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     .json(new ResponseHandler(200, "Got Subscribers", subscribers));
 });
 
+//03
 const getSubscribedChannel = asyncHandler(async (req, res) => {
   // `subscriberId` identifies the user whose followed channels are requested.
   const { subscriberId } = req.params;
