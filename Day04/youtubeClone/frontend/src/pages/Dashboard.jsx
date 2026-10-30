@@ -16,6 +16,8 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const deletingVideoRef = useRef(false);
   const [engagementRange, setEngagementRange] = useState("month");
+  const [activePoint, setActivePoint] = useState(null);
+  const [selectedPoint, setSelectedPoint] = useState(null);
   const stats = useQuery({
     queryKey: ["dashboard", "stats"],
     // Fetch dashboard statistics using the dashboardService (dashboardController is has responsible for this)
@@ -66,12 +68,7 @@ export default function Dashboard() {
   const areaPath = chartPoints.length
     ? `${linePath} L ${chartPoints.at(-1).x} 198 L ${chartPoints[0].x} 198 Z`
     : "";
-  const dateLabels = [0, 0.25, 0.5, 0.75, 1]
-    .map(
-      (fraction) =>
-        viewDays[Math.round(fraction * (viewDays.length - 1))]?.date,
-    )
-    .filter((date, index, dates) => date && dates.indexOf(date) === index);
+  const dateLabels = viewDays.map((day) => day.date);
   const formatDateLabel = (value) => {
     const date = new Date(value);
     if (engagementRange === "6hour" || engagementRange === "day") {
@@ -121,7 +118,11 @@ export default function Dashboard() {
             <span className="text-black/55 dark:text-white/55">Duration</span>
             <select
               value={engagementRange}
-              onChange={(event) => setEngagementRange(event.target.value)}
+              onChange={(event) => {
+                setEngagementRange(event.target.value);
+                setActivePoint(null);
+                setSelectedPoint(null);
+              }}
               className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-black"
               aria-label="View engagement duration"
             >
@@ -148,67 +149,145 @@ export default function Dashboard() {
             <svg
               className="w-full overflow-visible"
               viewBox="0 0 720 250"
-              role="img"
+              role="group"
               aria-label={`Channel view activity for the selected duration. Peak: ${maxViews.toLocaleString()} views in one period.`}
+              onMouseLeave={() => setActivePoint(null)}
             >
-              {[0, 0.5, 1].map((fraction) => {
-                const y = 198 - fraction * 160;
-                const value = Math.round(chartMax * fraction);
+              <defs>
+                <linearGradient id="view-area-gradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#5D75C0" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#5D75C0" stopOpacity="0" />
+                </linearGradient>
+                <filter
+                  id="view-tooltip-shadow"
+                  x="-20%"
+                  y="-30%"
+                  width="140%"
+                  height="170%"
+                >
+                  <feDropShadow
+                    dx="0"
+                    dy="3"
+                    stdDeviation="4"
+                    floodColor="#101828"
+                    floodOpacity="0.16"
+                  />
+                </filter>
+              </defs>
+              <path d={areaPath} fill="url(#view-area-gradient)" />
+              {dateLabels.map((date, index) => {
+                const pointIndex = viewDays.findIndex((day) => day.date === date);
+                const x = chartPoints[pointIndex]?.x;
                 return (
-                  <g key={fraction}>
+                  <g key={`time-guide-${date}`}>
                     <line
-                      x1="48"
-                      x2="700"
-                      y1={y}
-                      y2={y}
+                      x1={x}
+                      x2={x}
+                      y1="38"
+                      y2="216"
+                      strokeWidth="1"
                       className="stroke-black/10 dark:stroke-white/10"
                     />
                     <text
-                      x="40"
-                      y={y + 4}
-                      textAnchor="end"
-                      className="fill-black/50 text-[11px] dark:fill-white/50"
+                      x={x}
+                      y="228"
+                      textAnchor="middle"
+                      opacity={index % 2 === 0 ? 0.9 : 0.42}
+                      fontFamily="Inter, ui-sans-serif, system-ui, sans-serif"
+                      fontSize={viewDays.length > 18 ? "6" : "8"}
+                      fontWeight="500"
+                      className="fill-black dark:fill-white"
                     >
-                      {value.toLocaleString()}
+                      {formatDateLabel(date)}
                     </text>
                   </g>
                 );
               })}
-              <path d={areaPath} className="fill-primary/10" />
               <path
                 d={linePath}
                 fill="none"
                 className="stroke-primary"
-                strokeWidth="3"
+                strokeWidth="1.25"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              {chartPoints.map(({ date, views, x, y }) => (
-                <circle
-                  key={date}
-                  cx={x}
-                  cy={y}
-                  r="3"
-                  className="fill-primary"
-                >
-                  <title>
-                    {formatDateLabel(date)}: {views.toLocaleString()} views
-                  </title>
-                </circle>
-              ))}
-              {dateLabels.map((date) => {
-                const index = viewDays.findIndex((day) => day.date === date);
-                const x = chartPoints[index]?.x;
+              {chartPoints.map(({ date, views, topVideo, x, y }, index) => {
+                const isActive = activePoint === index || selectedPoint === index;
+                const popupX = Math.min(506, Math.max(48, x - 95));
+                const popupY = Math.max(7, y - 61);
                 return (
-                  <text
+                  <g
                     key={date}
-                    x={x}
-                    y="228"
-                    textAnchor="middle"
-                    className="fill-black/50 text-[11px] dark:fill-white/50"
+                    role="button"
+                    tabIndex="0"
+                    aria-label={`${formatDateLabel(date)}: ${views} views. Most viewed: ${topVideo?.title ?? "No video views"}.`}
+                    aria-pressed={selectedPoint === index}
+                    onMouseEnter={() => setActivePoint(index)}
+                    onFocus={() => setActivePoint(index)}
+                    onBlur={() => setActivePoint(null)}
+                    onClick={() =>
+                      setSelectedPoint(selectedPoint === index ? null : index)
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedPoint(selectedPoint === index ? null : index);
+                      }
+                    }}
+                    className="cursor-pointer outline-none"
                   >
-                    {formatDateLabel(date)}
-                  </text>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={selectedPoint === index ? 6 : isActive ? 5 : 2.5}
+                      className="fill-primary transition-[r] duration-150"
+                    />
+                    {isActive && (
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r={selectedPoint === index ? 2.5 : 2}
+                        className="fill-white pointer-events-none"
+                      />
+                    )}
+                    {isActive && (
+                      <g
+                        transform={`translate(${popupX} ${popupY})`}
+                        pointerEvents="none"
+                        filter="url(#view-tooltip-shadow)"
+                      >
+                        <rect
+                          width="190"
+                          height="49"
+                          rx="10"
+                          fill="white"
+                          stroke="#E5E7EB"
+                        />
+                        <text
+                          x="11"
+                          y="19"
+                          fill="#171717"
+                          fontFamily="Inter, ui-sans-serif, system-ui, sans-serif"
+                          fontSize="11"
+                          fontWeight="600"
+                        >
+                          {(topVideo?.title ?? "No video views").slice(0, 27)}
+                          {(topVideo?.title?.length ?? 0) > 27 ? "..." : ""}
+                        </text>
+                        <text
+                          x="11"
+                          y="37"
+                          fill="#6B7280"
+                          fontFamily="Inter, ui-sans-serif, system-ui, sans-serif"
+                          fontSize="10"
+                        >
+                          {topVideo
+                            ? `${topVideo.views.toLocaleString()} views · ${formatDateLabel(date)}`
+                            : `${views.toLocaleString()} total views · ${formatDateLabel(date)}`}
+                        </text>
+                      </g>
+                    )}
+                  </g>
                 );
               })}
             </svg>

@@ -144,7 +144,7 @@ const getChannelViewEngagement = asyncHandler(async (req, res) => {
     firstBucketDate.setUTCHours(0, 0, 0, 0);
   }
 
-  const dailyViews = await View.aggregate([
+  const groupedViews = await View.aggregate([
     {
       $match: {
         channel: new mongoose.Types.ObjectId(req.user._id),
@@ -152,26 +152,60 @@ const getChannelViewEngagement = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        pipeline: [{ $project: { title: 1 } }],
+        as: "videoDetails",
+      },
+    },
+    { $unwind: "$videoDetails" },
+    {
       $group: {
         _id: {
-          $dateTrunc: {
-            date: "$createdAt",
-            unit: selectedRange.bucket,
-            timezone: "UTC",
-            ...(selectedRange.bucket === "week" ? { startOfWeek: "monday" } : {}),
+          date: {
+            $dateTrunc: {
+              date: "$createdAt",
+              unit: selectedRange.bucket,
+              timezone: "UTC",
+              ...(selectedRange.bucket === "week"
+                ? { startOfWeek: "monday" }
+                : {}),
+            },
           },
+          video: "$video",
+          title: "$videoDetails.title",
         },
         views: { $sum: 1 },
       },
     },
+    { $sort: { "_id.date": 1, views: -1 } },
+    {
+      $group: {
+        _id: "$_id.date",
+        views: { $sum: "$views" },
+        topVideo: {
+          $first: {
+            _id: "$_id.video",
+            title: "$_id.title",
+            views: "$views",
+          },
+        },
+      },
+    },
   ]);
   const viewsByDate = new Map(
-    dailyViews.map(({ _id, views }) => [_id.toISOString(), views]),
+    groupedViews.map(({ _id, ...bucket }) => [_id.toISOString(), bucket]),
   );
   const buckets = [];
   for (const date = firstBucketDate; date <= now; ) {
     const dateKey = date.toISOString();
-    buckets.push({ date: dateKey, views: viewsByDate.get(dateKey) ?? 0 });
+    buckets.push({
+      date: dateKey,
+      views: viewsByDate.get(dateKey)?.views ?? 0,
+      topVideo: viewsByDate.get(dateKey)?.topVideo ?? null,
+    });
     const nextDate = new Date(date);
     if (selectedRange.bucket === "hour") {
       nextDate.setUTCHours(nextDate.getUTCHours() + 1);
