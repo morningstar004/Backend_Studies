@@ -345,7 +345,7 @@ export default function PlaylistDetail() {
               <button
                 type="button"
                 onClick={() => startPlayback(videoIds)}
-                className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <Play size={16} fill="currentColor" />
                 Play all
@@ -353,7 +353,7 @@ export default function PlaylistDetail() {
               <button
                 type="button"
                 onClick={shuffleVideos}
-                className="inline-flex w-fit items-center gap-2 rounded-full border border-black/15 bg-white/60 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-white/15 dark:bg-black/30 dark:hover:bg-black/50"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-[#22333B]/15 bg-white/70 px-5 py-2.5 text-sm font-semibold text-slateDark transition hover:bg-white active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-white/15 dark:bg-black/30 dark:text-white dark:hover:bg-black/50"
               >
                 <Shuffle size={16} />
                 Shuffle

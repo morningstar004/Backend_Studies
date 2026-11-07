@@ -100,7 +100,7 @@ const ProfileIdentity = memo(({ user, joinedDate }) => (
   <div className="mx-auto space-y-5">
     <div className="surface overflow-hidden">
       <div
-        className="h-64 bg-cover bg-center bg-gradient-to-br from-primary/90 via-primary/50 to-black dark:to-white/10"
+        className="h-64 bg-cover bg-center bg-gradient-to-br from-primary via-primary/70 to-slateDark dark:from-primary/80 dark:via-primary/40 dark:to-black"
         style={
           user.coverImage
             ? {
@@ -404,17 +404,17 @@ const Profile = () => {
       <div className="mx-auto mt-5 space-y-5">
         <div className="surface">
           <div>
-            <div className="sticky top-16 z-20 flex gap-2 overflow-x-auto border-b border-black/10 bg-white/90 px-2 py-2 backdrop-blur-sm dark:border-white/10 dark:bg-black/90">
+            <div className="sticky top-16 z-20 flex gap-2 overflow-x-auto border-b border-[#22333B]/10 bg-white/90 px-3 py-2.5 backdrop-blur-sm dark:border-white/10 dark:bg-black/90">
               {profileContents.map(({ to, label, end }) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={end}
                   className={({ isActive }) =>
-                    `shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    `shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-primary text-white shadow-sm"
-                        : "text-black/65 hover:bg-black/5 hover:text-black dark:text-white/65 dark:hover:bg-white/10 dark:hover:text-white"
+                        ? "bg-primary text-white shadow-sm font-semibold"
+                        : "text-slateDark/70 hover:bg-black/5 hover:text-slateDark dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
                     }`
                   }
                 >
