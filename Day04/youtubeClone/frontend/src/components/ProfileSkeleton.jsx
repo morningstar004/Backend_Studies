@@ -2,7 +2,7 @@ import { SkeletonCard } from "./States.jsx";
 
 const Placeholder = ({ className }) => (
   <div
-    className={`animate-pulse rounded bg-black/10 dark:bg-white/10 ${className}`}
+    className={`animate-pulse rounded bg-[#22333B]/10 dark:bg-white/10 ${className}`}
   />
 );
 

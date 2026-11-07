@@ -574,15 +574,15 @@ const VideoDetail = () => {
                     )
                   }
                   disabled={subscription.isPending}
-                  className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-50 ${
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition active:scale-95 disabled:opacity-50 ${
                     video.owner?.isSubscribed
-                      ? "border border-black/10 hover:border-primary hover:text-primary dark:border-white/10"
-                      : "bg-primary text-white hover:brightness-110"
+                      ? "border border-[#22333B]/15 bg-white/70 hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.04]"
+                      : "bg-primary text-white shadow-sm hover:bg-primary-hover"
                   }`}
                 >
                   {video.owner?.isSubscribed ? (
                     <>
-                      <Bell size={16} className="fill-current" />
+                      <Bell size={16} className="fill-current text-primary" />
                       Subscribed
                     </>
                   ) : (
@@ -603,7 +603,7 @@ const VideoDetail = () => {
                 disabled={like.isPending || dislike.isPending}
                 aria-label="Like video"
                 title="Like"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#22333B]/10 bg-white/70 px-3 py-2 text-sm transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04]"
               >
                 <ThumbsUp
                   size={17}
@@ -619,7 +619,7 @@ const VideoDetail = () => {
                 disabled={dislike.isPending || like.isPending}
                 aria-label="Dislike video"
                 title="Dislike"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#22333B]/10 bg-white/70 px-3 py-2 text-sm transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04]"
               >
                 <ThumbsDown
                   size={17}
@@ -634,7 +634,7 @@ const VideoDetail = () => {
                 onClick={shareVideo}
                 aria-label="Share video"
                 title="Share"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary dark:border-white/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#22333B]/10 bg-white/70 px-3 py-2 text-sm transition hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.04]"
               >
                 <Share2 size={17} />
               </button>
@@ -646,7 +646,7 @@ const VideoDetail = () => {
                 disabled={watchlist.isPending}
                 aria-label="Save to watchlist"
                 title="Save to watchlist"
-                className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#22333B]/10 bg-white/70 px-3 py-2 text-sm transition hover:border-primary hover:text-primary disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04]"
               >
                 <Bookmark size={17} />
               </button>
@@ -656,28 +656,28 @@ const VideoDetail = () => {
                   onClick={downloadVideo}
                   aria-label="Download video"
                   title="Download"
-                  className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 transition hover:border-primary hover:text-primary dark:border-white/10"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#22333B]/10 bg-white/70 px-3 py-2 text-sm transition hover:border-primary hover:text-primary dark:border-white/10 dark:bg-white/[0.04]"
                 >
                   <Download size={17} />
                 </button>
               )}
             </div>
           </div>
-          <section className="surface space-y-3 bg-black/[0.06] p-4 dark:bg-white/[0.08]">
-            <p className="text-sm font-medium text-black/65 dark:text-white/65">
+          <section className="surface space-y-3 bg-white/70 p-4 border border-[#22333B]/10 dark:bg-white/[0.04] dark:border-white/10">
+            <p className="text-sm font-medium text-slateDark/70 dark:text-white/70">
               {video.views ?? 0} views · Uploaded{" "}
               {formatRelativeTime(video.createdAt)}
             </p>
-            <p className="whitespace-pre-wrap text-sm leading-6 text-black/70 dark:text-white/70">
+            <p className="whitespace-pre-wrap text-sm leading-6 text-slateDark/80 dark:text-white/80">
               {video.description}
             </p>
           </section>
         </div>
-        <section className="space-y-4 border-t border-black/10 pt-6 dark:border-white/10">
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <MessageCircle size={19} />
+        <section className="space-y-4 border-t border-[#22333B]/10 pt-6 dark:border-white/10">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-slateDark dark:text-white">
+            <MessageCircle size={19} className="text-primary" />
             Comments
-            <span className="text-sm font-medium text-black/55 dark:text-white/55">
+            <span className="text-sm font-medium text-slateDark/55 dark:text-white/55">
               (
               {comments.data?.data?.totalDocs ??
                 comments.data?.data?.docs?.length ??
@@ -695,14 +695,14 @@ const VideoDetail = () => {
             }}
           >
             <input
-              className="input"
+              className="input flex-1"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               maxLength={1000}
               placeholder="Add a comment…"
             />
             <button
-              className="rounded-xl bg-primary px-4 text-white disabled:opacity-50"
+              className="rounded-xl bg-primary px-4 py-2 text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-50"
               disabled={addComment.isPending}
             >
               <Send size={17} />

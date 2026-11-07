@@ -325,7 +325,7 @@ const VideoOptionsMenu = ({
               top: menuPosition.top,
               maxHeight: menuPosition.maxHeight,
             }}
-            className="z-[100] w-56 overflow-y-auto rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]"
+            className="z-[100] w-56 overflow-y-auto rounded-2xl border border-[#22333B]/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#141C1E]"
           >
             {menuOptions.map(({ label, icon: Icon, action }) => (
               <button
@@ -338,9 +338,9 @@ const VideoOptionsMenu = ({
                   action?.();
                   setIsOpen(false);
                 }}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10"
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slateDark/80 transition hover:bg-black/5 hover:text-slateDark dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 text-primary" />
                 <span>{label}</span>
               </button>
             ))}
@@ -361,7 +361,7 @@ const VideoOptionsMenu = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="playlist-dialog-title"
-            className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-5 text-black shadow-2xl dark:border-white/10 dark:bg-[#111111] dark:text-white"
+            className="w-full max-w-md rounded-2xl border border-[#22333B]/10 bg-white p-6 text-slateDark shadow-2xl dark:border-white/10 dark:bg-[#141C1E] dark:text-white"
             onMouseDown={(event) => event.stopPropagation()}
           >
             {playlistDialog === "select" ? (
@@ -570,7 +570,7 @@ const VideoOptionsMenu = ({
                   <button
                     type="submit"
                     disabled={isSavingPlaylist}
-                    className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isSavingPlaylist
                       ? "Creating playlist..."

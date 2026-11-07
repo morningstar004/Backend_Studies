@@ -91,10 +91,10 @@ const Login = () => {
         submitLabel={loading ? "Signing in..." : "Sign In"}
         disabled={loading}
       />
-      <p className="mt-5 text-center text-sm text-black/60 dark:text-white/60">
+      <p className="mt-5 text-center text-sm text-slateDark/60 dark:text-white/60">
         New here?{" "}
         <Link
-          className="font-semibold text-primary hover:underline"
+          className="font-semibold text-primary transition-colors hover:text-primary-hover hover:underline"
           to="/register"
         >
           Create an account
