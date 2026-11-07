@@ -38,24 +38,24 @@ export default function Subscriptions() {
 
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-bold">Subscriptions</h1>
+      <h1 className="text-2xl font-bold text-slateDark dark:text-white">Subscriptions</h1>
       {videosQuery.isPending ? (
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 9 }, (_, index) => (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }, (_, index) => (
             <SkeletonCard key={index} />
           ))}
         </div>
       ) : videosQuery.isError && !videosQuery.data?.length ? (
-        <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-600 dark:text-red-400">
           <div className="font-semibold">Failed to load subscription videos</div>
           <div className="mt-1">
             {videosQuery.error.message || "Could not load subscription videos."}
           </div>
         </div>
-      ) : videosQuery.data.length ? (
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+      ) : videosQuery.data?.length ? (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {videosQuery.data.map((video) => (
-            <VideoCollectionCard key={video._id} video={video} />
+            <VideoCollectionCard key={video._id} video={video} dominantColorHover />
           ))}
         </div>
       ) : (

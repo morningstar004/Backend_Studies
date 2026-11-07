@@ -101,13 +101,13 @@ export default function UpdateVideo() {
           <ArrowLeft size={16} />
           Creator studio
         </Link>
-        <h1 className="text-2xl font-bold">Edit video</h1>
-        <p className="mt-1 text-sm text-black/55 dark:text-white/55">
+        <h1 className="text-2xl font-bold text-slateDark dark:text-white">Edit video</h1>
+        <p className="mt-1 text-sm text-slateDark/60 dark:text-white/60">
           Update your video details and thumbnail.
         </p>
       </div>
 
-      <form onSubmit={submit} className="surface space-y-5 p-5 sm:p-7">
+      <form onSubmit={submit} className="surface space-y-5 p-5 sm:p-7 shadow-sm">
         <label className="block text-sm font-medium">
           Title
           <input
@@ -159,13 +159,13 @@ export default function UpdateVideo() {
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
+            className="rounded-xl bg-primary px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-60"
           >
             {updateMutation.isPending ? "Saving..." : "Save changes"}
           </button>
           <Link
             to={`/video/${videoId}`}
-            className="rounded-xl border border-black/10 px-5 py-3 font-semibold transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+            className="rounded-xl border border-[#22333B]/10 px-5 py-3 font-semibold transition hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
           >
             Cancel
           </Link>

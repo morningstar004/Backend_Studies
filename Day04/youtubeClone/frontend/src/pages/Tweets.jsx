@@ -30,7 +30,7 @@ export function Tweets() {
         </div>
         <Link
           to="/create-tweet"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95"
         >
           <Plus size={16} />
           Create post
@@ -38,35 +38,37 @@ export function Tweets() {
       </header>
 
       {tweetsQuery.isLoading ? (
-        <div className="surface animate-pulse p-8 text-sm text-black/55 dark:text-white/55">
+        <div className="surface animate-pulse p-8 text-center text-sm text-slateDark/55 dark:text-white/55">
           Loading tweets...
         </div>
       ) : tweetsQuery.error && !tweets.length ? (
         <div
           role="alert"
-          className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm text-primary"
+          className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-600 dark:text-red-400"
         >
           {tweetsQuery.error.message || "Failed to load tweets."}
         </div>
       ) : tweets.length ? (
-        <div className="glass-texture glass-hover bg-transparent mx-auto w-[65%] max-w-116 space-y-3 rounded-2xl p-4 shadow-lg">
+        <div className="mx-auto w-full max-w-xl space-y-4">
           {tweets.map((tweet) => (
-            <TweetCard className="-z-10" key={tweet._id} tweet={tweet} compact />
+            <TweetCard key={tweet._id} tweet={tweet} compact />
           ))}
         </div>
       ) : (
         <div className="space-y-4">
           <EmptyState
             title="No tweets yet"
-            detail="Posts you share will appear here."
+            detail="Posts you share with your audience will appear here."
           />
-          <Link
-            to="/create-tweet"
-            className="mx-auto inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
-          >
-            <Plus size={16} />
-            Create your first post
-          </Link>
+          <div className="text-center">
+            <Link
+              to="/create-tweet"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95"
+            >
+              <Plus size={16} />
+              Create your first post
+            </Link>
+          </div>
         </div>
       )}
     </section>

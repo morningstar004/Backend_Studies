@@ -3,9 +3,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   ArrowRight,
+  Check,
   KeyRound,
   LogOut,
   MessageSquare,
+  Moon,
+  Palette,
+  Sun,
   UserRound,
   UserRoundCog,
 } from "lucide-react";
@@ -15,10 +19,12 @@ import { commentService, userService } from "../api/services.ts";
 import { EmptyState } from "../components/States.jsx";
 import History from "./History.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
 
 const sections = [
   { id: "profile", label: "Edit profile", icon: UserRound },
   { id: "password", label: "Change password", icon: KeyRound },
+  { id: "appearance", label: "Appearance", icon: Palette },
   { id: "comments", label: "Comments", icon: MessageSquare },
   { id: "activities", label: "Activities", icon: Activity },
   { id: "account", label: "Switch account", icon: UserRoundCog },
@@ -40,6 +46,7 @@ export default function Settings() {
     : "profile";
 
   const { user, refreshUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const queryClient = useQueryClient();
 
@@ -242,7 +249,7 @@ export default function Settings() {
         </div>
         <button
           disabled={saving}
-          className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -459,9 +466,99 @@ export default function Settings() {
     );
   };
 
+  const renderAppearanceSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-slateDark dark:text-white">
+          Appearance
+        </h2>
+        <p className="mt-1 text-sm text-slateDark/60 dark:text-white/60">
+          Choose your interface theme. Your preference is saved locally and applies instantly across the entire application.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 max-w-xl">
+        {/* Light Theme Card */}
+        <button
+          type="button"
+          onClick={() => {
+            if (theme !== "light") toggleTheme();
+          }}
+          className={`relative flex flex-col items-start rounded-2xl border p-4 text-left transition-all ${
+            theme === "light"
+              ? "border-primary bg-primary/10 shadow-md ring-2 ring-primary/30"
+              : "border-black/10 bg-black/5 hover:border-black/25 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+          }`}
+        >
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-amber-100 text-amber-700">
+                <Sun size={18} />
+              </span>
+              <span className="font-semibold text-slateDark dark:text-white">
+                Light mode
+              </span>
+            </div>
+            {theme === "light" && (
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-white">
+                <Check size={14} />
+              </span>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-slateDark/70 dark:text-white/70">
+            Clean mint background (#EFF3F1) with earthy teal accents and dark slate typography.
+          </p>
+          <div className="mt-4 flex w-full items-center gap-2 rounded-xl border border-black/10 bg-[#EFF3F1] p-2.5">
+            <div className="h-3 w-3 rounded-full bg-[#5E887E]" />
+            <div className="h-3 w-8 rounded-full bg-[#22333B]" />
+            <div className="h-3 w-12 rounded-full bg-[#C7A17A]" />
+          </div>
+        </button>
+
+        {/* Dark Theme Card */}
+        <button
+          type="button"
+          onClick={() => {
+            if (theme !== "dark") toggleTheme();
+          }}
+          className={`relative flex flex-col items-start rounded-2xl border p-4 text-left transition-all ${
+            theme === "dark"
+              ? "border-primary bg-primary/10 shadow-md ring-2 ring-primary/30"
+              : "border-black/10 bg-black/5 hover:border-black/25 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+          }`}
+        >
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-800 text-slate-200">
+                <Moon size={18} />
+              </span>
+              <span className="font-semibold text-slateDark dark:text-white">
+                Dark mode
+              </span>
+            </div>
+            {theme === "dark" && (
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-white">
+                <Check size={14} />
+              </span>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-slateDark/70 dark:text-white/70">
+            Deep slate starry sky canvas with glassy elevated cards and subtle light text.
+          </p>
+          <div className="mt-4 flex w-full items-center gap-2 rounded-xl border border-white/10 bg-[#0F1416] p-2.5">
+            <div className="h-3 w-3 rounded-full bg-[#5E887E]" />
+            <div className="h-3 w-8 rounded-full bg-white/70" />
+            <div className="h-3 w-12 rounded-full bg-[#C7A17A]" />
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+
   const renderSection = () => {
     if (activeSection === "profile") return renderProfileSettings();
     if (activeSection === "password") return renderPasswordSettings();
+    if (activeSection === "appearance") return renderAppearanceSettings();
     if (activeSection === "comments") return renderComments();
     if (activeSection === "activities") return <History />;
 
@@ -490,8 +587,8 @@ export default function Settings() {
   return (
     <main className="mx-auto max-w-6xl space-y-5 py-4">
       <header>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-sm text-black/55 dark:text-white/55">
+        <h1 className="text-2xl font-bold text-slateDark dark:text-white">Settings</h1>
+        <p className="mt-1 text-sm text-slateDark/60 dark:text-white/60">
           Manage your account, comments, and activity.
         </p>
       </header>
@@ -505,10 +602,10 @@ export default function Settings() {
               key={id}
               to={`/settings/${id}`}
               className={({ isActive }) =>
-                `flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
+                `flex shrink-0 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
                   isActive
-                    ? "bg-primary text-white"
-                    : "hover:bg-black/5 dark:hover:bg-white/10"
+                    ? "bg-primary text-white font-semibold shadow-sm"
+                    : "text-slateDark/75 hover:bg-black/5 hover:text-slateDark dark:text-white/75 dark:hover:bg-white/10 dark:hover:text-white"
                 }`
               }
             >
@@ -517,7 +614,7 @@ export default function Settings() {
             </NavLink>
           ))}
         </nav>
-        <section className="surface min-w-0 p-5 sm:p-7">
+        <section className="surface min-w-0 p-5 sm:p-7 shadow-sm">
           {renderSection()}
         </section>
       </div>
