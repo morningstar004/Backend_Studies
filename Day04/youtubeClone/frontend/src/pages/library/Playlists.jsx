@@ -29,7 +29,7 @@ function PlaylistCard({ playlist }) {
     <Link
       to={`/playlist/${playlist._id}`}
       aria-label={`Open playlist ${playlist.name}`}
-      className="glass-hover relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl border border-transparent transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out active:scale-[0.98] active:bg-primary/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary dark:bg-white/3 sm:h-72 xl:h-75 bg-transparent"
+      className="glass-hover relative flex h-64 min-w-0 flex-col overflow-hidden rounded-2xl border border-[#22333B]/10 bg-white/75 shadow-sm transition-[transform,background-color,border-color,box-shadow,backdrop-filter] duration-200 ease-out hover:shadow-md hover:border-primary/30 active:scale-[0.98] active:bg-primary/10 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-white/10 dark:bg-white/[0.03] sm:h-72 xl:h-75"
     >
       <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {thumbnail ? (
@@ -58,11 +58,11 @@ function PlaylistCard({ playlist }) {
             />
           </>
         ) : (
-          <div className="grid h-full place-items-center text-sm text-black/50 dark:text-white/50">
+          <div className="grid h-full place-items-center text-sm text-slateDark/50 dark:text-white/50">
             No videos yet
           </div>
         )}
-        <span className="absolute bottom-3 right-14 z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-black/75 px-2.5 py-1 pb-1.5 text-xs font-medium text-white">
+        <span className="absolute bottom-3 right-14 z-10 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-black/75 px-2.5 py-1 pb-1.5 text-xs font-medium text-white backdrop-blur-sm">
           <ListVideo className="h-3.5 w-3.5 shrink-0" />
           {playlist.totalVideos ?? playlist.videos?.length ?? 0}{" "}
           {(playlist.totalVideos ?? playlist.videos?.length ?? 0) === 1
@@ -71,11 +71,11 @@ function PlaylistCard({ playlist }) {
         </span>
       </div>
       <div className="flex min-w-0 shrink-0 flex-col p-4 sm:p-4 sm:pb-2.5">
-        <h2 className="line-clamp-2 wrap-break-words text-base font-semibold text-black dark:text-white sm:text-lg">
+        <h2 className="line-clamp-2 wrap-break-words text-base font-semibold text-slateDark dark:text-white sm:text-lg">
           {playlist.name}
         </h2>
         <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:mt-0.5 sm:flex-nowrap sm:text-sm">
-          <div className="flex shrink-0 items-center gap-1.5 text-black/60 dark:text-white/60">
+          <div className="flex shrink-0 items-center gap-1.5 text-slateDark/65 dark:text-white/60">
             {playlist.isPublished ? (
               <Globe2 className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" />
             ) : (
@@ -83,10 +83,10 @@ function PlaylistCard({ playlist }) {
             )}
             <span>{playlist.isPublished ? "Public" : "Private"}</span>
           </div>
-          <span className="hidden shrink-0 text-black/60 dark:text-white/60 sm:inline">
+          <span className="hidden shrink-0 text-slateDark/60 dark:text-white/60 sm:inline">
             •
           </span>
-          <div className="flex min-w-0 items-center gap-1.5 text-black/55 dark:text-white/55">
+          <div className="flex min-w-0 items-center gap-1.5 text-slateDark/55 dark:text-white/55">
             <Clock3 className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
             <span className="min-w-0 truncate">
               Updated{" "}

@@ -382,14 +382,14 @@ export function LibraryOverview() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-playlist-title"
-            className="w-full max-w-lg rounded-2xl border border-black/10 bg-white p-6 text-black shadow-2xl dark:border-white/10 dark:bg-black/80 dark:text-white"
+            className="w-full max-w-lg rounded-2xl border border-[#22333B]/10 bg-white p-6 text-slateDark shadow-2xl dark:border-white/10 dark:bg-[#141C1E] dark:text-white"
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <h2 id="edit-playlist-title" className="text-lg font-bold">
                   Edit playlist
                 </h2>
-                <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+                <p className="mt-1 text-sm text-slateDark/60 dark:text-white/60">
                   Update its name, description, and visibility.
                 </p>
               </div>
@@ -411,7 +411,7 @@ export function LibraryOverview() {
                   minLength={3}
                   maxLength={50}
                   defaultValue={editingPlaylist.name}
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none placeholder:text-black/40 focus:border-primary dark:border-white/15 dark:bg-black dark:text-white/60 dark:placeholder:text-white/40"
+                  className="input w-full rounded-xl"
                 />
               </label>
               <label className="block space-y-1.5 text-sm font-medium">
@@ -422,11 +422,11 @@ export function LibraryOverview() {
                   maxLength={1000}
                   defaultValue={editingPlaylist.description || ""}
                   aria-describedby="playlist-description-hint"
-                  className="min-h-24 w-full resize-y rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none placeholder:text-black/40 focus:border-primary dark:border-white/15 dark:bg-black dark:text-white/60 dark:placeholder:text-white/40"
+                  className="input min-h-24 w-full resize-y rounded-xl"
                 />
                 <span
                   id="playlist-description-hint"
-                  className="block text-xs font-normal text-black/55 dark:text-white/55"
+                  className="block text-xs font-normal text-slateDark/55 dark:text-white/55"
                 >
                   Leave blank to remove the description, or enter at least 10
                   characters.
@@ -439,20 +439,10 @@ export function LibraryOverview() {
                   defaultValue={
                     editingPlaylist.isPublished ? "public" : "private"
                   }
-                  className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-black outline-none focus:border-primary dark:border-white/15 dark:bg-black dark:text-white dark:scheme-dark"
+                  className="input w-full rounded-xl"
                 >
-                  <option
-                    className="bg-white text-black dark:bg-black dark:text-white"
-                    value="private"
-                  >
-                    Private
-                  </option>
-                  <option
-                    className="bg-white text-black dark:bg-black dark:text-white"
-                    value="public"
-                  >
-                    Public
-                  </option>
+                  <option value="private">Private</option>
+                  <option value="public">Public</option>
                 </select>
               </label>
               <div className="flex justify-end gap-2 pt-2">
@@ -460,14 +450,14 @@ export function LibraryOverview() {
                   type="button"
                   onClick={() => setEditingPlaylist(null)}
                   disabled={isSavingPlaylist}
-                  className="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
+                  className="rounded-xl px-4 py-2 text-sm font-semibold transition hover:bg-black/5 disabled:opacity-50 dark:hover:bg-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingPlaylist}
-                  className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-50"
                 >
                   {isSavingPlaylist ? "Saving..." : "Save changes"}
                 </button>

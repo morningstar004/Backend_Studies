@@ -258,18 +258,18 @@ const UploadVideo = () => {
                     shouldValidate: true,
                   })
                 }
-                className="block min-w-0 flex-1 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-black/5 file:px-3 file:py-2 file:font-medium dark:file:bg-white/10"
+                className="block min-w-0 flex-1 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:font-medium file:text-primary dark:file:bg-white/10"
               />
               {thumbnailPreview && (
                 <img
                   src={thumbnailPreview}
                   alt="Selected thumbnail preview"
-                  className="h-16 w-28 rounded-lg border border-black/10 object-cover dark:border-white/10"
+                  className="h-16 w-28 rounded-xl border border-[#22333B]/10 object-cover dark:border-white/10"
                 />
               )}
             </div>
             {errors.thumbnail && (
-              <span className="mt-1 block text-xs text-primary">
+              <span className="mt-1 block text-xs text-red-500">
                 {errors.thumbnail.message}
               </span>
             )}
@@ -278,7 +278,7 @@ const UploadVideo = () => {
 
         <button
           disabled={isSubmitting}
-          className="mt-8 w-fit rounded-xl bg-primary px-5 py-3 font-semibold text-white transition hover:brightness-110 active:scale-95 disabled:opacity-60 lg:mt-auto lg:pt-3"
+          className="mt-8 w-fit rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:opacity-60 lg:mt-auto"
         >
           {isSubmitting
             ? "Uploading..."
@@ -288,7 +288,7 @@ const UploadVideo = () => {
         </button>
       </section>
 
-      <section className="flex min-h-[360px] items-center justify-center bg-[#eceeef] p-5 dark:bg-[#17191b] sm:p-10 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:self-start">
+      <section className="flex min-h-[360px] items-center justify-center bg-[#E3ECE9]/40 p-5 dark:bg-[#141C1E] sm:p-10 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:self-start">
         <div className="relative aspect-video w-full max-w-4xl overflow-hidden">
           {selectedVideo ? (
             <>

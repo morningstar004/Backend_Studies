@@ -100,7 +100,7 @@ const TweetImages = ({ tweet, compact }) => {
 };
 
 const actionButtonClass =
-  "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-black/60 transition hover:bg-black/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-white/60 dark:hover:bg-white/10";
+  "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-slateDark/70 transition hover:bg-black/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-white/70 dark:hover:bg-white/10";
 
 function TweetOptionsMenu({
   canUnsubscribe,
@@ -194,7 +194,7 @@ function TweetOptionsMenu({
               top: position.top,
             }}
             onClick={(event) => event.stopPropagation()}
-            className="z-100 w-48 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
+            className="z-100 w-48 overflow-hidden rounded-2xl border border-[#22333B]/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#141C1E]"
           >
             {canUnsubscribe && (
               <button
@@ -380,8 +380,8 @@ export default function TweetCard({ tweet, compact = false }) {
   const commentList = commentsQuery.data?.data || [];
 
   const cardClass = compact
-    ? "surface !rounded-lg scroll-mt-24 overflow-hidden p-2.5 border-0"
-    : "surface scroll-mt-24 p-4";
+    ? "surface !rounded-2xl scroll-mt-24 overflow-hidden p-3.5 shadow-sm"
+    : "surface scroll-mt-24 p-5 shadow-sm";
   const compactActionButtonClass = compact ? "px-2 py-1.5 text-xs" : "";
 
   return (
@@ -396,7 +396,7 @@ export default function TweetCard({ tweet, compact = false }) {
             <img
               src={owner.avatar}
               alt=""
-              className={`${compact ? "h-8 w-8" : "h-11 w-11"} rounded-full bg-black/10 object-cover dark:bg-white/10`}
+              className={`${compact ? "h-8 w-8" : "h-11 w-11"} rounded-full bg-black/10 object-cover ring-1 ring-slateDark/10 hover:ring-primary dark:bg-white/10 dark:ring-white/10`}
             />
           </Link>
         ) : (
@@ -407,13 +407,11 @@ export default function TweetCard({ tweet, compact = false }) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">
+          <p className="truncate text-sm font-semibold text-slateDark dark:text-white">
             {owner?.fullName || "Creator"}
           </p>
-          <p className="truncate text-xs text-black/50 dark:text-white/50">
+          <p className="truncate text-xs text-slateDark/50 dark:text-white/50">
             {owner?.username ? `@${owner.username}` : ""}
-            {/* {owner?.subscribersCount != null &&
-              `${owner?.username ? " · " : ""}${owner.subscribersCount} subscribers`} */}
           </p>
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-1">
@@ -426,7 +424,7 @@ export default function TweetCard({ tweet, compact = false }) {
                 )
               }
               disabled={subscribeMutation.isPending}
-              className={`inline-flex items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60`}
+              className={`inline-flex items-center gap-1.5 rounded-full bg-primary ${compact ? "px-2.5 py-1.5" : "px-3 py-2"} text-xs font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:cursor-wait disabled:opacity-60`}
             >
               <UserPlus size={15} />
               Subscribe
