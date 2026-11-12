@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -41,6 +42,7 @@ const VideoOptionsMenu = ({
   const menuRef = useRef(null);
   const menuPortalRef = useRef(null);
   const triggerRef = useRef(null);
+  const menuId = useId();
   const [menuPosition, setMenuPosition] = useState(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -251,19 +253,29 @@ const VideoOptionsMenu = ({
 
     const rect = trigger.getBoundingClientRect();
     const menuHeight = Math.min(menuOptions.length * 44 + 8, window.innerHeight - 16);
+    const menuWidth = 224;
     const fitsBelow = rect.bottom + menuHeight + 8 <= window.innerHeight;
     const fitsAbove = rect.top - menuHeight - 8 >= 0;
     const placeBelow =
       menuPlacement === "below" ? fitsBelow || !fitsAbove : !fitsAbove && fitsBelow;
     const left = Math.max(
       8,
-      Math.min(rect.right - 224, window.innerWidth - 232),
+      Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8),
     );
     const top = placeBelow
       ? Math.min(rect.bottom + 8, window.innerHeight - menuHeight - 8)
       : Math.max(8, rect.top - menuHeight - 8);
 
-    setMenuPosition({ left, top, maxHeight: menuHeight });
+    const originX = Math.max(
+      0,
+      Math.min(100, ((rect.left + rect.width / 2 - left) / menuWidth) * 100),
+    );
+    setMenuPosition({
+      left,
+      top,
+      maxHeight: menuHeight,
+      transformOrigin: `${originX}% ${placeBelow ? 0 : 100}%`,
+    });
   };
 
   useEffect(() => {
@@ -295,6 +307,9 @@ const VideoOptionsMenu = ({
         ref={triggerRef}
         type="button"
         aria-label="Open video options"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-controls={menuId}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -310,43 +325,51 @@ const VideoOptionsMenu = ({
         <MoreVertical className={compact ? "h-4 w-4" : "h-4 w-4"} />
       </button>
 
-      {isOpen &&
-        menuPosition &&
-        createPortal(
-          <div
-            ref={menuPortalRef}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => event.stopPropagation()}
-            role="menu"
-            aria-label="Video options"
-            style={{
-              position: "fixed",
-              left: menuPosition.left,
-              top: menuPosition.top,
-              maxHeight: menuPosition.maxHeight,
-            }}
-            className="z-[100] w-56 overflow-y-auto rounded-2xl border border-[#22333B]/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#141C1E]"
-          >
-            {menuOptions.map(({ label, icon: Icon, action }) => (
-              <button
-                key={label}
-                type="button"
-                role="menuitem"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  action?.();
-                  setIsOpen(false);
-                }}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slateDark/80 transition hover:bg-black/5 hover:text-slateDark dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
-              >
-                <Icon className="h-4 w-4 text-primary" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>,
-          document.body,
-        )}
+      {createPortal(
+        <AnimatePresence initial={false}>
+          {isOpen && menuPosition && (
+            <motion.div
+              id={menuId}
+              ref={menuPortalRef}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              role="menu"
+              aria-label="Video options"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              style={{
+                position: "fixed",
+                left: menuPosition.left,
+                top: menuPosition.top,
+                maxHeight: menuPosition.maxHeight,
+                transformOrigin: menuPosition.transformOrigin,
+              }}
+              className="z-[100] w-56 overflow-y-auto rounded-2xl border border-[#22333B]/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#141C1E]"
+            >
+              {menuOptions.map(({ label, icon: Icon, action }) => (
+                <button
+                  key={label}
+                  type="button"
+                  role="menuitem"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    action?.();
+                    setIsOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slateDark/80 transition hover:bg-black/5 hover:text-slateDark dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <Icon className="h-4 w-4 text-primary" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
 
       {playlistDialog &&
         createPortal(

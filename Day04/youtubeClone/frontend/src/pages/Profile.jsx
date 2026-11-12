@@ -1,4 +1,5 @@
 import { memo, useLayoutEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { Link, NavLink, useParams } from "react-router-dom";
@@ -411,14 +412,36 @@ const Profile = () => {
                   to={to}
                   end={end}
                   className={({ isActive }) =>
-                    `shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+                    `relative isolate shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-primary text-white shadow-sm font-semibold"
+                        ? "text-white font-semibold"
                         : "text-slateDark/70 hover:bg-black/5 hover:text-slateDark dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
                     }`
                   }
                 >
-                  {label}
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.span
+                          aria-hidden="true"
+                          layoutId="profile-navigation-pill"
+                          className="pointer-events-none absolute inset-0 z-0 rounded-xl bg-primary shadow-sm"
+                          initial={{ scaleX: 1 }}
+                          animate={{ scaleX: [1, 1.15, 1] }}
+                          transition={{
+                            layout: {
+                              type: "spring",
+                              stiffness: 500,
+                              damping: 36,
+                              bounce: 0.15,
+                            },
+                            scaleX: { duration: 0.24, ease: "easeOut" },
+                          }}
+                        />
+                      )}
+                      <span className="relative z-10">{label}</span>
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>

@@ -88,11 +88,11 @@ export default function History() {
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Watch history</h1>
+        <h1 className="text-2xl font-bold text-slateDark dark:text-white">Watch history</h1>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <label className="relative w-full sm:w-72">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slateDark/40 dark:text-white/40"
               size={17}
             />
             <input
@@ -101,14 +101,14 @@ export default function History() {
               value={historySearch}
               onChange={(event) => setHistorySearch(event.target.value)}
               placeholder="Search watch history"
-              className="input w-full rounded-3xl pl-9"
+              className="input w-full rounded-2xl pl-9 text-sm"
             />
           </label>
           <button
             type="button"
             onClick={handleClearHistory}
             disabled={!historyVideos.length}
-            className="inline-flex items-center justify-center gap-2 rounded-3xl border border-red-500/40 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-500/10 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Trash2 size={16} />
             Clear history
@@ -117,8 +117,8 @@ export default function History() {
       </header>
 
       {historyQuery.isLoading ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }, (_, index) => (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }, (_, index) => (
             <SkeletonCard key={index} />
           ))}
         </div>
@@ -131,14 +131,15 @@ export default function History() {
         <div className="space-y-8">
           {historyGroups.map(({ key, label, videos }) => (
             <section key={key} className="space-y-4">
-              <h2 className="text-lg font-semibold">{label}</h2>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <h2 className="text-lg font-semibold text-slateDark dark:text-white">{label}</h2>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {videos.map((video) => (
                   <VideoCollectionCard
                     key={video._id}
                     video={video}
                     timestamp={video.historyDate}
                     showHistoryRemoval
+                    dominantColorHover
                   />
                 ))}
               </div>

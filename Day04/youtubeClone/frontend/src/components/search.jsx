@@ -1,4 +1,5 @@
 import { ArrowLeft, Search, X } from "lucide-react";
+import SearchCombobox from "./SearchCombobox.jsx";
 import SpeechSearchButton from "./SpeechSearchButton.jsx";
 
 const SearchPage = ({ open, query, setQuery, onClose, onSubmit, onSearch }) => {
@@ -21,11 +22,11 @@ const SearchPage = ({ open, query, setQuery, onClose, onSubmit, onSearch }) => {
             className="absolute left-3 top-3 text-slateDark/40 dark:text-white/40"
             size={17}
           />
-          <input
+          <SearchCombobox
             autoFocus
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search videos or creators"
+            query={query}
+            setQuery={setQuery}
+            onSearch={onSearch}
             className="input search-glass__input relative z-10 w-full rounded-full border-0 bg-transparent pl-9 pr-12 shadow-none focus:border-transparent focus:ring-0 text-slateDark dark:text-white"
           />
           <SpeechSearchButton onSearch={onSearch} />

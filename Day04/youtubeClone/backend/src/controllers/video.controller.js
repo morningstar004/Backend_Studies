@@ -63,15 +63,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
       .select("_id")
       .lean();
 
-      // If there are no matching owners, we can set the owner condition to an empty array to ensure no videos are returned for that case.
-    if (matchingOwners.length === 0) {
-      matchCondition.owner = { $in: [] };
-    } else {
-      matchCondition.$or = [
-        { title: searchRegex },
-        { owner: { $in: matchingOwners.map(({ _id }) => _id) } },
-      ];
-    }
+    matchCondition.$or = [
+      { title: searchRegex },
+      { owner: { $in: matchingOwners.map(({ _id }) => _id) } },
+    ];
   }
 
   if (userId) {

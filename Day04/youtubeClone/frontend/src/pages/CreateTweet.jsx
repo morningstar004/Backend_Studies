@@ -374,7 +374,7 @@ const CreateTweet = () => {
             disabled={!caption.trim() || isSubmitting}
             aria-label={isSubmitting ? "Posting" : "Post"}
             title={isSubmitting ? "Posting..." : "Post"}
-            className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Send size={18} />
           </button>

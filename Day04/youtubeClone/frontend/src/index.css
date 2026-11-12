@@ -201,7 +201,7 @@
     --search-glass-border-width: 1px;
     position: relative;
     isolation: isolate;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(30, 41, 59, 0.24);
     border-radius: 9999px;
     background:
