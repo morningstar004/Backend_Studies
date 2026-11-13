@@ -21,6 +21,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import ProfileOption from "./profileOption.jsx";
 import SearchPage from "./search.jsx";
+import SearchCombobox from "./SearchCombobox.jsx";
 import SpeechSearchButton from "./SpeechSearchButton.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -34,7 +35,12 @@ const links = [
 ];
 
 const active = ({ isActive }) =>
-  `flex justify-items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive ? "text-white" : "hover:bg-black/5 dark:hover:bg-white/10"}`;
+  `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
+    isActive
+      ? "text-slateDark font-semibold dark:text-white"
+      : "text-slateDark/75 hover:bg-black/5 dark:text-white/75 dark:hover:bg-white/10"
+  }`;
+
 function AppNavLink({ children, className, pillGroup, ...props }) {
   return (
     <NavLink

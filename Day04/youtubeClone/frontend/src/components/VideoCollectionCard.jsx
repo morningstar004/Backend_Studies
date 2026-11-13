@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import VideoOptionsMenu from "./VideoOptionsMenu.jsx";
 import formatRelativeTime from "./formatRelativeTime.js";
 import getDominantColor from "../context/dominantColor.js";
@@ -17,7 +17,7 @@ const formatDuration = (seconds = 0) => {
 
 const VideoCollectionCard = ({
   video,
-  timestamp = video.createdAt,
+  timestamp = video?.createdAt,
   showHistoryRemoval = false,
   isInWatchlist = false,
   playlistId,
@@ -25,10 +25,11 @@ const VideoCollectionCard = ({
   horizontal = false,
   dominantColorHover = false,
 }) => {
+  const navigate = useNavigate();
   const [dominantColor, setDominantColor] = useState("hsl(210 80% 60%)");
 
   useEffect(() => {
-    if (!dominantColorHover) return undefined;
+    if (!dominantColorHover || !video?.thumbnail) return undefined;
 
     let isCancelled = false;
     getDominantColor(video.thumbnail).then((color) => {
@@ -38,19 +39,21 @@ const VideoCollectionCard = ({
     return () => {
       isCancelled = true;
     };
-  }, [dominantColorHover, video.thumbnail]);
+  }, [dominantColorHover, video?.thumbnail]);
+
+  if (!video) return null;
 
   if (horizontal) {
     return (
       <article
         className={`group relative isolate overflow-visible rounded-xl bg-white/60 p-3 dark:bg-black/60 ${
-          dominantColorHover ? "transition-colors duration-[400ms]" : ""
+          dominantColorHover ? "transition-colors duration-400" : ""
         }`}
       >
         {dominantColorHover && (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
+            className="pointer-events-none absolute -inset-px z-0 scale-80 rounded-xl opacity-0 transition-all duration-300 ease-out group-hover:scale-110 group-hover:duration-400 group-hover:ease-in group-hover:opacity-60"
             style={{
               backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
             }}
@@ -71,7 +74,7 @@ const VideoCollectionCard = ({
             </span>
           </div>
           <div className="min-w-0 flex-1 py-1">
-            <h2 className="line-clamp-2 font-semibold dark:text-white text-black">
+            <h2 className="line-clamp-2 font-semibold text-black dark:text-white">
               {video.title}
             </h2>
             <div className="mt-2 flex min-w-0 items-center gap-2 text-xs text-black/60 dark:text-white/60">
@@ -114,12 +117,12 @@ const VideoCollectionCard = ({
   return (
     <Link
       to={`/video/${video._id}`}
-      className={`group relative isolate overflow-hidden rounded-2xl text-black transition-colors duration-[400ms] ease-out hover:text-primary dark:text-white`}
+      className="group relative isolate overflow-hidden rounded-2xl text-black transition-colors duration-400 ease-out hover:text-primary dark:text-white"
     >
       {dominantColorHover && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-px z-0 scale-90 rounded-2xl opacity-0 transition-all duration-[400ms] ease-out group-hover:scale-100 group-hover:opacity-60"
+          className="pointer-events-none absolute -inset-px z-0 scale-80 ease-linear rounded-2xl opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:ease-out group-hover:duration-350 group-hover:opacity-60"
           style={{
             backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
           }}
@@ -129,7 +132,7 @@ const VideoCollectionCard = ({
         <img
           src={video.thumbnail}
           alt={video.title}
-          className={`h-[95%] w-[97%] rounded-2xl object-cover transition duration-300`}
+          className="h-[95%] w-[97%] rounded-2xl object-cover transition duration-300"
         />
         <div
           className={`absolute right-3 rounded-md bg-black/80 px-1.5 font-medium text-white backdrop-blur-md opacity-80 ${
@@ -142,7 +145,9 @@ const VideoCollectionCard = ({
       <div
         className={`relative z-10 flex-col pb-2 ${compact ? "px-3" : "px-4"}`}
       >
-        <h2 className="line-clamp-2 font-bold text-black dark:text-white">{video.title}</h2>
+        <h2 className="line-clamp-2 font-bold text-black dark:text-white">
+          {video.title}
+        </h2>
         <div
           className={`absolute right-2 z-10 flex items-center justify-center rounded-full text-black transition-all duration-300 hover:bg-black/5 dark:text-white dark:hover:bg-white/10 ${
             compact ? "bottom-1.5 h-7 w-7" : "bottom-2 h-10 w-10"
@@ -174,19 +179,28 @@ const VideoCollectionCard = ({
                 : "flex-col gap-2"
             }`}
           >
-            <Link
-              to={
-                video.owner?.username ? `/channel/${video.owner.username}` : "#"
-              }
+            <span
+              role="button"
+              tabIndex={0}
               className={`transition-colors hover:text-primary ${
                 compact ? "text-[13px]" : "text-sm"
               }`}
               onClick={(event) => {
-                if (!video.owner?.username) event.preventDefault();
+                event.stopPropagation();
+                event.preventDefault();
+                if (video.owner?.username) {
+                  navigate(`/channel/${video.owner.username}`);
+                }
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && video.owner?.username) {
+                  event.stopPropagation();
+                  navigate(`/channel/${video.owner.username}`);
+                }
               }}
             >
               {video.owner?.fullName || "Creator"}
-            </Link>
+            </span>
             {compact ? <span>•</span> : null}
             <div
               className={`flex gap-1 ${compact ? "shrink-0 items-center" : ""}`}
