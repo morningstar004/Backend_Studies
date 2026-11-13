@@ -1,8 +1,16 @@
 // Import query hooks for managing asynchronous data fetching and caching.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, Heart, Pencil, Trash2, Users, Video } from "lucide-react";
+import {
+  ChevronDown,
+  Eye,
+  Heart,
+  Pencil,
+  Trash2,
+  Users,
+  Video,
+} from "lucide-react";
 import { dashboardService, videoService } from "../api/services.ts";
 import { SkeletonCard, EmptyState } from "../components/States.jsx";
 import { toast } from "sonner";
@@ -12,12 +20,47 @@ const stat = [
   { key: "subscribers", label: "Subscribers", icon: Users },
   { key: "totalLikes", label: "Likes", icon: Heart },
 ];
+const engagementOptions = [
+  { value: "6hour", label: "6 hours" },
+  { value: "day", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "3month", label: "3 months" },
+  { value: "year", label: "Year" },
+  { value: "all", label: "All time" },
+];
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const deletingVideoRef = useRef(false);
+  const durationMenuRef = useRef(null);
   const [engagementRange, setEngagementRange] = useState("month");
+  const [isDurationMenuOpen, setIsDurationMenuOpen] = useState(false);
   const [activePoint, setActivePoint] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
+  const selectedEngagementOption =
+    engagementOptions.find((option) => option.value === engagementRange) ??
+    engagementOptions[3];
+
+  useEffect(() => {
+    if (!isDurationMenuOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!durationMenuRef.current?.contains(event.target)) {
+        setIsDurationMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setIsDurationMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isDurationMenuOpen]);
+
   const stats = useQuery({
     queryKey: ["dashboard", "stats"],
     // Fetch dashboard statistics using the dashboardService (dashboardController is has responsible for this)
@@ -71,6 +114,25 @@ export default function Dashboard() {
   const dateLabels = viewDays.map((day) => day.date);
   const formatDateLabel = (value) => {
     const date = new Date(value);
+    if (engagementRange === "week") {
+      const today = new Date();
+      const dateOffset = Math.round(
+        (Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) -
+          Date.UTC(
+            today.getUTCFullYear(),
+            today.getUTCMonth(),
+            today.getUTCDate(),
+          )) /
+          86400000,
+      );
+      if (dateOffset === 0) return "Today";
+      if (dateOffset === -1) return "Yesterday";
+      if (dateOffset === 1) return "Tomorrow";
+      return date.toLocaleDateString(undefined, {
+        weekday: "long",
+        timeZone: "UTC",
+      });
+    }
     if (engagementRange === "6hour" || engagementRange === "day") {
       return date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -114,27 +176,54 @@ export default function Dashboard() {
               Views over time. Tracking starts with new views.
             </span>
           </h2>
-          <label className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="text-black/55 dark:text-white/55">Duration</span>
-            <select
-              value={engagementRange}
-              onChange={(event) => {
-                setEngagementRange(event.target.value);
-                setActivePoint(null);
-                setSelectedPoint(null);
-              }}
-              className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-black"
-              aria-label="View engagement duration"
-            >
-              <option value="6hour">6 hours</option>
-              <option value="day">Day</option>
-              <option value="week">Week</option>
-              <option value="month">Month</option>
-              <option value="3month">3 months</option>
-              <option value="year">Year</option>
-              <option value="all">All time</option>
-            </select>
-          </label>
+            <div className="relative" ref={durationMenuRef}>
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={isDurationMenuOpen}
+                aria-label={`View engagement duration: ${selectedEngagementOption.label}`}
+                onClick={() =>
+                  setIsDurationMenuOpen((isOpen) => !isOpen)
+                }
+                className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm transition hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-white/10 dark:bg-[#111111] dark:hover:bg-white/10"
+              >
+                <span>{selectedEngagementOption.label}</span>
+                <ChevronDown
+                  size={16}
+                  className={`shrink-0 transition-transform ${isDurationMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {isDurationMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="View engagement duration"
+                  className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-2xl border border-black/10 bg-white py-1 shadow-xl dark:border-white/10 dark:bg-[#111111]"
+                >
+                  {engagementOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={option.value === engagementRange}
+                      onClick={() => {
+                        setEngagementRange(option.value);
+                        setActivePoint(null);
+                        setSelectedPoint(null);
+                        setIsDurationMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-black/5 dark:hover:bg-white/10 ${
+                        option.value === engagementRange ? "font-semibold" : ""
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         {engagement.isLoading ? (
           <p className="text-sm text-black/55 dark:text-white/55">
@@ -155,8 +244,8 @@ export default function Dashboard() {
             >
               <defs>
                 <linearGradient id="view-area-gradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#5D75C0" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#5D75C0" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#5E887E" stopOpacity="0.55" />
+                  <stop offset="100%" stopColor="#5E887E" stopOpacity="0.02" />
                 </linearGradient>
                 <filter
                   id="view-tooltip-shadow"

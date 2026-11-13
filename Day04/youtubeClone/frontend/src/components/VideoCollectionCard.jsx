@@ -122,7 +122,7 @@ const VideoCollectionCard = ({
       {dominantColorHover && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-px z-0 scale-80 ease-linear rounded-2xl opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:ease-out group-hover:duration-350 group-hover:opacity-60"
+          className="pointer-events-none absolute -inset-px z-0 scale-80 ease-linear rounded-2xl opacity-0 transition-all duration-100 group-hover:ease-in group-hover:scale-100 group-hover:duration-250 group-hover:opacity-60"
           style={{
             backgroundColor: `color-mix(in srgb, ${dominantColor} 65%, black)`,
           }}

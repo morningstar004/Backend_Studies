@@ -59,22 +59,22 @@ export default function ForgotPassword() {
   return (
     <div className="mx-auto max-w-xl py-6">
       <form
-        className="surface p-6 sm:p-8"
+        className="surface mx-auto w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-sm"
         onSubmit={step === "request" ? requestOtp : resetPassword}
       >
-        <h1 className="text-center text-2xl font-bold">Reset your password</h1>
-        <p className="mt-2 text-center text-sm text-black/60 dark:text-white/60">
+        <h1 className="text-center text-2xl font-bold text-slateDark dark:text-white">Reset your password</h1>
+        <p className="mt-2 text-center text-sm text-slateDark/60 dark:text-white/60">
           {step === "request"
             ? "We’ll email you a four-digit OTP."
             : "Enter the OTP from your email and choose a new password."}
         </p>
         {error && (
-          <p className="mt-5 rounded-xl bg-primary/10 p-3 text-sm text-primary">
+          <p className="mt-5 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}
         {message && (
-          <p className="mt-5 rounded-xl bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-300">
+          <p className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
             {message}
           </p>
         )}
@@ -150,12 +150,12 @@ export default function ForgotPassword() {
           )}
         </div>
         <div className="mt-6 flex items-center justify-between gap-4">
-          <Link className="text-sm text-primary hover:underline" to="/login">
+          <Link className="text-sm text-primary transition-colors hover:text-primary-hover hover:underline" to="/login">
             Back to sign in
           </Link>
           <button
             disabled={loading}
-            className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl bg-primary px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-primary-hover active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
               ? "Please wait..."
